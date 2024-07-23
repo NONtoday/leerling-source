@@ -1,0 +1,28 @@
+<sl-header />
+
+<div class="container" id="mainContent" [class.with-wizard]="showWizard()" tabindex="-1">
+    @if (isPhoneOrTabletPortrait()) {
+        <sl-scrollable-title [title]="pageTitle" />
+    } @else {
+        <div class="text-heading-1">{{ pageTitle }}</div>
+    }
+
+    @if (finishedLoading()) {
+        @if (showWizard()) {
+            <sl-afwezig-melden-wizard
+                [absentieRedenen]="absentieRedenen()!"
+                [leerling]="leerling()!"
+                (isDirty)="wizardIsDirty.set($event)" />
+        } @else if (leerling()) {
+            <div class="school-contactgegevens">
+                <sl-school-contactgegevens [alwaysShowBorder]="true" [leerlingID]="leerling()!.id" />
+            </div>
+        }
+    } @else {
+        <div class="page-loading">
+            <hmy-spinner [large]="true" />
+        </div>
+    }
+</div>
+
+<sl-tab-bar />

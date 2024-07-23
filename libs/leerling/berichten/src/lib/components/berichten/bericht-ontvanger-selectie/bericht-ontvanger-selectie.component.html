@@ -1,0 +1,44 @@
+<div class="ontvangers">
+    @for (ontvanger of ontvangers(); track $index) {
+        <hmy-tag
+            [label]="ontvanger | medewerkerVolledigeNaam: { metAanhef: true }"
+            [iconAriaLabel]="'verwijderen van ' + (ontvanger | medewerkerVolledigeNaam: { metAanhef: true })"
+            [iconTabindex]="tabindexNieuwBericht"
+            (iconClick)="verwijderMedewerker(ontvanger)"
+            size="big" />
+    }
+    <div class="zoekveld pointer" [class.has-placeholder]="hasPlaceholder()">
+        <input
+            #textInput
+            [ngModel]="search()"
+            [tabindex]="tabindexNieuwBericht"
+            [placeholder]="placeholderText()"
+            [autoFocus]="deviceService.isTabletOrDesktop()"
+            (focus)="activateInput()"
+            (click)="activateInput()"
+            (ngModelChange)="search.set($event)"
+            (keydown.backspace)="deleteLaatsteOntvanger()"
+            hmyAutoFocus
+            aria-label="Ontvangers: zoek in veld of kies uit lijst"
+            type="text"
+            autocomplete="off" />
+    </div>
+</div>
+<ng-template #zoekresultatenPopup>
+    <div class="zoekresultaten">
+        <div class="zoekresultaten-inner">
+            @for (result of searchResults(); track $index) {
+                <sl-bericht-ontvanger-optie
+                    [correspondent]="result | medewerkerToBoodschapCorrespondent"
+                    [tabIndex]="tabindexNieuwBericht"
+                    (click)="selectMedewerker(result)"
+                    tabindex="0"
+                    role="button" />
+            } @empty {
+                <div class="geen-resultaten">
+                    <span class="text-content-semi text-moderate">Geen ontvangers gevonden</span>
+                </div>
+            }
+        </div>
+    </div>
+</ng-template>

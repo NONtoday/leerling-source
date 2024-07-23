@@ -1,0 +1,11 @@
+<sl-header />
+<sl-scrollable-title class="scrollable-title title" [title]="'Registraties'" tabIndex="0" role="text" />
+<div class="content" id="mainContent" tabindex="-1">
+    <sl-registraties
+        [registratieCategorieeen]="registratieCategorieeen()"
+        [tijdspan]="tijdspan()"
+        (onSelectTijdspan)="selectTijdspan($event)" />
+    <sl-maatregelen [maatregelToekenningen]="maatregelToekenningen()" />
+</div>
+
+<sl-tab-bar [fixedToBottom]="true" />

@@ -1,0 +1,20 @@
+<div class="header">
+    <div class="icon-titel">
+        @if (!showIconInPill() && registratie().vakOfTitel; as vakOfTitel) {
+            <i [hmyIcon]="vakOfTitel | vakToIcon" size="small"></i>
+        }
+        <span class="titel ellipsis text-content-semi text-strong">{{ titel() }}</span>
+    </div>
+</div>
+
+<span class="datum-info text-content-small text-moderate">{{ datuminfo() }} </span>
+@if (showIconInPill()) {
+    <hmy-icon-pill
+        [icon]="registratie().vakOfTitel ?? '' | vakToIcon"
+        [text]="registratie().vakOfTitel ?? ''"
+        type="outline"
+        color="neutral"></hmy-icon-pill>
+}
+@if (registratie().opmerkingen; as opmerkingen) {
+    <div class="opmerking text-content-small text-strong">{{ opmerkingen }}</div>
+}

@@ -1,0 +1,22 @@
+@if (titel()) {
+    <div class="header">
+        <span class="header-titel">{{ titel() }}</span>
+    </div>
+}
+
+<div class="container">
+    @if (weekItems().length > 0) {
+        <sl-rooster-huiswerk-dropdown-items
+            [items]="weekItems()"
+            [toekenningsType]="'WEEK'"
+            [baseTabIndex]="baseTabIndex()"
+            (itemSelected)="itemSelected.emit($event)" />
+    }
+    @if (dagItems().length > 0) {
+        <sl-rooster-huiswerk-dropdown-items
+            [items]="dagItems()"
+            [toekenningsType]="'DAG'"
+            [baseTabIndex]="baseTabIndex()"
+            (itemSelected)="itemSelected.emit($event)" />
+    }
+</div>

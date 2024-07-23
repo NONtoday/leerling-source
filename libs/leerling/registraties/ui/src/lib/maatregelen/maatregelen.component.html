@@ -1,0 +1,28 @@
+<div class="maatregelen-header" tabindex="200">
+    <span class="maatregelen-titel">Maatregelen</span>
+    @if (heeftMaatregelen()) {
+        <hmy-icon-pill
+            class="aantal-maatregelen-pill"
+            [icon]="'maatregel'"
+            [iconSize]="'smallest'"
+            [hoverable]="false"
+            [color]="'accent'"
+            [text]="aantalMaatregelen() + ' actief'"
+            [type]="'light'" />
+    }
+</div>
+@if (maatregelToekenningen() !== undefined) {
+    @if (heeftMaatregelen()) {
+        <div class="maatregelen-lijst">
+            @for (toekenning of maatregelToekenningen(); track $index) {
+                <sl-maatregel-item [toekenning]="toekenning" />
+            }
+        </div>
+    } @else {
+        <div class="geen-maatregelen" tabindex="201">
+            <p>Geen maatregelen</p>
+        </div>
+    }
+} @else {
+    <hmy-spinner />
+}

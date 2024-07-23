@@ -1,0 +1,37 @@
+<div class="background" [@maskAnimation]="maskState()" (click)="animateAndClose()"></div>
+<div
+    class="content-container"
+    #container
+    [@contentAnimation]="contentState()"
+    [ngxDragConfig]="dragConfig"
+    [class.with-title]="settings().title"
+    [class.is-scrolling]="isScrolling()"
+    [class.can-scroll]="canScroll()"
+    [cdkTrapFocusAutoCapture]="true"
+    (@contentAnimation.done)="onContentAnimationDone()"
+    (ngxDrag)="onDrag($event)"
+    (ngxScroll)="calculateScroll.notify()"
+    aria-modal="true"
+    role="dialog"
+    cdkTrapFocus>
+    <div class="swipe-area" #swipable [class.dragging]="dragging()">
+        <div class="indicator"></div>
+    </div>
+    <div class="modal-header">
+        @if (settings().title) {
+            <div class="title" role="text" tabindex="0">
+                @if (settings().titleIcon) {
+                    <i class="title-icon" [color]="settings().titleIconColor" [hmyIcon]="settings().titleIcon!" size="medium"></i>
+                }
+                {{ settings().title }}
+            </div>
+        }
+        @if (settings().showClose) {
+            <div class="sluiten-icon-wrapper" (click)="animateAndClose()" tabindex="0" role="button">
+                <i class="sluiten-icon" [sizes]="['smallest', 'small', 'medium']" hmyIcon="sluiten"></i>
+            </div>
+        }
+    </div>
+
+    <ng-template class="content" #content></ng-template>
+</div>

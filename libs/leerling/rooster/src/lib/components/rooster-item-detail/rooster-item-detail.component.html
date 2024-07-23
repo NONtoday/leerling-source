@@ -1,0 +1,168 @@
+<div class="header">
+    <div class="afspraak-header" [class.with-border]="!toonStudiemateriaalTabs()">
+        @if (roosterItem().afspraakItem.beginLesuur) {
+            <hmy-pill
+                [hoverable]="false"
+                [text]="pillText()"
+                [color]="pillColor()"
+                [attr.aria-label]="lesurenLabel()"
+                type="darker"
+                color="primary"
+                tabindex="0" />
+        }
+        <hmy-vak-icon [vaknaam]="roosterItem().afspraakItem.vak?.naam ?? roosterItem().omschrijving" />
+        <span class="header-titel" tabindex="0">{{ roosterItem().afspraakItem.vak?.naam ?? roosterItem().omschrijving }}</span>
+        <i class="sluiten" (click)="sluiten()" hmyIcon="sluiten" size="medium" tabindex="0" aria-label="sluiten" role="button"></i>
+    </div>
+    @if (toonStudiemateriaalTabs()) {
+        <hmy-tab-row class="sidebar-tabs" [tabs]="tabs" (activeTabChange)="onTabSwitch($event)" />
+    }
+</div>
+
+@switch (modus()) {
+    @case ('Omschrijving') {
+        <ng-container *ngTemplateOutlet="omschrijving"></ng-container>
+    }
+    @case ('Studiemateriaal') {
+        @if (vakMetUuid(); as vak) {
+            <sl-studiemateriaal [vak]="vak" />
+        } @else {
+            <sl-studiemateriaal-vakselectie />
+        }
+    }
+}
+
+<ng-template #omschrijving>
+    <div class="content">
+        @if (roosterItem().afspraakItem.vak || roosterItem().afspraakItem.medewerkers.length > 0) {
+            <div class="titel-medewerkers" tabindex="0" role="text">
+                @if (roosterItem().afspraakItem.vak) {
+                    <span class="afspraak-titel">{{ roosterItem().afspraakItem.titel }}</span>
+                }
+
+                @if (roosterItem().afspraakItem.medewerkers.length > 0) {
+                    <!--Deze div is nodig zodat de elementen op nieuwe regels netjes onder de andere regel komen te staan-->
+                    <div>
+                        <div class="medewerkers">
+                            @for (medewerker of roosterItem().afspraakItem.medewerkers; track medewerker) {
+                                <hmy-tag
+                                    [label]="medewerker"
+                                    [attr.aria-label]="medewerker | medewerkerAanhefAriaLabel"
+                                    icon="none"
+                                    color="positive" />
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+
+        <div class="tijd-locatie">
+            <div class="blok" tabindex="0" role="text">
+                <span class="blok-titel">Tijd</span>
+                <span>{{ tijd() }}</span>
+            </div>
+            @if (roosterItem().locatie) {
+                <div class="blok locatie" tabindex="0" role="text">
+                    <span class="blok-titel">Locatie</span>
+                    <span>{{ roosterItem().locatie }}</span>
+                </div>
+            }
+        </div>
+
+        @if (roosterItem().afspraakItem.omschrijving || roosterItem().afspraakItem.bijlagen.length) {
+            <div class="inhoud">
+                @if (roosterItem().afspraakItem.omschrijving; as omschrijving) {
+                    <span class="afspraak-omschrijving-header">Omschrijving</span>
+                    <sl-html-content [content]="omschrijving" tabindex="0" role="text" />
+                }
+                @for (bijlage of roosterItem().afspraakItem.bijlagen; track bijlage.omschrijving) {
+                    <div class="bijlage" (click)="openBijlage(bijlage)" tabindex="0" role="link">
+                        <i hmyIcon="bijlage" size="small"></i>
+                        <span>{{ bijlage.omschrijving }}</span>
+                    </div>
+                }
+            </div>
+        }
+
+        @if (lesstofItems().length > 0) {
+            <div class="huiswerk">
+                <p class="deze-les" tabindex="0">Lesstof</p>
+                @for (swi of lesstofItems(); track $index) {
+                    <sl-studiewijzer-item
+                        [item]="swi"
+                        [toonAfvinkKnop]="false"
+                        [toonCompacteOmschrijving]="true"
+                        [toonChevron]="true"
+                        (click)="openHuiswerk(swi)"
+                        titelType="onderwerp"
+                        tabindex="0"
+                        role="link" />
+                }
+            </div>
+        }
+
+        @if (heeftStudiewijzerItems() || toonStudiemateriaalBtn()) {
+            <div class="huiswerk">
+                @if (heeftStudiewijzerItems()) {
+                    <p class="deze-les" tabindex="0">Uit studiewijzer</p>
+                }
+                @for (swi of studiewijzerItems(); track $index) {
+                    <sl-studiewijzer-item
+                        [item]="swi"
+                        [toonAfvinkKnop]="false"
+                        [toonCompacteOmschrijving]="true"
+                        [toonChevron]="true"
+                        (click)="openHuiswerk(swi)"
+                        titelType="onderwerp"
+                        tabindex="0"
+                        role="link" />
+                }
+                @if (toonStudiemateriaalBtn()) {
+                    <hmy-button
+                        class="studiemateriaal-btn"
+                        (click)="openStudiemateriaal()"
+                        iconLeft="boek"
+                        iconRight="chevronRechts"
+                        mode="tertiary"
+                        label="Studiemateriaal"
+                        justifyContent="space-between"
+                        iconRightSize="smallest"
+                        role="link" />
+                }
+            </div>
+        }
+    </div>
+
+    @if (!isOuderVerzorger && isOnline()) {
+        <div class="footer">
+            @if (magUitschrijven()) {
+                <div class="buttons">
+                    <button
+                        class="btn uitschrijven"
+                        (click)="openKWTGuard()"
+                        mode="tertiary"
+                        type="button"
+                        aria-label="Uitschrijven"
+                        role="button"
+                        tabindex="0">
+                        Uitschrijven
+                    </button>
+                    <ng-template #guard>
+                        <sl-kwt-uitschrijven-confirm-modal
+                            [subtext]="getkwtGuardSubtext()"
+                            [foutmelding]="kwtFoutmelding()"
+                            [loading]="loading()"
+                            [shouldCloseAfterConfirm]="shouldCloseAfterConfirm()"
+                            (confirm)="schrijfUitVoorKWT()"
+                            (onClose)="resetFoutmelding()"
+                            text="Je schrijft je uit voor deze momenten"
+                            annulerenButtonText="Annuleren"
+                            bevestigenButtonText="Uitschrijven"
+                            bevestigenButtonMode="delete" />
+                    </ng-template>
+                </div>
+            }
+        </div>
+    }
+</ng-template>

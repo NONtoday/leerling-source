@@ -1,0 +1,12 @@
+@for (poging of pogingen; track $index) {
+    <div tabindex="200">
+        <div class="poging">
+            <div class="omschrijving">{{ poging.omschrijving }}</div>
+            <div class="datum">&nbsp;• {{ poging.datum }}</div>
+            <div class="cijfer" [ngClass]="{ onvoldoende: poging.isOnvoldoende }">{{ poging.resultaat }}</div>
+        </div>
+        @if (poging.opmerking) {
+            <p class="opmerking">{{ poging.opmerking }}</p>
+        }
+    </div>
+}

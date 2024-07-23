@@ -1,0 +1,29 @@
+@if (showBackButton()) {
+    <i
+        class="terug iconleft"
+        (click)="terugClicked.emit()"
+        hmyIcon="pijlLinks"
+        size="large"
+        tabindex="0"
+        role="link"
+        aria-label="Terug"></i>
+} @else if (iconLeft()) {
+    <i class="icon iconleft" [hmyIcon]="iconLeft()!.name" (click)="iconLeft()!.onClick()" size="large"></i>
+}
+
+@if (vakNaam(); as vakNaam) {
+    <hmy-vak-icon [vaknaam]="vakNaam" />
+}
+<span class="title" tabindex="0">{{ title() }}</span>
+@for (icon of iconsRight(); track $index) {
+    <i class="icon" [hmyIcon]="icon.name" (click)="icon.onClick()" size="large"></i>
+} @empty {
+    <i
+        class="sluiten"
+        [sizes]="['medium', 'medium', 'large']"
+        (click)="sluitenClicked.emit()"
+        hmyIcon="sluiten"
+        tabindex="0"
+        role="link"
+        aria-label="Sluiten"></i>
+}

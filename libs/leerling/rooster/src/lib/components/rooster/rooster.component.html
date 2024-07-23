@@ -1,0 +1,51 @@
+<sl-header [hideBorderBottomMobile]="true">
+    <sl-header-action-button [hideWhenOffline]="false" (click)="updatePeildatumVandaag()" iconName="kalenderDag" label="vandaag" />
+</sl-header>
+
+<div class="container">
+    @if (isTabletOfDesktop()) {
+        <div class="headers-container">
+            <sl-rooster-week-header
+                [datum]="peildatum()"
+                [toonWeekend]="toonWeekend()"
+                (weekend)="toggleWeekendBekijken($event)"
+                (navigation)="onNavigation($event)" />
+            <sl-vakantie-header
+                class="weekvakantie"
+                [beginDatum]="peildatum() | weekBegindatum"
+                [eindDatum]="peildatum() | weekEinddatum: toonWeekend()" />
+        </div>
+
+        <sl-rooster-weken
+            [peildatum]="peildatum()"
+            [toonWeekend]="toonWeekend()"
+            (peildatumChange)="updatePeildatum($event)"
+            (focusVolgendeWeekMaandag)="focusVolgendeWeekMaandag()" />
+    } @else {
+        @if (scrollableTitle$ | async; as title) {
+            <sl-scrollable-title [title]="title" />
+        }
+        <sl-dagen-header
+            [peildatum]="peildatum()"
+            [allowKeyEvents]="false"
+            [ngClass]="{ hideborder: hideBorder$ | async }"
+            (dateChange)="updatePeildatum($event)"
+            (peildatumChange)="updatePeildatum($event)" />
+        @if (weekEnDagItems$ | async; as huiswerk) {
+            @if (huiswerk.weekitems.length > 0 || huiswerk.dagitems.length > 0) {
+                <div class="stack">
+                    <sl-rooster-huiswerk-stack
+                        [datum]="peildatum()"
+                        [weekItems]="huiswerk.weekitems"
+                        [dagItems]="huiswerk.dagitems"
+                        role="button"
+                        tabindex="900" />
+                </div>
+            }
+        }
+        <sl-vakantie-header class="dagvakantie" [beginDatum]="peildatum()" [eindDatum]="peildatum()" />
+        <sl-rooster-dagen [peildatum]="peildatum()" (peildatumChange)="updatePeildatum($event)" />
+    }
+</div>
+
+<sl-tab-bar />

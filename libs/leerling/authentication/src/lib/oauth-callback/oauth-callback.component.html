@@ -1,0 +1,13 @@
+@if (message(); as message) {
+    <div class="outlet">
+        <i [hmyIcon]="'somtoday'" [color]="'fg-primary-normal'" [size]="'large'"></i>
+        <p>
+            {{ message }}
+        </p>
+        @if (tryAgain) {
+            <hmy-button class="button" (click)="tryAgainNow()" label="Opnieuw inloggen" size="small" mode="secondary"></hmy-button>
+        }
+    </div>
+} @else {
+    <hmy-spinner></hmy-spinner>
+}

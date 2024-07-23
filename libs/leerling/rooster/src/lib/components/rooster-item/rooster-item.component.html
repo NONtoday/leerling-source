@@ -1,0 +1,33 @@
+<div class="groups">
+    <div class="group">
+        <div class="titel label" #title>{{ titel() }}</div>
+        @if (roosterItem().locatie) {
+            <div class="locatie label" #subtitel>{{ roosterItem().locatie }}</div>
+        }
+    </div>
+    <div class="group">
+        @if (roosterItem().isKWT) {
+            @if (isIngeschreven) {
+                <hmy-icon-pill
+                    class="kwt-color-pill"
+                    [icon]="'yesRadio'"
+                    [iconSize]="'smallest'"
+                    [hoverable]="false"
+                    [color]="pillColor()"
+                    [text]="kwtPillText()"
+                    [type]="pillType()" />
+            } @else if (!isVerlopen()) {
+                <hmy-pill class="kwt-pill" [hoverable]="false" [color]="pillColor()" [text]="kwtPillText()" [type]="pillType()" />
+            }
+        } @else {
+            <hmy-pill class="tijd" [hoverable]="false" [color]="pillColor()" [text]="pillText()" type="darker" />
+
+            @if (roosterItem().studiewijzerItems.length > 0) {
+                <sl-werkdruk-indicator [huiswerkTypen]="roosterItem().studiewijzerItems | huiswerkTypen" />
+            }
+        }
+    </div>
+</div>
+@if (roosterItem().isKWT && roosterItem().kwtInfo?.ondertitel) {
+    <div class="kwt-ondertitel label" #subtitel>{{ roosterItem().kwtInfo?.ondertitel }}</div>
+}

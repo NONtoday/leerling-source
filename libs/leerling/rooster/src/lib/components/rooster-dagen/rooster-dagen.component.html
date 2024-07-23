@@ -1,0 +1,16 @@
+<sl-rooster-tijden class="tijden" />
+<sl-rooster-dag
+    class="dag"
+    [datum]="datums() | drieluikData: 0"
+    [showLoadingSpinner]="true"
+    [tabIndex]="-1"
+    data-position="left"
+    aria-hidden="true" />
+<sl-rooster-dag class="dag" [datum]="datums() | drieluikData: 1" [showLoadingSpinner]="true" [tabIndex]="0" data-position="center" />
+<sl-rooster-dag
+    class="dag"
+    [datum]="datums() | drieluikData: 2"
+    [showLoadingSpinner]="true"
+    [tabIndex]="-1"
+    data-position="right"
+    aria-hidden="true" />

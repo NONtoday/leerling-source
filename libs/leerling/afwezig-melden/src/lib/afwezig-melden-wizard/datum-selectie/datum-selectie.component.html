@@ -1,0 +1,50 @@
+<div class="dag-selectie">
+    <div class="week-opties">
+        @for (weekOptie of weekOpties(); track $index) {
+            @if (weekOptie.maandNaam) {
+                <div class="week-optie-maand">{{ weekOptie.maandNaam }}</div>
+            }
+            <div class="dag-opties">
+                @for (dagOptie of weekOptie.dagOpties; track $index) {
+                    <div
+                        class="dag-optie"
+                        [class.range]="isBeginEindRangeOptie(dagOptie)"
+                        [class.disabled]="dagOptie.disabled"
+                        [class.selected]="isSelectedDagOptie(dagOptie)"
+                        [attr.aria-label]="dagOptieAriaLabel(dagOptie)"
+                        (click)="selectDagOptie(dagOptie)"
+                        tabindex="0"
+                        role="button">
+                        <div>
+                            <div>{{ dagOptie.dagNaam }}</div>
+                            <div>{{ dagOptie.dagNummer }}</div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+    <div class="toon-meer-week-opties" (click)="toonMeerWeekOpties()" role="button" tabindex="0">Toon meer</div>
+</div>
+
+@if (magTijdstipKiezen()) {
+    <div class="tijd-selectie-container" (click)="toggleHeleDag($event)" role="button" tabindex="0">
+        <div class="hele-dag-toggle">
+            <div class="hele-dag-toggle-text">Hele dag</div>
+            <hmy-toggle [(ngModel)]="heleDag" />
+        </div>
+
+        @if (!heleDag()) {
+            <div class="tijd-selectie">
+                <div>{{ mode() === 'Begin' ? 'Begintijd' : 'Eindtijd' }}</div>
+                <hmy-dropdown
+                    [items]="tijdOptieDropdownItems()"
+                    [selected]="selectedTijdOptieDropdownItem()"
+                    [listHeight]="226"
+                    [modalOnMobile]="true"
+                    (onSelectionChanged)="onTijdOptieSelected($event)"
+                    listWidth="fit-dropdown" />
+            </div>
+        }
+    </div>
+}

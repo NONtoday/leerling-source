@@ -1,0 +1,7 @@
+<div class="wrapper">
+    <i class="icon" [hmyIcon]="iconName()" [attr.aria-label]="label()" size="medium" role="button"></i>
+
+    @if (counter()) {
+        <div class="counter">{{ counter() }}</div>
+    }
+</div>

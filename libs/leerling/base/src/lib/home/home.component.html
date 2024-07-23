@@ -1,0 +1,9 @@
+<router-outlet />
+@if (appSpinner()) {
+    <div class="spinner-container" (click)="$event.preventDefault()">
+        <div class="spinner">
+            <hmy-spinner [large]="true" />
+            <span>Even geduld...</span>
+        </div>
+    </div>
+}

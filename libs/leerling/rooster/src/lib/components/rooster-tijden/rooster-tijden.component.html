@@ -1,0 +1,8 @@
+<div class="uur" *ngFor="let label of labels; let first = first; let last = last">
+    @if (!first) {
+        <span class="tijd" [attr.aria-label]="label.ariaLabel" role="text">{{ label.label }}</span>
+    }
+    @if (!last) {
+        <div class="line"></div>
+    }
+</div>

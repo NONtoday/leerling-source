@@ -1,0 +1,74 @@
+@if (vakresultatenView$ | async; as view) {
+    @if (view?.vakToetsdossier) {
+        <div class="header">
+            <i
+                class="back-button"
+                [hmyIcon]="'pijlLinks'"
+                (click)="onBackButtonClick()"
+                size="small"
+                tabindex="100"
+                aria-label="terug"
+                role="link"></i>
+            <div class="vaknaam" [hmyTooltip]="view.vakToetsdossier.vakNaam" [showIfEllipsed]="true" [onTouchAllowed]="true" tabindex="100">
+                <hmy-vak-icon [vaknaam]="view.vakToetsdossier.vakNaam!" />
+                <span>{{ view.vakToetsdossier.vakNaam }}</span>
+            </div>
+            @if (view.tabs.length > 1 && view.vakToetsdossier.vakNaam) {
+                <hmy-switch-group>
+                    @for (tab of view.tabs; track $index) {
+                        <hmy-switch
+                            [active]="view.actieveTab === tab"
+                            [label]="tab | tabNaam: view.vakToetsdossier"
+                            [attr.aria-selected]="view.actieveTab === tab"
+                            (click)="selectTab(tab)"
+                            tabindex="100"
+                            role="button" />
+                    }
+                </hmy-switch-group>
+                <div class="tabs">
+                    @for (tab of view.tabs; track $index) {
+                        <hmy-tab
+                            [attr.aria-selected]="view.actieveTab === tab"
+                            [active]="view.actieveTab === tab"
+                            [tab]="{ label: tab | tabNaam: view.vakToetsdossier }"
+                            (click)="selectTab(tab)"
+                            tabindex="100"
+                            role="button" />
+                    }
+                    <div class="filler"></div>
+                </div>
+            }
+        </div>
+        @if (view.actieveTab === 'Examen' && view.vakToetsdossier.examendossier; as dossier) {
+            <sl-examenresultaten [examendossier]="dossier" />
+        }
+        @if (view.actieveTab === 'Alternatief' && view.vakToetsdossier.voortgangsdossier?.alternatiefNiveau; as dossier) {
+            <sl-voortgangsresultaten [voortgangsdossier]="dossier" [isAlternatiefNiveau]="true" />
+        }
+        @if (
+            (view.actieveTab === 'Rapport' || view.actieveTab === 'Standaard') && view.vakToetsdossier.voortgangsdossier?.standaardNiveau;
+            as dossier
+        ) {
+            <sl-voortgangsresultaten [voortgangsdossier]="dossier" [isAlternatiefNiveau]="false" />
+        }
+        @if (!(view | heeftVakResultaten)) {
+            <div class="geen-resultaten">
+                <sl-geen-data>
+                    @if (!(view | heeftAndereVakResultaten)) {
+                        <p tabindex="100">Er zijn nog geen cijfers ingevoerd voor dit vak.</p>
+                    }
+                    @if (view | heeftAndereVakResultaten) {
+                        <p tabindex="100">
+                            Er zijn nog geen cijfers ingevoerd. Kijk
+                            {{ view.actieveTab === 'Rapport' ? 'in je examendossier.' : 'bij het andere niveau.' }}
+                        </p>
+                    }
+                </sl-geen-data>
+            </div>
+        }
+    } @else {
+        <div class="spinner-container">
+            <hmy-spinner />
+        </div>
+    }
+}

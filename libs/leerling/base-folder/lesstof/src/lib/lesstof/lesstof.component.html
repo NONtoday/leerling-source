@@ -1,0 +1,23 @@
+@if (lesstof(); as lesstof) {
+    @if (lesstof.totaalAantalLesstof > 0) {
+        <h2 tabindex="0" role="text">Lesstof</h2>
+        @for (studiewijzeritem of lesstof.geselecteerdeItems; track studiewijzeritem.id) {
+            <sl-studiewijzer-item
+                [item]="studiewijzeritem"
+                [toonAfvinkKnop]="false"
+                [toonChevron]="true"
+                [toonCompacteOmschrijving]="true"
+                [toonAankomend]="studiewijzeritem | lesstofAankomend"
+                [alternatieveOmschrijving]="studiewijzeritem | lesstofDatumformat"
+                [benoemIcon]="false"
+                (click)="openLesstof(studiewijzeritem)"
+                titelType="onderwerp"
+                tabindex="0" />
+        }
+    }
+    @if (lesstof.totaalAantalLesstof > lesstof.geselecteerdeItems.length) {
+        <div class="meer-link" (click)="toonMeer()" tabindex="0" role="button">
+            <hmy-icon-pill [reversed]="true" text="Toon eerder" icon="chevronOnder" iconSize="smallest" color="neutral" />
+        </div>
+    }
+}

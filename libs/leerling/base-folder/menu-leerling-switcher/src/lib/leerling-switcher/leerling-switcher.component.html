@@ -1,0 +1,30 @@
+<div class="leerling-selector" [cdkTrapFocusAutoCapture]="true" body-scroll-lock-ignore cdkTrapFocus>
+    @for (profiel of availableAccounts(); track $index) {
+        <div class="account-profile">
+            <span class="leerling-selector-header">{{ profiel.schoolnaam }}</span>
+            @for (leerling of profiel.subLeerlingen; track $index) {
+                <div
+                    class="account-leerling"
+                    [class.active]="currentAccountLeerling().leerling === leerling"
+                    [tabIndex]="0"
+                    [attr.role]="currentAccountLeerling().leerling === leerling ? '' : 'link'"
+                    [attr.aria-label]="leerling.nn + (currentAccountLeerling().leerling === leerling ? ' geselecteerd' : '')"
+                    (click)="switchLeerling(profiel.sessionIdentifier, leerling)">
+                    <hmy-avatar [lazyLoading]="true" [initialen]="initialen(leerling)" [src]="leerling.avatarSrc"></hmy-avatar>
+                    <span class="ellipsis">{{ leerling.nn }}</span>
+                    @if (currentAccountLeerling().leerling === leerling) {
+                        <i hmyIcon="yesRadio" size="small" color="fg-on-neutral-weak"></i>
+                    }
+                </div>
+            }
+        </div>
+    }
+
+    @if (isOnline()) {
+        <div class="delimiter"></div>
+        <div class="selector-option account" (click)="addNewAccount()" role="link" tabindex="0" role="link">
+            <i hmyIcon="persoonToevoegen" size="small"></i>
+            <span>Account toevoegen</span>
+        </div>
+    }
+</div>

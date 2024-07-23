@@ -1,0 +1,51 @@
+<div class="container" #container [cdkTrapFocusAutoCapture]="true" [class.show-details]="selectedTab()" cdkTrapFocus>
+    <div class="menu" #menu [attr.aria-hidden]="!!selectedTab()">
+        <div>
+            <sl-account-modal-header [toonTerug]="false" (actionClicked)="onHeaderActionClicked($event)" titel="Instellingen" />
+
+            <nav>
+                @for (tab of tabs$ | async; track $index) {
+                    <sl-account-modal-tab
+                        *slHeeftRecht="tab.recht"
+                        [autoFocus]="$index === 0"
+                        [tab]="tab"
+                        [active]="tab.titel === selectedTab()"
+                        [attr.aria-selected]="tab.titel === selectedTab()"
+                        (click)="selectTab(tab)"
+                        hmyAutoFocus
+                        tabIndex="0"
+                        role="button" />
+                }
+            </nav>
+        </div>
+
+        <div class="bottom-section">
+            <div class="version" (click)="forceUitloggen()">versie: {{ version$ | async }}</div>
+        </div>
+    </div>
+
+    <sl-account-modal-details
+        [titel]="selectedTab()"
+        (headerActionClicked)="onHeaderActionClicked($event)"
+        (touchstart)="onTouchStart($event)"
+        (touchmove)="onTouchMove($event)"
+        (touchend)="onTouchEnd($event)">
+        @switch (selectedTab()) {
+            @case ('Mijn gegevens') {
+                <sl-gegevens (title)="changeTitle($event)" />
+            }
+            @case ('Notificaties') {
+                <sl-notificatie-settings />
+            }
+            @case ('Toestemmingen') {
+                <sl-toestemmingen [toestemmingen]="toestemmingen()" />
+            }
+            @case ('Weergave') {
+                <sl-weergave />
+            }
+            @case ('Agenda') {
+                <sl-agenda />
+            }
+        }
+    </sl-account-modal-details>
+</div>

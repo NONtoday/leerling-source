@@ -1,0 +1,27 @@
+@if (isOuder()) {
+    <div class="leerling">
+        <hmy-avatar [lazyLoading]="true" [initialen]="leerlingInitialen()" [src]="leerlingFoto()"></hmy-avatar>
+        <span>{{ leerlingNaam() }}</span>
+    </div>
+}
+@if (vakanties(); as vakanties) {
+    @if (vakanties.length !== 0) {
+        <div class="vakanties-wrapper">
+            @for (vakantie of vakanties; track $index) {
+                <div class="vakantie-item" tabindex="0" role="text">
+                    <span class="vakantie-item-span"
+                        >{{ vakantie.naam }}
+                        <p class="vakantie-item-subtext">
+                            {{ vakantie | vakantieSubtitle }}
+                        </p>
+                    </span>
+                </div>
+            }
+        </div>
+    } @else {
+        <div class="geen-vakanties">
+            <sl-geen-data />
+            <p tabindex="0">Er zijn geen vakanties gevonden</p>
+        </div>
+    }
+}

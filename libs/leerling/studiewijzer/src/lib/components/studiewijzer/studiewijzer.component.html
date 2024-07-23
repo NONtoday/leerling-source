@@ -1,0 +1,71 @@
+<sl-header [hideBorderBottomMobile]="true">
+    <!-- Voor nu geen usecase op mobile, wellicht in de toekomst wel-->
+    <!-- <sl-header-action-button
+        [hideWhenOffline]="false"
+        [counter]="headerActionFilterCounter()"
+        (click)="openToast()"
+        iconName="filter"
+        label="filter"
+        tabindex="10" /> -->
+    <sl-header-action-button
+        [hideWhenOffline]="false"
+        (click)="updatePeildatumVandaag()"
+        iconName="kalenderDag"
+        label="vandaag"
+        tabindex="10" />
+    <sl-header-action-button
+        [hideWhenOffline]="false"
+        (click)="openStudiemateriaalVakselectie()"
+        iconName="boek"
+        label="studiemateriaal"
+        tabindex="10" />
+</sl-header>
+
+<div class="container">
+    @if (isTabletOfDesktop()) {
+        @if (vakkeuzes(); as vakkeuze) {
+            <sl-studiewijzer-weken-header
+                class="header"
+                [datum]="peildatum()"
+                [toonWeekend]="toonWeekend()"
+                [maandnummer]="maandnummer()"
+                [vakkeuzes]="vakkeuze"
+                (weekend)="toggleWeekendBekijken($event)"
+                (naarVandaag)="scrollNaarVandaag(true)"
+                (naarHuidigeWeek)="focusHuidigeWeek()"
+                (activeFilters)="activeFilters.set($event)" />
+        }
+
+        <sl-studiewijzer-weken
+            class="studiewijzer"
+            [datum]="peildatum()"
+            [activeFilters]="activeFilters()"
+            [toonWeekend]="toonWeekend()"
+            (maandnummer)="changeMaandnummer($event)"
+            (refreshStudiewijzer)="refreshStudiewijzer($event)"
+            (terugNaarBoven)="focusOnHeader()" />
+    } @else {
+        @if (scrollableTitle$ | async; as title) {
+            <sl-scrollable-title [title]="title" />
+        }
+        <sl-dagen-header
+            [peildatum]="peildatum()"
+            [allowKeyEvents]="false"
+            [huiswerkItems]="weekEnDagItems()"
+            [showSwipeIndicator]="false"
+            (dateChange)="updatePeildatum($event)"
+            (peildatumChange)="updatePeildatum($event)" />
+
+        <sl-studiewijzer-dag
+            class="dag"
+            [dag]="studiewijzerDag()"
+            [showLoadingSpinner]="true"
+            [activeFilters]="activeFilters()"
+            (peildatumChange)="updatePeildatum($event)"
+            (horizontalNext)="onSwipe(true)"
+            (horizontalPrevious)="onSwipe(false)"
+            slHorizontalSwipe />
+    }
+</div>
+
+<sl-tab-bar aria-live="assertive" />
