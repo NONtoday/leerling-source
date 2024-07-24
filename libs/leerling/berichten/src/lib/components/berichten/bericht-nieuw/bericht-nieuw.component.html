@@ -1,0 +1,36 @@
+<ng-template #headerActions>
+    <sl-header-action-button [hideWhenOffline]="true" (click)="verzendBericht()" iconName="verzenden" label="verzenden" />
+</ng-template>
+<span class="titel">Nieuw bericht</span>
+<form class="nieuw-bericht-form" [formGroup]="form" (ngSubmit)="verzendBericht()">
+    <div class="input-veld focus-veld ontvangers">
+        <label class="ontvangers-label" for="ontvangersInput">Aan:</label>
+        <sl-bericht-ontvanger-selectie #ontvangerSelectie formControlName="ontvangers" required name="ontvangers" />
+    </div>
+    <div class="input-veld focus-veld onderwerp">
+        <label for="onderwerpInput">Onderwerp:</label>
+        <input
+            #onderwerpInput
+            [placeholder]="deviceService.isTabletOrDesktop() ? 'Waar gaat het over? (verplicht)' : 'Waar gaat het over?'"
+            formControlName="onderwerp"
+            aria-label="onderwerp"
+            required
+            name="onderwerp"
+            autocomplete="off"
+            maxlength="1024"
+            type="text" />
+    </div>
+    <div class="focus-veld inhoud">
+        <textarea
+            id="inhoudInput"
+            formControlName="inhoud"
+            aria-label="inhoud"
+            name="inhoud"
+            placeholder="Type een bericht..."
+            spellcheck="true"></textarea>
+    </div>
+    <div class="buttons">
+        <hmy-button (click)="clickAnnuleren()" mode="quaternary" label="Annuleren" />
+        <hmy-button [disabled]="!form.valid || !isOnline()" (click)="clickVerzenden()" mode="primary" type="button" label="Verzenden" />
+    </div>
+</form>

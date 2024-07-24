@@ -1,0 +1,30 @@
+<div class="map" [attr.aria-label]="mapnaam()" [attr.aria-expanded]="isOpen()" (click)="toggleOpen()" tabindex="0" role="button">
+    <i hmyIcon="map" size="large"></i>
+    <span class="titel">{{ mapnaam() }}</span>
+    <i class="chevron" [ngClass]="{ open: isOpen() }" [hmyIcon]="isOpen() ? 'chevronOnder' : 'chevronLinks'" size="small"></i>
+</div>
+
+@if (isOpen()) {
+    @for (bijlage of jaarbijlageMap()?.jaarbijlagen; track bijlage.bijlage.id) {
+        <sl-bijlage
+            [@collapseOnLeave]
+            [@expandOnEnter]
+            [omschrijving]="bijlage.naam"
+            [uri]="bijlage.uri"
+            [extension]="bijlage.extension"
+            (bijlageOpened)="bijlageOpened.emit(bijlage)"
+            tabindex="0" />
+    }
+
+    @for (leermiddel of leermiddelen(); track leermiddel.uuid) {
+        <sl-bijlage
+            [@collapseOnLeave]
+            [@expandOnEnter]
+            [omschrijving]="leermiddel.titel"
+            [uri]="leermiddel.uri"
+            [methode]="leermiddel.methode"
+            [uitgever]="leermiddel.uitgever"
+            (bijlageOpened)="leermiddelOpened.emit(leermiddel)"
+            tabindex="0" />
+    }
+}

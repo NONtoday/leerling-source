@@ -1,0 +1,13 @@
+@if (items() && items().length > 0) {
+    <div [ngClass]="{ weekitems: toekenningsType() === 'WEEK', dagitems: toekenningsType() === 'DAG' }">
+        @for (huiswerk of items(); track $index) {
+            <sl-studiewijzer-item
+                [item]="huiswerk"
+                [toonAfvinkKnop]="false"
+                [toonCompacteOmschrijving]="true"
+                [tabIndex]="baseTabIndex()"
+                (click)="itemSelected.emit(huiswerk)"
+                role="menuitem" />
+        }
+    </div>
+}

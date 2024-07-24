@@ -1,0 +1,29 @@
+<div class="background" [@maskAnimation]="maskState" (click)="animateAndClose()"></div>
+<div
+    class="content-container"
+    #contentContainer
+    [@contentAnimation]="{ value: contentState, params: { yTransform: amountShowRollupYTransform } }"
+    (@contentAnimation.start)="onContentAnimationStarted()"
+    (@contentAnimation.done)="onContentAnimationDone()"
+    (touchstart)="onTouchStart($event)"
+    (touchmove)="onTouchMove($event)"
+    (touchend)="onTouchEnd($event)"
+    aria-modal="true"
+    role="dialog">
+    <div class="swipe-container">
+        <div class="swipe-indicator" #swipeIndicator></div>
+    </div>
+    @if (settings.showClose) {
+        <div class="sluiten-icon-container" (click)="animateAndClose()">
+            <i
+                class="sluiten-icon"
+                [sizes]="['smallest', 'small', 'large']"
+                hmyIcon="sluiten"
+                tabindex="0"
+                aria-label="Sluiten"
+                role="button"></i>
+        </div>
+    }
+
+    <div class="content" #content></div>
+</div>

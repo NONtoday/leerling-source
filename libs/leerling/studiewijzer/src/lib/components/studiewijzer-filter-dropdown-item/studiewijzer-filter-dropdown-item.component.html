@@ -1,0 +1,8 @@
+<hmy-checkbox class="checkbox" [checked]="afgevinkt()" [customTabIndex]="-1" (valueChanged)="onAfvinken()" color="primary" />
+
+@if (icon(); as icon) {
+    <i class="icon" [hmyIcon]="icon" [color]="iconColor()" size="medium"></i>
+} @else {
+    <hmy-vak-icon class="vak-icon" [vaknaam]="label()" />
+}
+<span>{{ label() }}</span>

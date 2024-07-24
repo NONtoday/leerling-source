@@ -1,0 +1,96 @@
+@if (weekRooster$ | async; as weekRooster) {
+    <div class="navigation">
+        <div class="container links">
+            <h1>{{ huidigeMaand }}</h1>
+            <div class="weeknummer" [attr.aria-label]="'Week ' + huidigeWeek" tabindex="100">Week {{ huidigeWeek }}</div>
+            <div class="buttons">
+                <div class="button previous" (click)="vorigeWeekEnabled() && onNavigation('previous')" aria-label="Vorige week" role="link">
+                    <i
+                        [class.disabled]="!vorigeWeekEnabled()"
+                        [color]="vorigeWeekEnabled() ? 'fg-on-primary-weak' : 'disabled-fg'"
+                        (keydown.enter)="onNavigation('previous')"
+                        hmyIcon="chevronLinks"
+                        size="small"
+                        hmyTooltip="Vorige week"
+                        tabindex="100"></i>
+                </div>
+                <div class="button next" (click)="volgendeWeekEnabled() && onNavigation('next')" role="link" aria-label="Volgende week">
+                    <i
+                        [class.disabled]="!volgendeWeekEnabled()"
+                        [color]="volgendeWeekEnabled() ? 'fg-on-primary-weak' : 'disabled-fg'"
+                        (keydown.enter)="onNavigation('next')"
+                        hmyIcon="chevronRechts"
+                        size="small"
+                        hmyTooltip="Volgende week"
+                        tabindex="100"></i>
+                </div>
+            </div>
+            <hmy-button
+                class="naar-vandaag"
+                #vandaag
+                (click)="onNavigation('vandaag')"
+                label="Vandaag"
+                mode="tertiary"
+                tabindex="100"
+                customTabindex="-1"
+                aria-label="Toon vandaag"
+                role="link" />
+        </div>
+
+        <div class="container rechts">
+            @if (toonWeekendButton()) {
+                <i
+                    class="icon-action"
+                    [ngClass]="toonWeekend() ? 'verberg' : 'toon'"
+                    [hmyTooltip]="weekendButtonText()"
+                    [attr.aria-label]="weekendButtonText()"
+                    (click)="toggleWeekend()"
+                    hmyIcon="downloaden"
+                    size="medium"
+                    tabindex="0"
+                    role="button"></i>
+            }
+        </div>
+    </div>
+
+    <div class="dagen">
+        @for (datum of dates; track $index) {
+            <div class="dag">
+                <p #dagHeader [tabIndex]="($index + 2) * 100" [attr.aria-label]="datum.description">
+                    {{ datum.dagNaam }}<span [class.active]="datum.isActive">{{ datum.dagnummer }}</span>
+                </p>
+                @if (showStacks$ | async) {
+                    <div class="stacks" [style.grid-template-rows]="stacksRows$ | async">
+                        @if (
+                            (weekRooster.dagen[$index].dagitems && weekRooster.dagen[$index].dagitems.length > 0) ||
+                            (weekRooster.weekitems && weekRooster.weekitems.length > 0)
+                        ) {
+                            <sl-rooster-huiswerk-stack
+                                [dagItems]="weekRooster.dagen[$index].dagitems"
+                                [weekItems]="weekRooster.weekitems"
+                                [tabIndex]="
+                                    weekRooster.dagen[$index].dagitems.length > 0 || weekRooster.weekitems.length > 0
+                                        ? ($index + 2) * 100
+                                        : -1
+                                "
+                                [datum]="datum.datum"
+                                [attr.aria-label]="
+                                    weekRooster.dagen[$index].dagitems.length + weekRooster.weekitems.length
+                                        | i18nPlural: pluralMapping['totaalItems']
+                                "
+                                role="menu" />
+                        }
+
+                        @if (heeftMaatregelRechten()) {
+                            @if (weekRooster.dagen[$index].maatregelen && weekRooster.dagen[$index].maatregelen.length > 0) {
+                                <sl-rooster-maatregelen
+                                    [maatregelen]="weekRooster.dagen[$index].maatregelen"
+                                    [tabIndex]="weekRooster.dagen[$index].maatregelen.length > 0 ? ($index + 2) * 100 : -1" />
+                            }
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+}

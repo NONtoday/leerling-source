@@ -1,0 +1,61 @@
+<div class="vak">
+    <hmy-vak-icon [vaknaam]="vakgemiddelde.vakkeuze.vak.naam" />
+    <span>{{ vakgemiddelde.vakkeuze.vak.naam }}</span>
+    @if (vakgemiddelde.vakAnderNiveau) {
+        <hmy-icon-pill
+            [text]="vakgemiddelde.vakAnderNiveau"
+            [onTouchAllowed]="true"
+            [hmyTooltip]="'Volgt vak op ander niveau • ' + vakgemiddelde.vakAnderNiveau"
+            [attr.aria-label]="'Volgt vak op ander niveau ' + vakgemiddelde.vakAnderNiveau"
+            position="bottom"
+            icon="hogerNiveau"
+            color="warning" />
+    }
+</div>
+@if (vakgemiddelde.examendossierResultaat) {
+    <sl-vakgemiddelde-item-cijfer
+        [formattedResultaat]="vakgemiddelde.examendossierResultaat.formattedResultaat"
+        [isVoldoende]="vakgemiddelde.examendossierResultaat.isVoldoende"
+        [bijzonderheid]="vakgemiddelde.examendossierResultaat.bijzonderheid"
+        [attr.aria-label]="
+            'Schoolexamencijfer ' +
+            vakgemiddelde.examendossierResultaat.formattedResultaat +
+            (vakgemiddelde.examendossierResultaat.bijzonderheid === 'TeltNietMee' ? ', telt niet mee.' : '.')
+        "
+        type="schoolexamengemiddelde"
+        aanduiding="SE" />
+}
+@if (vakgemiddelde.voortgangsdossierResultaatAfwijkend) {
+    <sl-vakgemiddelde-item-cijfer
+        [formattedResultaat]="vakgemiddelde.voortgangsdossierResultaatAfwijkend.formattedResultaatAlternatief"
+        [isVoldoende]="vakgemiddelde.voortgangsdossierResultaatAfwijkend.isVoldoendeAlternatief"
+        [bijzonderheid]="vakgemiddelde.voortgangsdossierResultaatAfwijkend.bijzonderheid"
+        [aanduiding]="vakgemiddelde.afwijkendNiveauOmschrijving"
+        [attr.aria-label]="
+            'Rapportcijfer ' +
+            vakgemiddelde.afwijkendNiveauOmschrijving +
+            ', ' +
+            vakgemiddelde.voortgangsdossierResultaatAfwijkend.formattedResultaatAlternatief +
+            (vakgemiddelde.voortgangsdossierResultaatAfwijkend.bijzonderheid === 'TeltNietMee' ? ', telt niet mee.' : '.')
+        "
+        type="rapportcijfer"
+        cy-tag="rapportcijfer alternatief" />
+}
+@if (vakgemiddelde.voortgangsdossierResultaat || toonLegeKolom) {
+    <sl-vakgemiddelde-item-cijfer
+        [formattedResultaat]="vakgemiddelde.voortgangsdossierResultaat?.formattedResultaat"
+        [isVoldoende]="vakgemiddelde.voortgangsdossierResultaat?.isVoldoende"
+        [bijzonderheid]="vakgemiddelde.voortgangsdossierResultaat?.bijzonderheid"
+        [aanduiding]="vakgemiddelde.niveauOmschrijving"
+        [toonAanduiding]="false"
+        [attr.aria-label]="
+            vakgemiddelde.voortgangsdossierResultaat?.formattedResultaat
+                ? 'Rapportcijfer ' +
+                  (vakgemiddelde.voortgangsdossierResultaatAfwijkend ? vakgemiddelde.niveauOmschrijving + ', ' : '') +
+                  vakgemiddelde.voortgangsdossierResultaat?.formattedResultaat +
+                  (vakgemiddelde.voortgangsdossierResultaat?.bijzonderheid === 'TeltNietMee' ? ', telt niet mee' : '')
+                : ''
+        "
+        type="rapportcijfer"
+        cy-tag="rapportcijfer" />
+}

@@ -1,0 +1,14 @@
+<sl-rooster-dag
+    *ngFor="let datum of dates; let i = index; trackBy: trackByDatum"
+    [datum]="datum"
+    [customTabindex]="(i + 2) * 100 + 50"
+    [showLoadingSpinner]="(dates.length === 5 && i === 2) || (dates.length === 7 && i === 3)"
+    role="link" />
+
+<hmy-button
+    class="naar-volgende-week"
+    (click)="naarVolgendeWeek.emit()"
+    customTabindex="-1"
+    tabindex="0"
+    label="Naar volgende week"
+    role="link" />

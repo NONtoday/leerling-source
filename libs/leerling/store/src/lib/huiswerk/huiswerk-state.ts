@@ -1,0 +1,157 @@
+import { HttpStatusCode } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { Action, State, StateContext, StateToken } from '@ngxs/store';
+import { patch } from '@ngxs/store/operators';
+import { RswiAfspraakToekenning, RswiDagToekenning, RswiGemaakt, RswiWeekToekenning } from 'leerling-codegen';
+import { RequestInformation, RequestInformationBuilder } from 'leerling-request';
+import { forkJoin, tap } from 'rxjs';
+import { CallService } from '../call/call.service';
+import { RechtenSelectors } from '../rechten/rechten-selectors';
+import { SwitchContext } from '../shared/shared-actions';
+import { AbstractState, insertOrUpdateItem } from '../util/abstract-state';
+import { createLinks } from '../util/entiteit-model';
+import { RefreshHuiswerk, ToggleAfgevinkt } from './huiswerk-actions';
+import {
+    ADDITIONAL_GEMAAKT,
+    ADDITIONAL_LEERLINGEN,
+    ADDITIONAL_LEERLINGEN_MET_INLEVERINGEN,
+    ADDITIONAL_LEERLING_PROJECTGROEP,
+    ADDITIONAL_LESGROEP,
+    ADDITIONAL_STUDIEWIJZER_ID,
+    SSWIModel,
+    SSWIWeek,
+    SStudiewijzerItem,
+    createSWIWeek
+} from './huiswerk-model';
+
+export const HUISWERK_STATE_TOKEN = new StateToken<SSWIModel>('huiswerk');
+const DEFAULT_STATE = { jaarWeken: undefined };
+
+@State<SSWIModel>({
+    name: HUISWERK_STATE_TOKEN,
+    defaults: DEFAULT_STATE
+})
+@Injectable({
+    providedIn: 'root'
+})
+export class HuiswerkState extends AbstractState {
+    @Action(RefreshHuiswerk)
+    refreshHuiswerk(ctx: StateContext<SSWIModel>, action: RefreshHuiswerk) {
+        const leerlingId: number | undefined = this.getLeerlingID();
+        if (!leerlingId) {
+            return;
+        }
+
+        if (!this._store.selectSnapshot(RechtenSelectors.heeftRecht('huiswerkBekijkenAan'))) {
+            this._setOrUpdateSwiWeek(ctx, createSWIWeek(action.jaarWeek, leerlingId, [], [], []));
+            return;
+        }
+
+        // Als er nog geen enkele studiewijzer is (bv begin van het schooljaar), krijgen we een 403 terug.
+        const datumRequestInfo = this._buildHuiswerkRequest(leerlingId, 'jaarWeek', action.jaarWeek);
+        const weekRequestInfo = this._buildHuiswerkRequest(leerlingId, 'weeknummer', action.jaarWeek.split('~')[1]);
+
+        const isStillFresh = this.isFresh(
+            this.createCallDefinition('studiewijzeritemafspraaktoekenningen', this.getTimeout(), datumRequestInfo),
+            this.createCallDefinition('studiewijzeritemdagtoekenningen', this.getTimeout(), datumRequestInfo),
+            this.createCallDefinition('studiewijzeritemweektoekenningen', this.getTimeout(), weekRequestInfo)
+        );
+
+        if (isStillFresh) {
+            return;
+        }
+
+        const afspraakToekenningenRequest = this.cachedUnwrappedGet<RswiAfspraakToekenning>(
+            'studiewijzeritemafspraaktoekenningen',
+            datumRequestInfo,
+            { force: true }
+        );
+        const dagToekenningenRequest = this.cachedUnwrappedGet<RswiDagToekenning>('studiewijzeritemdagtoekenningen', datumRequestInfo, {
+            force: true
+        });
+        const weekToekenningenRequest = this.cachedUnwrappedGet<RswiWeekToekenning>('studiewijzeritemweektoekenningen', weekRequestInfo, {
+            force: true
+        });
+
+        if (!afspraakToekenningenRequest || !dagToekenningenRequest || !weekToekenningenRequest) {
+            return;
+        }
+
+        return forkJoin([afspraakToekenningenRequest, dagToekenningenRequest, weekToekenningenRequest]).pipe(
+            tap(([afspraakToekenningen, dagToekenningen, weekToekenningen]) => {
+                const swiWeek = createSWIWeek(action.jaarWeek, leerlingId, afspraakToekenningen, dagToekenningen, weekToekenningen);
+                this._setOrUpdateSwiWeek(ctx, swiWeek);
+            })
+        );
+    }
+
+    private _buildHuiswerkRequest(leerlingId: number, weerkParamNaam: string, weekParamValue: any): RequestInformation {
+        return new RequestInformationBuilder()
+            .parameter('geenDifferentiatieOfGedifferentieerdVoorLeerling', leerlingId)
+            .parameter(weerkParamNaam, weekParamValue)
+            .additionals(
+                ADDITIONAL_LEERLINGEN,
+                ADDITIONAL_GEMAAKT,
+                ADDITIONAL_LESGROEP,
+                ADDITIONAL_LEERLINGEN_MET_INLEVERINGEN,
+                ADDITIONAL_LEERLING_PROJECTGROEP,
+                ADDITIONAL_STUDIEWIJZER_ID
+            )
+            .ignoreStatusCodes(HttpStatusCode.Forbidden)
+            .build();
+    }
+
+    private _setOrUpdateSwiWeek(ctx: StateContext<SSWIModel>, swiWeek: SSWIWeek) {
+        const state = ctx.getState();
+        if (state.jaarWeken) {
+            ctx.setState(patch({ jaarWeken: insertOrUpdateItem((item) => item.jaarWeek, swiWeek) }));
+        } else {
+            ctx.setState({
+                jaarWeken: [swiWeek]
+            });
+        }
+    }
+
+    @Action(ToggleAfgevinkt)
+    toggleAfgevinkt(ctx: StateContext<SSWIModel>, action: ToggleAfgevinkt) {
+        const leerlingId: number | undefined = this.getLeerlingID();
+        if (!leerlingId) {
+            return;
+        }
+
+        const gemaakt: RswiGemaakt = {
+            leerling: {
+                links: createLinks(leerlingId, 'leerling.RLeerlingPrimer')
+            },
+            swiToekenningId: action.item.toekenningId,
+            gemaakt: !action.item.gemaakt
+        };
+
+        return this.requestService.put<RswiGemaakt>('swigemaakt/cou', new RequestInformationBuilder().body(gemaakt).build()).pipe(
+            tap((result) => {
+                const mapItem = (item: SStudiewijzerItem) =>
+                    item.toekenningId === action.item.toekenningId ? { ...item, gemaakt: Boolean(result.gemaakt) } : item;
+                const weken = ctx.getState().jaarWeken?.map((week) => ({
+                    ...week,
+                    weekitems: week.weekitems.map(mapItem),
+                    dagen: week.dagen.map((dag) => {
+                        return {
+                            ...dag,
+                            items: dag.items.map(mapItem)
+                        };
+                    })
+                }));
+                ctx.setState(patch({ jaarWeken: weken }));
+            })
+        );
+    }
+
+    @Action(SwitchContext)
+    override switchContext(ctx: StateContext<SSWIModel>) {
+        ctx.setState(DEFAULT_STATE);
+    }
+
+    override getTimeout(): number {
+        return CallService.SWI_TIMEOUT;
+    }
+}

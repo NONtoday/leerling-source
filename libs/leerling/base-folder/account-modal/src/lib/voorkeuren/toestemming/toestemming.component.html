@@ -1,0 +1,20 @@
+<div class="settings">
+    <div class="naam" [hmyTooltip]="toelichting()" [onTouchAllowed]="true">
+        <span>{{ naam() }}</span>
+        @if (toelichting(); as toelichting) {
+            <div [attr.aria-label]="toelichting">
+                <i hmyIcon="informatie" size="small" color="action-neutral-weak"></i>
+            </div>
+        }
+    </div>
+    <hmy-toggle
+        class="toggle"
+        [ngModel]="waarde()"
+        [attr.aria-disabled]="disabled()"
+        [attr.aria-checked]="waarde()"
+        [attr.aria-label]="naamToelichtingAriaLabel()"
+        [disabled]="disabled()"
+        (click)="updateWaarde()"
+        tabindex="0"
+        role="checkbox" />
+</div>

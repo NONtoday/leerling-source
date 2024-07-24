@@ -1,0 +1,39 @@
+<div class="onboarding-content">
+    <img class="onboarding-img" [src]="'../../assets/img/onboarding/' + (isMobile() ? 'mobile' : 'tablet') + '.png'" alt="" />
+
+    @if (isVerzorger()) {
+        <p class="onboarding-info">
+            Het vernieuwde Somtoday biedt je meer duidelijkheid en inzicht, zodat jij kunt handelen wanneer dat nodig is.
+        </p>
+    } @else {
+        <p class="onboarding-info">Het vernieuwde Somtoday biedt je meer structuur en overzicht, zodat jij grip hebt op je schooldag.</p>
+    }
+
+    <ul class="onboarding-items">
+        <li class="onboarding-item">
+            <img src="../../assets/svg/onboarding/nieuw.svg" alt="" />
+            Overzichtelijk rooster-, studiewijzer (huiswerk)- en cijferoverzicht
+        </li>
+
+        @if (isVerzorger()) {
+            <li class="onboarding-item">
+                <img src="../../assets/svg/onboarding/accounts.svg" alt="" />
+                Makkelijk wisselen tussen accounts van kinderen op verschillende Somtoday scholen
+            </li>
+        }
+
+        <li class="onboarding-item">
+            <img src="../../assets/svg/onboarding/darkmode.svg" alt="" />
+            Meer persoonlijke instellingen zoals dark mode
+        </li>
+
+        @if (!isVerzorger()) {
+            <li class="onboarding-item">
+                <img src="../../assets/svg/onboarding/leermiddelen.svg" alt="" />
+                Altijd en overal toegang tot je leermiddelen
+            </li>
+        }
+    </ul>
+</div>
+
+<hmy-button (click)="close()" customTabindex="0" mode="secondary" label="Aan de slag" cdkFocusInitial />

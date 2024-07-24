@@ -1,0 +1,34 @@
+@if (label()) {
+    <span class="dropdown-label">{{ label() }}</span>
+}
+<div
+    class="dropdown-box"
+    #dropdownBox
+    [class.dropdown-open]="isOpen()"
+    [attr.aria-expanded]="isOpen()"
+    [attr.aria-label]="getDropdownBoxAriaLabel()"
+    [style.height.px]="buttonHeight()"
+    [tabindex]="customTabindex()"
+    [attr.id]="customId()"
+    (click)="openOptionsList()"
+    role="listbox"
+    aria-controls="dropdown-list">
+    <span class="dropdown-value" [class.placeholder]="!selected()">
+        {{ selected()?.label ?? placeholder() }}
+    </span>
+    <i class="dropdown-chevron" hmyIcon="chevronOnder" size="smallest"></i>
+</div>
+
+<ng-template #dropdownList>
+    <div id="dropdown-list" [style.height]="getListHeightValue()">
+        <div class="dropdown-list-container" [cdkTrapFocusAutoCapture]="true" role="listbox" body-scroll-lock-ignore cdkTrapFocus>
+            @for (item of items(); track $index) {
+                <hmy-dropdown-item [selected]="selected() === item" [item]="item" (click)="select(item)" tabindex="0" />
+            } @empty {
+                <div class="dropdown-no-items" tabindex="0" role="option" aria-disabled="true">
+                    <span>{{ noItemsPlaceholder() }}</span>
+                </div>
+            }
+        </div>
+    </div>
+</ng-template>

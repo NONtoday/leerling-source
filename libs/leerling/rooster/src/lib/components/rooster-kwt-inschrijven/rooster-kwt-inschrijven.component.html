@@ -1,0 +1,62 @@
+<div class="content">
+    <div class="titel">
+        <span class="datum" tabindex="0"
+            ><i class="icon" hmyIcon="inplannen" size="small"></i>{{ datumLabel(roosterItem().beginDatumTijd) }}</span
+        >
+    </div>
+
+    <div class="keuze">
+        @for (actie of roosterItem().afspraakItem.kwtInfo?.afspraakActies; track $index) {
+            <sl-rooster-kwt-keuze
+                [afspraakActie]="actie"
+                [attr.aria-label]="actie | kwtKeuzeAriaLabel: actie.titel === actieGeselecteerd()?.titel"
+                (actieGeselecteerd)="setActieGeselecteerd($event)"
+                tabindex="0"
+                role="option" />
+        }
+    </div>
+</div>
+
+@if (!isOuderVerzorger && isOnline()) {
+    <div class="footer">
+        @if (kwtFoutmelding(); as foutmelding) {
+            <div class="foutmelding">
+                <hmy-error-bar [message]="foutmelding" role="alert"></hmy-error-bar>
+            </div>
+        }
+        <div class="buttons">
+            <hmy-button
+                class="annuleren"
+                [size]="'normal'"
+                [disabled]="loading()"
+                (click)="sluiten()"
+                type="button"
+                label="Annuleren"
+                mode="quaternary"
+                aria-label="Annuleren"
+                role="button"
+                tabindex="0"
+                customTabindex="-1" />
+
+            @if (loading()) {
+                <div class="spinner-button">
+                    <hmy-spinner [isWhite]="true"></hmy-spinner>
+                </div>
+            } @else {
+                <hmy-button
+                    class="submit"
+                    #submit
+                    [ngClass]="{ click: isAccessedByClick() }"
+                    [size]="'normal'"
+                    [disabled]="isDisabled()"
+                    [label]="buttonLabel()"
+                    (click)="schrijfInVoorKWT()"
+                    tabindex="0"
+                    type="submit"
+                    aria-label="Inschrijven"
+                    role="button"
+                    customTabindex="-1" />
+            }
+        </div>
+    </div>
+}

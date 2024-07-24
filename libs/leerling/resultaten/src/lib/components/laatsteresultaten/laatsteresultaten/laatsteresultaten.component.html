@@ -1,0 +1,19 @@
+@if (laatsteResultaten$ | async; as resultaten) {
+    @for (resultaat of resultaten; track $index) {
+        <sl-laatste-resultaat-item
+            [laatsteResultaat]="resultaat"
+            [toonDetails]="resultaat === selectedResultaat()"
+            [attr.aria-expanded]="resultaat === selectedResultaat()"
+            (toonDetailsEvent)="toonDetails($event, resultaat)"
+            (openVakCijferlijst)="openVakCijferlijst(resultaat)"
+            role="button"
+            tabindex="200" />
+    } @empty {
+        <div class="geen-resultaten">
+            <sl-geen-data />
+            <p tabindex="200">Er zijn nog geen cijfers voor deze periode</p>
+        </div>
+    }
+} @else {
+    <hmy-spinner />
+}

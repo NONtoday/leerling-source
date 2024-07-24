@@ -1,0 +1,33 @@
+<div class="container" #header [style.height.px]="containerHeight()" [class.title-hidden]="titleHidden()">
+    <div class="title-bar">
+        @if (showBackButton()) {
+            <i
+                class="terug"
+                (click)="terugClicked.emit()"
+                hmyIcon="pijlLinks"
+                size="medium"
+                tabindex="0"
+                role="link"
+                aria-label="Terug"></i>
+        } @else {
+            <!-- geen css changes nodig -->
+            <div>&nbsp;</div>
+        }
+        <span class="bar-title" [tabindex]="titleHidden() ? 0 : -1" [attr.aria-hidden]="!titleHidden()" role="text">{{ title() }}</span>
+        @for (icon of iconsRight(); track $index) {
+            <i class="icon" [hmyIcon]="icon.name" (click)="icon.onClick()" size="medium"></i>
+        }
+    </div>
+    <span
+        class="title"
+        #titleSpan
+        [style]="titleStyle()"
+        [tabindex]="titleHidden() ? -1 : 0"
+        [attr.aria-hidden]="titleHidden()"
+        role="text">
+        @if (vakNaam(); as vakNaam) {
+            <hmy-vak-icon [vaknaam]="vakNaam" />
+        }
+        {{ title() }}
+    </span>
+</div>

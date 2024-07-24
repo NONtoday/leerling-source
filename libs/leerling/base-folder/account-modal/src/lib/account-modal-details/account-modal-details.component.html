@@ -1,0 +1,7 @@
+@if (titel) {
+    <sl-account-modal-header [toonTerug]="true" [titel]="titel" (actionClicked)="headerActionClicked.emit($event)" />
+}
+
+<div class="content" #content>
+    <ng-content />
+</div>

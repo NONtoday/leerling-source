@@ -1,0 +1,75 @@
+<div class="header">
+    <span class="titel" tabindex="0">Filteren</span>
+</div>
+<div class="select" [attr.aria-label]="allSelectedOrDeselected()" (click)="selectOrDeselectAll()" tabindex="0" role="button">
+    {{ allSelectedOrDeselected() }}
+</div>
+<div class="items">
+    @for (filterType of huiswerkFilterTypen; track $index) {
+        <sl-studiewijzer-filter-dropdown-item
+            [label]="filterType.label"
+            [icon]="filterType.icon"
+            [filterValue]="filterType.filter"
+            [iconColor]="filterType.color"
+            [attr.aria-label]="filterType.label"
+            (addOrSubstractToCounter)="setAantalGeselecteerd($event)"
+            (click)="onAfvinken(filterType.filter)"
+            tabindex="0"
+            type="type"
+            role="menuitemcheckbox" />
+    }
+
+    <hr class="divider" />
+
+    @if (vakkeuzes(); as vakkeuzes) {
+        @for (vakkeuze of vakkeuzes; track $index) {
+            <sl-studiewijzer-filter-dropdown-item
+                [label]="vakkeuze.vak.naam"
+                [filterValue]="vakkeuze.vak.uuid"
+                [attr.aria-label]="vakkeuze.vak.naam"
+                (addOrSubstractToCounter)="setAantalGeselecteerd($event)"
+                (click)="onAfvinken(vakkeuze.vak.uuid)"
+                tabindex="0"
+                type="vak"
+                role="menuitemcheckbox" />
+        }
+    }
+</div>
+<div class="button-wrapper">
+    <hr class="divider" />
+    <div class="buttons">
+        @if (activeFilters().swiType.length || activeFilters().vak.length) {
+            <button
+                class="filter-button"
+                [attr.aria-label]="numberActiveFiltersText()"
+                (click)="resetAndSubmit()"
+                type="button"
+                role="button"
+                tabindex="0">
+                {{ numberActiveFiltersText() }}
+            </button>
+        } @else {
+            <hmy-button
+                class="sluiten"
+                [size]="'normal'"
+                (click)="close()"
+                type="button"
+                label="Sluiten"
+                mode="tertiary"
+                aria-label="Sluiten"
+                role="button"
+                tabindex="0"
+                customTabindex="-1" />
+        }
+        <hmy-button
+            class="opslaan"
+            [size]="'normal'"
+            (click)="onSubmit()"
+            type="submit"
+            label="Opslaan"
+            aria-label="Opslaan"
+            role="button"
+            tabindex="0"
+            customTabindex="-1" />
+    </div>
+</div>

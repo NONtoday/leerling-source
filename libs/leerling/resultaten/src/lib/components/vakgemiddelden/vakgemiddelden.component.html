@@ -1,0 +1,33 @@
+@if (plaatsingen$ | async; as plaatsingen) {
+    <sl-plaatsingen
+        [plaatsingen]="plaatsingen"
+        [tabIndex]="plaatsingComponentTabindex"
+        (plaatsingGewisseld)="selecteerPlaatsing($event)"
+        role="listbox"></sl-plaatsingen>
+    @if (vakkeuzesVoorPlaatsing$ | async; as data) {
+        <div class="vakken">
+            @for (vakgemiddelde of data.vakkeuzes; track vakgemiddelde) {
+                <sl-vakgemiddelde-item
+                    class="item"
+                    [vakgemiddelde]="vakgemiddelde"
+                    [toonLegeKolom]="!!data.voortgangsdossierGemiddelde"
+                    (click)="onVakgemiddeldeClick(vakgemiddelde)"
+                    tabindex="120" />
+            }
+            @if (data.voortgangsdossierGemiddelde) {
+                <div
+                    class="totaalgemiddelden"
+                    [attr.aria-label]="'Totaalgemiddelden: ongeveer ' + data.voortgangsdossierGemiddelde"
+                    role="text"
+                    tabindex="120">
+                    <span>Totaalgemiddelden</span>
+                    <span class="cijfer">{{ '~ ' + data.voortgangsdossierGemiddelde }}</span>
+                </div>
+            }
+        </div>
+    } @else {
+        <hmy-spinner />
+    }
+} @else {
+    <hmy-spinner />
+}

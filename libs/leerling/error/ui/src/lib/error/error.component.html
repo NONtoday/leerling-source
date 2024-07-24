@@ -1,0 +1,26 @@
+<sl-error-image />
+
+<div class="container">
+    @if (isUnsupported()) {
+        <p class="text-content-semi strong">De huidige versie van de app wordt niet meer ondersteund. Update de app om door te gaan.</p>
+    } @else {
+        <p class="text-content-semi strong">Er lijkt iets niet helemaal goed te gaan.</p>
+        <p class="text-content-semi">
+            {{ errorMessage() }}
+            Probeer het later opnieuw
+            @if (isIdpDown()) {
+                <span>
+                    of bekijk <a target="_blank" href="https://som.today/status/">onze statuspagina</a> voor meer informatie en
+                    updates</span
+                >
+            }
+            .
+        </p>
+    }
+</div>
+
+@if (isUnsupported()) {
+    <hmy-button class="align-self-center" [label]="storeButtonLabel" (click)="goToStore()" />
+} @else {
+    <hmy-button class="align-self-center" (click)="goHome()" label="Probeer opnieuw" />
+}

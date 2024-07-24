@@ -1,0 +1,10 @@
+<p class="text-moderate text-content-small-semi" tabindex="0">{{ text() }}</p>
+<div class="buttons">
+    <hmy-button class="annuleren-button" [label]="annulerenButtonText()" (click)="annulerenClick()" mode="quaternary" />
+    <hmy-button
+        class="bevestigen-button"
+        [label]="bevestigenButtonText()"
+        [mode]="bevestigenButtonMode()"
+        (click)="bevestigenClick()"
+        mode="delete" />
+</div>

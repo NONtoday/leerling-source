@@ -1,0 +1,106 @@
+<form class="container" [formGroup]="gegevensForm" (ngSubmit)="onSubmit()">
+    <div class="input-wrapper">
+        <div class="input-container" [attr.aria-label]="'telefoonnummer: ' + data.telnummer + '. disabled'" tabindex="0">
+            <label class="label" for="telefoonnummer">Telefoonnummer</label>
+            <input class="input" id="telefoonnummer" formControlName="telefoonnummer" type="tel" name="telefoonnummer" />
+        </div>
+        <div
+            class="input-container"
+            [attr.aria-label]="!data.mobielWijzigenAan ? 'Mobiel nummer: ' + data.mobielnummer + '. disabled' : ''"
+            [tabIndex]="!data.mobielWijzigenAan ? '0' : '-1'">
+            <label class="label" for="mobielnummer">Mobiel nummer</label>
+            <input
+                class="input"
+                id="mobielnummer"
+                [attr.aria-invalid]="mobielNummer?.invalid && mobielNummer?.touched"
+                formControlName="mobielnummer"
+                type="tel"
+                name="mobielnummer"
+                tabindex="0"
+                aria-describedby="mobiel-error" />
+            @if (mobielNummer?.invalid && mobielNummer?.touched) {
+                <div class="error-container">
+                    @if (mobielNummer?.hasError('pattern')) {
+                        <div class="input-error">
+                            <i hmyIcon="noRadio" size="small" color="fg-negative-normal"></i
+                            ><span id="mobiel-error" role="alert">Er is geen geldig Mobiel nummer ingevuld.</span>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+        @if (isVerzorger) {
+            <div
+                class="input-container"
+                [attr.aria-label]="!data.mobielWijzigenAan ? 'Werknummer: ' + data.werknummer + '. disabled' : ''"
+                [tabIndex]="!data.mobielWijzigenAan ? '0' : '-1'">
+                <label class="label" for="werknummer">Werknummer</label>
+                <input
+                    class="input"
+                    id="werknummer"
+                    [attr.aria-invalid]="mobielWerkNummer?.invalid && mobielWerkNummer?.touched"
+                    formControlName="werknummer"
+                    type="tel"
+                    name="werknummer"
+                    tabindex="0"
+                    aria-describedby="werknummer-error" />
+                @if (mobielWerkNummer?.invalid && mobielWerkNummer?.touched) {
+                    <div class="error-container">
+                        @if (mobielWerkNummer?.hasError('pattern')) {
+                            <div class="input-error">
+                                <i hmyIcon="noRadio" size="small" color="fg-negative-normal"></i
+                                ><span id="werknummer-error" role="alert">Er is geen geldig Werknummer ingevuld.</span>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+        <div
+            class="input-container"
+            [attr.aria-label]="!data.emailWijzigenAan ? 'E-mailadres: ' + data.eMail + '. disabled' : ''"
+            [tabIndex]="!data.emailWijzigenAan ? '0' : '-1'">
+            <label class="label" for="email">E-mailadres</label>
+            <input
+                class="input"
+                id="email"
+                [attr.aria-invalid]="emailAdres?.invalid && emailAdres?.touched"
+                formControlName="email"
+                type="email"
+                name="email"
+                tabindex="0"
+                aria-describedby="email-error" />
+            <div class="error-container" *ngIf="emailAdres?.invalid && emailAdres?.touched">
+                <div class="input-error" *ngIf="emailAdres?.hasError('pattern')">
+                    <i hmyIcon="noRadio" size="small" color="fg-negative-normal"></i>
+                    <span
+                        id="email-error"
+                        role="alert"
+                        aria-label="Er is geen geldig e-mailadres ingevuld. Controleer of het e-mailadres een &#64; en een punt bevat."
+                        >Er is geen geldig e-mailadres ingevuld. Controleer of het e-mailadres een &#64; en een . bevat.</span
+                    >
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="button-wrapper">
+        <hr class="divider" />
+        <div class="buttons">
+            <hmy-button
+                class="btn annuleren"
+                (click)="toggleView(true)"
+                type="button"
+                label="Annuleren"
+                mode="tertiary"
+                customTabindex="0"></hmy-button>
+            <!-- Als de knop zelf gedisabled is, geven we dit hmy-button-divje een tabindex, anders de knop zelf.-->
+            <hmy-button
+                class="btn submit"
+                [disabled]="!gegevensForm.valid || gegevensForm.pristine"
+                [tabIndex]="!gegevensForm.valid || gegevensForm.pristine ? '0' : '-1'"
+                type="submit"
+                label="Opslaan"
+                customTabindex="0"></hmy-button>
+        </div>
+    </div>
+</form>
