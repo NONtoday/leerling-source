@@ -1,8 +1,10 @@
 import { Injectable, inject, untracked } from '@angular/core';
 import Bugsnag from '@bugsnag/js';
 import { Store } from '@ngxs/store';
+import { isPresent } from 'harmony';
 import { AuthenticationService } from 'leerling-authentication';
 import { LesstofModel } from 'leerling-lesstof';
+import { sortLocale } from 'leerling-util';
 import {
     RefreshEduRoutePortalProducts,
     RefreshStudiemateriaal,
@@ -10,7 +12,7 @@ import {
     SVak,
     StudiemateriaalSelectors
 } from 'leerling/store';
-import { Observable, of } from 'rxjs';
+import { Observable, filter, map, of } from 'rxjs';
 import { JaarbijlagenModel, Leermiddel, LeermiddelModel, Studiemateriaal } from './studiemateriaal-frontend-model';
 import { StudiemateriaalFrontendSelectors } from './studiemateriaal-frontend-selectors';
 
@@ -34,7 +36,10 @@ export class StudiemateriaalService {
 
     public getVakkenMetStudiemateriaal(): Observable<SVak[] | undefined> {
         this._refreshVakkenMetStudiemateriaal();
-        return this._store.select(StudiemateriaalSelectors.getVakkenMetStudiemateriaal());
+        return this._store.select(StudiemateriaalSelectors.getVakkenMetStudiemateriaal()).pipe(
+            filter(isPresent),
+            map((items) => sortLocale(items, ['naam']))
+        );
     }
 
     public getStudiemateriaal(

@@ -1,1 +1,100 @@
-{"authorization_endpoint":"https:\/\/inloggen.somtoday.nl\/oauth2\/authorize","token_endpoint":"https:\/\/inloggen.somtoday.nl\/oauth2\/token","introspection_endpoint":"https:\/\/inloggen.somtoday.nl\/oauth2\/introspect","revocation_endpoint":"https:\/\/inloggen.somtoday.nl\/oauth2\/revoke","issuer":"https:\/\/somtoday.nl","jwks_uri":"https:\/\/inloggen.somtoday.nl\/oauth2\/jwks.json","scopes_supported":["openid","address","email","phone","profile"],"response_types_supported":["code","id_token","code token","code id_token","id_token token","code id_token token"],"response_modes_supported":["fragment","query","form_post"],"grant_types_supported":["authorization_code","client_credentials","implicit","password","refresh_token","urn:ietf:params:oauth:grant-type:token-exchange","urn:ietf:params:oauth:grant-type:jwt-bearer"],"code_challenge_methods_supported":["plain","S256"],"token_endpoint_auth_methods_supported":["client_secret_basic","client_secret_post"],"introspection_endpoint_auth_methods_supported":["client_secret_basic","client_secret_post"],"revocation_endpoint_auth_methods_supported":["client_secret_basic","client_secret_post"],"request_object_signing_alg_values_supported":["none"],"ui_locales_supported":["nl-NL"],"request_parameter_supported":true,"request_uri_parameter_supported":true,"authorization_response_iss_parameter_supported":true,"subject_types_supported":["public"],"userinfo_endpoint":"https:\/\/inloggen.somtoday.nl\/oauth2\/userinfo","end_session_endpoint":"https:\/\/inloggen.somtoday.nl\/oauth2\/logout","id_token_signing_alg_values_supported":["RS256"],"userinfo_signing_alg_values_supported":["RS256"],"display_values_supported":["page"],"claim_types_supported":["normal"],"claims_supported":["sub","name","given_name","family_name","middle_name","nickname","preferred_username","picture","email","email_verified","gender","birthdate","zoneinfo","locale","phone_number","phone_number_verified","address","updated_at"],"claims_parameter_supported":true}
+{
+    "authorization_endpoint": "https://inloggen.somtoday.nl/oauth2/authorize",
+    "token_endpoint": "https://inloggen.somtoday.nl/oauth2/token",
+    "introspection_endpoint": "https://inloggen.somtoday.nl/oauth2/introspect",
+    "revocation_endpoint": "https://inloggen.somtoday.nl/oauth2/revoke",
+    "issuer": "https://somtoday.nl",
+    "jwks_uri": "https://inloggen.somtoday.nl/oauth2/jwks.json",
+    "scopes_supported": [
+        "openid",
+        "address",
+        "email",
+        "phone",
+        "profile"
+    ],
+    "response_types_supported": [
+        "code",
+        "id_token",
+        "code token",
+        "code id_token",
+        "id_token token",
+        "code id_token token"
+    ],
+    "response_modes_supported": [
+        "fragment",
+        "query",
+        "form_post"
+    ],
+    "grant_types_supported": [
+        "authorization_code",
+        "client_credentials",
+        "implicit",
+        "password",
+        "refresh_token",
+        "urn:ietf:params:oauth:grant-type:token-exchange",
+        "urn:ietf:params:oauth:grant-type:jwt-bearer"
+    ],
+    "code_challenge_methods_supported": [
+        "plain",
+        "S256"
+    ],
+    "token_endpoint_auth_methods_supported": [
+        "client_secret_basic",
+        "client_secret_post"
+    ],
+    "introspection_endpoint_auth_methods_supported": [
+        "client_secret_basic",
+        "client_secret_post"
+    ],
+    "revocation_endpoint_auth_methods_supported": [
+        "client_secret_basic",
+        "client_secret_post"
+    ],
+    "request_object_signing_alg_values_supported": [
+        "none"
+    ],
+    "ui_locales_supported": [
+        "nl-NL"
+    ],
+    "request_parameter_supported": true,
+    "request_uri_parameter_supported": true,
+    "authorization_response_iss_parameter_supported": true,
+    "subject_types_supported": [
+        "public"
+    ],
+    "userinfo_endpoint": "https://inloggen.somtoday.nl/oauth2/userinfo",
+    "end_session_endpoint": "https://inloggen.somtoday.nl/oauth2/logout",
+    "id_token_signing_alg_values_supported": [
+        "RS256"
+    ],
+    "userinfo_signing_alg_values_supported": [
+        "RS256"
+    ],
+    "display_values_supported": [
+        "page"
+    ],
+    "claim_types_supported": [
+        "normal"
+    ],
+    "claims_supported": [
+        "sub",
+        "name",
+        "given_name",
+        "family_name",
+        "middle_name",
+        "nickname",
+        "preferred_username",
+        "picture",
+        "email",
+        "email_verified",
+        "gender",
+        "birthdate",
+        "zoneinfo",
+        "locale",
+        "phone_number",
+        "phone_number_verified",
+        "address",
+        "updated_at"
+    ],
+    "claims_parameter_supported": true
+}
