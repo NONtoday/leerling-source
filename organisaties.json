@@ -2345,6 +2345,12 @@
                         "domain_hint": "commanderijcollege.onmicrosoft.com"
                     }
                 ]
+            },
+            {
+                "uuid": "7521aec7-ec91-4344-bd3e-7d15b61af6d3",
+                "naam": "Maerlant Lyceum",
+                "plaats": "'S-GRAVENHAGE",
+                "oidcurls": []
             }
         ]
     }

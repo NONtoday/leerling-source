@@ -83,11 +83,18 @@ export function getIconVoorVak(vaknaam: string): IconName {
     const lowercaseVaknaam = vaknaam.toLowerCase();
     const firstChar = lowercaseVaknaam.charAt(0);
 
-    return findExactMatch(lowercaseVaknaam)?.icon ?? findPartialMatch(firstChar)?.icon ?? DEFAULT_ICON;
+    const match =
+        findVakNaamMatch(lowercaseVaknaam)?.icon ?? findAfkortingMatch(lowercaseVaknaam)?.icon ?? findPartialMatch(firstChar)?.icon;
+
+    return match ?? DEFAULT_ICON;
 }
 
-function findExactMatch(vaknaam: string): VakType | undefined {
-    return vaknamen.find((vaktype) => vaktype.keywords.includes(vaknaam));
+function findVakNaamMatch(vaknaam: string): VakType | undefined {
+    return vaknamen.find((vaktype) => vaktype.keywords.find((keyword) => vaknaam.includes(keyword)));
+}
+
+function findAfkortingMatch(afkorting: string): VakType | undefined {
+    return vaknamen.find((vaktype) => vaktype.abreviation.includes(afkorting));
 }
 
 function findPartialMatch(firstChar: string): VakType | undefined {
