@@ -24,7 +24,7 @@
     </div>
 </div>
 <ng-template #zoekresultatenPopup>
-    <div class="zoekresultaten">
+    <div class="zoekresultaten" body-scroll-lock-ignore>
         <div class="zoekresultaten-inner" cdkTrapFocus cdkTrapFocusAutoCapture="true">
             @for (result of searchResults(); track $index) {
                 <sl-bericht-ontvanger-optie
