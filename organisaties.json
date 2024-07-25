@@ -574,7 +574,7 @@
                 "oidcurls": []
             },
             {
-                "uuid": "6b3506de-e089-41d5-b657-e03bb25cc63c",
+                "uuid": "0f7f0258-063e-46fb-966e-04792abfedc4",
                 "naam": "Jan van Brabant College OUD",
                 "plaats": "HELMOND",
                 "oidcurls": [
@@ -720,8 +720,8 @@
                 ]
             },
             {
-                "uuid": "68716a63-2766-4269-af2b-f3499f3ecb65",
-                "naam": "Jan van Brabant College, Deltaweg OUD",
+                "uuid": "2c41ad69-3d5b-43c2-afa2-9d00e6603500",
+                "naam": "Jan van Brabant College OUD",
                 "plaats": "HELMOND",
                 "oidcurls": [
                     {
@@ -864,7 +864,7 @@
                 ]
             },
             {
-                "uuid": "75993090-8fbd-4ced-a0fd-5f160fe215a9",
+                "uuid": "f18c7b25-43fe-46a2-85d0-acd13fede4e2",
                 "naam": "Willibrord Gymnasium oud",
                 "plaats": "DEURNE",
                 "oidcurls": [
@@ -2232,10 +2232,16 @@
                 "uuid": "8abf956a-287f-4b07-a118-6257fbe0ed1b",
                 "naam": "De Einder praktijkschool",
                 "plaats": "'S-GRAVENHAGE",
-                "oidcurls": []
+                "oidcurls": [
+                    {
+                        "omschrijving": "Praktijkschool De Einder medewerkers",
+                        "url": "https://login.microsoftonline.com/deeinder.onmicrosoft.com/v2.0",
+                        "domain_hint": "deeinder.onmicrosoft.com"
+                    }
+                ]
             },
             {
-                "uuid": "914ad64e-493d-4263-91e2-3150d8a7a03d",
+                "uuid": "f3cebda2-cdb4-4959-81f6-f48b39d850a0",
                 "naam": "Commanderij College oud",
                 "plaats": "GEMERT",
                 "oidcurls": []
@@ -2244,13 +2250,49 @@
                 "uuid": "14501062-5323-4e16-98aa-b66c52184748",
                 "naam": "Gymnasium Haganum",
                 "plaats": "'S-GRAVENHAGE",
-                "oidcurls": []
+                "oidcurls": [
+                    {
+                        "omschrijving": "Gymnasium Haganum leerling/medewerker",
+                        "url": "https://login.microsoftonline.com/haganum.onmicrosoft.com/v2.0",
+                        "domain_hint": "haganum.onmicrosoft.com"
+                    }
+                ]
             },
             {
                 "uuid": "8febe24c-b0b5-4e7b-a3fe-ae6de33f5582",
-                "naam": "JdW Johan de Witt",
+                "naam": "Johan de Witt",
                 "plaats": "'S-GRAVENHAGE",
-                "oidcurls": []
+                "oidcurls": [
+                    {
+                        "omschrijving": "Johan de Witt Den Haag leerling/medewerker",
+                        "url": "https://login.microsoftonline.com/johandewitt.onmicrosoft.com/v2.0",
+                        "domain_hint": "johandewitt.onmicrosoft.com"
+                    }
+                ]
+            },
+            {
+                "uuid": "16349dd5-3746-4ef5-9958-efd68b1758bd",
+                "naam": "Haags Montessori Lyceum",
+                "plaats": "'S-GRAVENHAGE",
+                "oidcurls": [
+                    {
+                        "omschrijving": "Haags Montessori Lyceum leerling/medewerker",
+                        "url": "https://login.microsoftonline.com/haagsmontessorilyceum.onmicrosoft.com/v2.0",
+                        "domain_hint": "haagsmontessorilyceum.onmicrosoft.com"
+                    }
+                ]
+            },
+            {
+                "uuid": "dac21bd7-1b06-4552-977f-a7fdc6ab292b",
+                "naam": "Dalton Den Haag",
+                "plaats": "'S-GRAVENHAGE",
+                "oidcurls": [
+                    {
+                        "omschrijving": "Dalton Den Haag leerling/medewerker",
+                        "url": "https://login.microsoftonline.com/daltondenhaag.onmicrosoft.com/v2.0",
+                        "domain_hint": "daltondenhaag.onmicrosoft.com"
+                    }
+                ]
             },
             {
                 "uuid": "6bbcfcef-28e5-4f76-a84f-8a62862a54e4",
@@ -2303,18 +2345,6 @@
                         "domain_hint": "commanderijcollege.onmicrosoft.com"
                     }
                 ]
-            },
-            {
-                "uuid": "16349dd5-3746-4ef5-9958-efd68b1758bd",
-                "naam": "Haags Montessori Lyceum",
-                "plaats": "'S-GRAVENHAGE",
-                "oidcurls": []
-            },
-            {
-                "uuid": "dac21bd7-1b06-4552-977f-a7fdc6ab292b",
-                "naam": "Dalton Den Haag",
-                "plaats": "'S-GRAVENHAGE",
-                "oidcurls": []
             }
         ]
     }

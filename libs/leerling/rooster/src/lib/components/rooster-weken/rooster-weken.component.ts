@@ -30,7 +30,16 @@ export class RoosterWekenComponent extends AbstractDrieluikComponent<RoosterWeek
     }
 
     public override onNavigation(direction: Direction): void {
-        this.peildatumChange.emit(addWeeks(this.peildatum(), direction === 'next' ? 1 : -1));
+        const isNext = direction === 'next';
+        let newPeildatum = addWeeks(this.peildatum(), isNext ? 1 : -1);
+        let inSchooljaar = isDayInCurrentSchoolyear(newPeildatum);
+        if (!inSchooljaar) {
+            newPeildatum = isNext ? previousMondayOrDateIfMonday(newPeildatum) : nextFridayOrDateIfFriday(newPeildatum);
+            inSchooljaar = isDayInCurrentSchoolyear(newPeildatum);
+        }
+        if (inSchooljaar) {
+            this.peildatumChange.emit(newPeildatum);
+        }
     }
 
     public override getAantalSwipeDagen(): number {
