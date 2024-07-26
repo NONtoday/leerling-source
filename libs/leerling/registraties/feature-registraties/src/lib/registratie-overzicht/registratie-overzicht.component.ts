@@ -48,6 +48,7 @@ export class RegistratieOverzichtComponent {
         )
     );
     maatregelToekenningen = derivedAsync(() => this.registratieService.getActieveMaatregelen());
+    registratiesIsLoading = derivedAsync(() => this.registratieService.isLoading(), { initialValue: false });
 
     private accountContextMetRechten$ = this._rechtenService.getAccountContextMetRechten();
     public heeftRegistratiesRechten = toSignal(this.accountContextMetRechten$.pipe(map(verifyRegistratiesRechten)));

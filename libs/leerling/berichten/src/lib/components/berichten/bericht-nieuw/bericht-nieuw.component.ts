@@ -118,7 +118,6 @@ export class BerichtNieuwComponent {
         const onderwerpVerplicht = this.form.controls.onderwerp.errors?.['required'];
         const onderwerpTeLang = this.form.controls.onderwerp.errors?.['maxlength'];
 
-        //TODO: Is ontvangers juiste taal voor de eindgebruiker?
         if (ontvangersVerplicht && onderwerpVerplicht) {
             return {
                 titel: 'Ontvangers en onderwerp ontbreken',

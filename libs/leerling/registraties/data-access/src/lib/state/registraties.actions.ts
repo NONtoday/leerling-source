@@ -10,3 +10,8 @@ export class RefreshRegistraties {
 
     constructor(readonly requestOptions: { forceRequest?: true } = {}) {}
 }
+
+export class SetIsLoading {
+    static readonly type = '[Registraties] Set is loading';
+    constructor(public isLoading: boolean) {}
+}

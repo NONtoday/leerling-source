@@ -6,34 +6,36 @@
 }
 @if (schoolgegevens(); as schoolgegevens) {
     <sl-school-contactgegevens [leerlingID]="leerlingID()" title="Contactgegevens" />
-    <div class="wrapper leerling-gegevens">
-        @if (schoolgegevens.mentoren && schoolgegevens.mentoren.length > 0) {
-            <div tabindex="0" role="text">
-                <p class="title-text">Mentor</p>
-                <div class="data-container">
-                    <div>
-                        @for (mentor of schoolgegevens.mentoren; track $index) {
-                            <p class="mentor">{{ mentor }}</p>
-                        }
+    @if ((schoolgegevens.mentoren && schoolgegevens.mentoren.length > 0) || schoolgegevens.stamgroepnaam || schoolgegevens.loopbaan) {
+        <div class="wrapper leerling-gegevens">
+            @if (schoolgegevens.mentoren && schoolgegevens.mentoren.length > 0) {
+                <div tabindex="0" role="text">
+                    <p class="title-text">Mentor</p>
+                    <div class="data-container">
+                        <div>
+                            @for (mentor of schoolgegevens.mentoren; track $index) {
+                                <p class="mentor">{{ mentor }}</p>
+                            }
+                        </div>
                     </div>
                 </div>
-            </div>
-        }
-        @if (schoolgegevens.stamgroepnaam) {
-            <div class="stamgroep" tabindex="0" role="text">
-                <p class="title-text">Stamgroep</p>
-                <div class="data-container">
-                    <p>{{ schoolgegevens.stamgroepnaam }}</p>
+            }
+            @if (schoolgegevens.stamgroepnaam) {
+                <div class="stamgroep" tabindex="0" role="text">
+                    <p class="title-text">Stamgroep</p>
+                    <div class="data-container">
+                        <p>{{ schoolgegevens.stamgroepnaam }}</p>
+                    </div>
                 </div>
-            </div>
-        }
-        @if (schoolgegevens.loopbaan) {
-            <div class="loopbaan" tabindex="0" role="text">
-                <p class="title-text">Schoolloopbaan</p>
-                <div class="data-container">
-                    <p>{{ schoolgegevens.loopbaan }}</p>
+            }
+            @if (schoolgegevens.loopbaan) {
+                <div class="loopbaan" tabindex="0" role="text">
+                    <p class="title-text">Schoolloopbaan</p>
+                    <div class="data-container">
+                        <p>{{ schoolgegevens.loopbaan }}</p>
+                    </div>
                 </div>
-            </div>
-        }
-    </div>
+            }
+        </div>
+    }
 }

@@ -67,13 +67,28 @@ export class PopupService {
         }
 
         this.renderer.addClass(connectedElement.element.nativeElement, settings.popupOpenClass);
-        this.renderer.appendChild(document.body, popupElement);
+        this.renderer.appendChild(this.getDomElement(connectedElement, settings), popupElement);
 
         disableBodyScrollWithTouchMove(popupElement);
 
         this.openPopups.set(connectedElement, popupComponentRef);
 
         return contentComponentRef instanceof ComponentRef ? contentComponentRef.instance : contentComponentRef;
+    }
+
+    private getDomElement(connectedElement: ViewContainerRef, settings: PopupSettings) {
+        switch (settings.domPosition) {
+            case 'body': {
+                return document.body;
+            }
+            case 'sibling': {
+                const parent = connectedElement.element.nativeElement.parentNode;
+                return parent ?? document.body;
+            }
+            default: {
+                return document.body;
+            }
+        }
     }
 
     private scrollElementVerticalInViewport(

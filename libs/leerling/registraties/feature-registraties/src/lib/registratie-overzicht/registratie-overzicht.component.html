@@ -5,6 +5,7 @@
         *ngIf="heeftRegistratiesRechten()"
         [registratieCategorieeen]="registratieCategorieeen()"
         [tijdspan]="tijdspan()"
+        [isLoading]="registratiesIsLoading()"
         (onSelectTijdspan)="selectTijdspan($event)" />
     <sl-maatregelen *ngIf="heeftMaatregelRechten()" [maatregelToekenningen]="maatregelToekenningen()" />
 </div>

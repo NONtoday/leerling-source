@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { DropdownComponent, DropdownItem, RegistratieCategorieComponent, SpinnerComponent } from 'harmony';
+
 import { LOCALSTORAGE_KEY_TIJDSPAN, SRegistratieCategorie, SRegistratiePeriode, registratiePeriodes } from 'leerling-registraties-models';
 import { SidebarService, createSidebarSettings } from 'leerling-util';
 import { last } from 'lodash-es';
@@ -20,6 +21,7 @@ export class RegistratiesComponent {
 
     tijdspan = input.required<(typeof registratiePeriodes)[number]>();
     registratieCategorieeen = input.required<SRegistratieCategorie[] | undefined>();
+    isLoading = input.required<boolean>();
     onSelectTijdspan = output<SRegistratiePeriode>();
 
     heeftRegistraties = computed(() => this.registratieCategorieeen()?.some((c) => c.aantal > 0));

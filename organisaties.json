@@ -2351,6 +2351,18 @@
                 "naam": "Maerlant Lyceum",
                 "plaats": "'S-GRAVENHAGE",
                 "oidcurls": []
+            },
+            {
+                "uuid": "5d0c8c45-0baf-480b-9b43-dd3cfae2c0a6",
+                "naam": "Lyceum Ypenburg",
+                "plaats": "RIJSWIJK ZH",
+                "oidcurls": []
+            },
+            {
+                "uuid": "d8a9128c-31ff-4984-91b6-e5ea4347f9a5",
+                "naam": "Maris College",
+                "plaats": "'S-GRAVENHAGE",
+                "oidcurls": []
             }
         ]
     }

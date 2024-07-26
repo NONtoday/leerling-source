@@ -94,4 +94,8 @@ export class AuthorizationHeaderService {
     public get refreshError$(): Observable<void> {
         return this.refreshErrorSubject.asObservable();
     }
+
+    public featureDisabledRefreshError(): void {
+        this.refreshErrorSubject.next();
+    }
 }

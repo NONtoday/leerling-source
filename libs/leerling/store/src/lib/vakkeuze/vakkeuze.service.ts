@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, untracked } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { Observable } from 'rxjs';
 import { RefreshVakken } from './vakkeuze-actions';
@@ -24,6 +24,6 @@ export class VakkeuzeService {
     }
 
     public refreshVakkeuzes(): void {
-        this._store.dispatch(new RefreshVakken());
+        untracked(() => this._store.dispatch(new RefreshVakken()));
     }
 }

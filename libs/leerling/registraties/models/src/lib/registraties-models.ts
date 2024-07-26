@@ -8,6 +8,7 @@ export interface SRegistratiesState {
     'Laatste 30 dagen': SRegistratieCategorie[] | undefined;
     'Deze periode': SRegistratieCategorie[] | undefined;
     'Dit schooljaar': SRegistratieCategorie[] | undefined;
+    isLoading: boolean;
 }
 
 export interface SRegistratieCategorie {

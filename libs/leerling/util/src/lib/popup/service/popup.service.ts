@@ -83,6 +83,21 @@ export class PopupService {
         };
     }
 
+    private getDomElement(connectedElement: ViewContainerRef, settings: PopupSettings) {
+        switch (settings.domPosition) {
+            case 'body': {
+                return document.body;
+            }
+            case 'sibling': {
+                const parent = connectedElement.element.nativeElement.parentNode;
+                return parent ?? document.body;
+            }
+            default: {
+                return document.body;
+            }
+        }
+    }
+
     private setInputs<T>(componentRef: ComponentRef<T>, inputs: SignalInputs<T>) {
         Object.entries(inputs).forEach(([key, value]) => {
             componentRef.setInput(key, value);

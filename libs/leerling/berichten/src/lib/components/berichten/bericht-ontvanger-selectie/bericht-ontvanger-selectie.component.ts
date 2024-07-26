@@ -111,8 +111,8 @@ export class BerichtOntvangerSelectieComponent implements ControlValueAccessor {
     openSearchOptions() {
         if (!this._popupService.isOpen(this.textInput())) {
             const popupSettings = this.deviceService.isTabletOrDesktop()
-                ? createPopupSettings({ alignment: 'start', width: '344px' })
-                : createPopupSettings({ width: '344px', left: 16 });
+                ? createPopupSettings({ alignment: 'start', width: '344px', domPosition: 'sibling' })
+                : createPopupSettings({ left: 16, maxWidth: '344px', domPosition: 'sibling' });
 
             this._popupService.popup(this.zoekresultatenPopup(), this.textInput(), {}, popupSettings);
         }
@@ -173,9 +173,7 @@ export class BerichtOntvangerSelectieComponent implements ControlValueAccessor {
         const searchLower = search.toLowerCase();
         return possibleResults.filter(
             (medewerker) =>
-                medewerker.achternaam?.toLowerCase().includes(searchLower) ||
-                medewerker.roepnaam?.toLowerCase().includes(searchLower) ||
-                medewerker.afkorting?.toLowerCase().includes(searchLower)
+                medewerker.achternaam?.toLowerCase().includes(searchLower) || medewerker.afkorting?.toLowerCase().includes(searchLower)
         );
     };
 }

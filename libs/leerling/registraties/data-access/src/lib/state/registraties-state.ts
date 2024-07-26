@@ -1,32 +1,32 @@
 import { Injectable } from '@angular/core';
-import { Action, Selector, State, StateContext, StateToken, createSelector } from '@ngxs/store';
+import { Action, createSelector, Selector, State, StateContext, StateToken } from '@ngxs/store';
 import { parseISO } from 'date-fns';
 import { isPresent } from 'harmony';
 import { RLeerlingoverzichtRegistratie, RLeerlingoverzichtRegistratiesWrapper, RRegistratie } from 'leerling-codegen';
 import {
     LOCALSTORAGE_KEY_TIJDSPAN,
+    registratieCategorieNamen,
     RMentordashboardOverzichtPeriode,
     SRegistratie,
     SRegistratieCategorie,
     SRegistratieCategorieNaam,
     SRegistratiePeriode,
-    SRegistratiesState,
-    registratieCategorieNamen
+    SRegistratiesState
 } from 'leerling-registraties-models';
 import { RequestInformationBuilder } from 'leerling-request';
 import {
     AbstractState,
+    assertIsDefined,
     AvailablePushType,
-    CallService,
     Callproperties,
+    CallService,
     IncomingPushAction,
-    SMaatregelenState,
-    assertIsDefined
+    SMaatregelenState
 } from 'leerling/store';
 import { orderBy } from 'lodash-es';
 import { map, tap } from 'rxjs';
-import { P, match } from 'ts-pattern';
-import { RefreshRegistraties, SelectTijdspan } from './registraties.actions';
+import { match, P } from 'ts-pattern';
+import { RefreshRegistraties, SelectTijdspan, SetIsLoading } from './registraties.actions';
 
 export const BERICHT_STATE_TOKEN = new StateToken<SRegistratiesState>('registraties');
 
@@ -35,7 +35,8 @@ const DEFAULT_STATE: SRegistratiesState = {
     'Laatste 7 dagen': undefined,
     'Laatste 30 dagen': undefined,
     'Deze periode': undefined,
-    'Dit schooljaar': undefined
+    'Dit schooljaar': undefined,
+    isLoading: false
 };
 
 @State<SRegistratiesState>({
@@ -63,38 +64,47 @@ export class RegistratiesState extends AbstractState {
             .with('Dit schooljaar', () => 'SCHOOLJAAR')
             .exhaustive();
 
+        ctx.patchState({ isLoading: true });
+
         const callProperties: Callproperties = {};
         if (action.requestOptions.forceRequest) {
             callProperties.force = true;
         }
-        return this.cachedGet<RLeerlingoverzichtRegistratiesWrapper>(
+        const result = this.cachedGet<RLeerlingoverzichtRegistratiesWrapper>(
             `leerlingen/${this.getLeerlingID()}/registratieOverzicht`,
             new RequestInformationBuilder().parameter('periode', rperiode).build(),
             callProperties
-        )?.pipe(
-            map((rLeerlingoverzichtRegistratiesWrapper) =>
-                (rLeerlingoverzichtRegistratiesWrapper.registraties ?? [])
-                    ?.map((rRegistratieCategorie): SRegistratieCategorie | undefined => {
-                        const categorieNaam = getRRegistratieCategorieNaam(rRegistratieCategorie);
-                        // filter categorieen die we niet willen tonen
-                        if (!categorieNaam || !registratieCategorieNamen.includes(categorieNaam)) return;
-
-                        return {
-                            naam: categorieNaam,
-                            aantal: rRegistratieCategorie.periodeRegistratieDetails?.aantalRegistraties ?? 0,
-                            registraties: orderBy(
-                                rRegistratieCategorie.periodeRegistratieDetails?.vakRegistraties
-                                    ?.flatMap((vakRegistratie) => vakRegistratie.registraties ?? [])
-                                    .map(mapSRegistratie) ?? [],
-                                ['beginDatumTijd' satisfies keyof SRegistratie],
-                                'desc'
-                            )
-                        };
-                    })
-                    .filter(isPresent)
-            ),
-            tap((sRegistratieCategorieen) => ctx.patchState({ [tijdspan]: sRegistratieCategorieen }))
         );
+        if (result) {
+            return result.pipe(
+                map((rLeerlingoverzichtRegistratiesWrapper) =>
+                    (rLeerlingoverzichtRegistratiesWrapper.registraties ?? [])
+                        ?.map((rRegistratieCategorie): SRegistratieCategorie | undefined => {
+                            const categorieNaam = getRRegistratieCategorieNaam(rRegistratieCategorie);
+                            // filter categorieen die we niet willen tonen
+                            if (!categorieNaam || !registratieCategorieNamen.includes(categorieNaam)) return;
+
+                            return {
+                                naam: categorieNaam,
+                                aantal: rRegistratieCategorie.periodeRegistratieDetails?.aantalRegistraties ?? 0,
+                                registraties: orderBy(
+                                    rRegistratieCategorie.periodeRegistratieDetails?.vakRegistraties
+                                        ?.flatMap((vakRegistratie) => vakRegistratie.registraties ?? [])
+                                        .map(mapSRegistratie) ?? [],
+                                    ['beginDatumTijd' satisfies keyof SRegistratie],
+                                    'desc'
+                                )
+                            };
+                        })
+                        .filter(isPresent)
+                ),
+                tap((sRegistratieCategorieen) => ctx.patchState({ [tijdspan]: sRegistratieCategorieen, isLoading: false }))
+            );
+        } else {
+            // Fallback for when the result is 'cached'.
+            ctx.patchState({ isLoading: false });
+            return result;
+        }
     }
 
     @Action(IncomingPushAction)
@@ -104,9 +114,19 @@ export class RegistratiesState extends AbstractState {
         }
     }
 
+    @Action(SetIsLoading)
+    setIsLoading(ctx: StateContext<SRegistratiesState>, action: SetIsLoading) {
+        return ctx.patchState({ isLoading: action.isLoading });
+    }
+
     @Selector()
     static tijdspan(state: SRegistratiesState) {
         return state.selectedTijdspan;
+    }
+
+    @Selector()
+    static isLoading(state: SRegistratiesState) {
+        return state.isLoading;
     }
 
     static registratieCategorieen(tijdspan: SRegistratiePeriode) {

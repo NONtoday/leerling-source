@@ -2,6 +2,7 @@ export const DEFAULT_ELEMENT_OFFSET = 8;
 export const DEFAULT_SCROLL_OFFSET = 8;
 
 export interface PopupSettings {
+    domPosition: 'body' | 'sibling';
     animation: 'none' | 'fade' | 'slide';
     position: 'above' | 'under' | 'left' | 'right';
     alignment: 'start' | 'center' | 'end';
@@ -25,6 +26,7 @@ export const createPopupSettings = (updatedSettings?: Partial<PopupSettings>, in
     }
 
     return {
+        domPosition: 'body',
         animation: 'fade',
         position: 'under',
         alignment: 'center',

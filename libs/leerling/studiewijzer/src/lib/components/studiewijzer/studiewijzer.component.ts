@@ -102,7 +102,7 @@ export class StudiewijzerComponent implements OnInit {
     public toonWeekend = signal(false);
     public isTabletOfDesktop = toSignal(this._deviceService.isTabletOrDesktop$, { initialValue: this._deviceService.isTabletOrDesktop() });
     public scrollableTitle$: Observable<string | undefined> = this._studiewijzerService.scrollableTitle$;
-    public vakkeuzes = toSignal(this._vakkeuzeService.getVakkeuzes());
+    public vakkeuzes = derivedAsync(() => (this.isTabletOfDesktop() ? this._vakkeuzeService.getVakkeuzes() : of([])));
     public activeFilters = signal<SelectedFilters>({ swiType: [], vak: [] });
     public weekEnDagItems = derivedAsync(() => this.getStudiewijzerItemsVoorDrieWeken(this.peildatum(), this.activeFilters()));
     public headerActionFilterCounter = computed(() => this.activeFilters().swiType.length + this.activeFilters().vak.length);
@@ -142,6 +142,10 @@ export class StudiewijzerComponent implements OnInit {
         this._keyPressedService.mainKeyboardEvent$.pipe(takeUntilDestroyed()).subscribe((event) => this.onKeyDown(event));
 
         onRefreshOrRedirectHome([StudiewijzerComponent.HUISWERKFEATURE], () => {
+            if (this.isTabletOfDesktop()) {
+                this._vakkeuzeService.refreshVakkeuzes();
+            }
+
             if (isSameDay(new Date(), this._lastRefreshed)) {
                 this._studiewijzerService.refreshStudiewijzerVoorPeildatum(this.peildatum());
             } else {

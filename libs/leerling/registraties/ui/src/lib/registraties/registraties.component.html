@@ -8,7 +8,7 @@
     size="medium"
     customTabindex="0"
     customId="mainContent" />
-@if (registratieCategorieeen(); as categorieen) {
+@if (!isLoading() && registratieCategorieeen(); as categorieen) {
     @if (heeftRegistraties()) {
         <div class="registratie-categorieen">
             @for (categorie of categorieen; track categorie.naam) {

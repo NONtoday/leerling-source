@@ -82,7 +82,7 @@ export function mapEduRoutePortalUserProducts(rEduRoutePortalUserProcuct: REduRo
 export function mapStudiemateriaal(vakOfLesgroepUuid: string, rStudieMateriaal: RStudieMateriaal): SStudiemateriaal {
     return {
         vakOfLesgroepUuid: vakOfLesgroepUuid,
-        lesstof: mapLesstof(rStudieMateriaal.lesstof),
+        lesstof: mapLesstof(rStudieMateriaal.lesstof?.filter((ls) => !!ls.studiewijzerItem)),
         jaarbijlagenMappen: mapJaarbijlagenMappen(rStudieMateriaal.jaarBijlagenMappen),
         jaarbijlagen: mapJaarbijlagen(rStudieMateriaal.jaarBijlagen),
         externMateriaal: mapJaarExternMateriaal(rStudieMateriaal.externMateriaal),
