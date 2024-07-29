@@ -1,6 +1,6 @@
 import { inject, Injectable, untracked } from '@angular/core';
 import { Store } from '@ngxs/store';
-import { isPresent } from 'harmony';
+import { ConfirmModalComponent, createModalSettings, isPresent, ModalService } from 'harmony';
 import { InfoMessageService } from 'leerling-util';
 import {
     BerichtState,
@@ -25,6 +25,7 @@ import { Observable, take } from 'rxjs';
 export class BerichtService {
     private _store = inject(Store);
     private _infoMessageService = inject(InfoMessageService);
+    private _modalService = inject(ModalService);
 
     refreshConversaties = (refreshOptions?: RefreshConversatieOptions) => this._store.dispatch(new RefreshConversaties(refreshOptions));
     postvakIn = () => this._store.select(BerichtState.postvakIn);
@@ -36,6 +37,21 @@ export class BerichtService {
         if (isPresent(conversatie?.datumOudsteOngelezenBoodschap)) {
             this._store.dispatch(new MarkeerGelezen(conversatie));
         }
+    }
+
+    createVerwijderDialog(): ConfirmModalComponent {
+        return this._modalService.modal(
+            ConfirmModalComponent,
+            {
+                text: 'Dit kan niet ongedaan worden gemaakt.',
+                annulerenButtonText: 'Annuleren',
+                bevestigenButtonText: 'Verwijderen',
+                bevestigenButtonMode: 'delete'
+            },
+            createModalSettings({
+                title: 'Gesprek verwijderen?'
+            })
+        ) as ConfirmModalComponent;
     }
 
     markeerOngelezen(conversatie: SConversatie) {

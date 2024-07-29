@@ -15,11 +15,12 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { collapseOnLeaveAnimation, expandOnEnterAnimation } from 'angular-animations';
-import { ModalService, TooltipDirective, VerwijderConfirmationComponent, createModalSettings } from 'harmony';
+import { TooltipDirective, VerwijderConfirmationComponent } from 'harmony';
 import { HeaderActionButtonComponent, injectHeaderConfig } from 'leerling-header';
 import { SConversatie } from 'leerling/store';
 import { last } from 'lodash-es';
 import { computedPrevious } from 'ngxtension/computed-previous';
+import { filter } from 'rxjs';
 import { match } from 'ts-pattern';
 import { BerichtService } from '../../../services/bericht.service';
 import { BerichtActiesComponent } from '../bericht-acties/bericht-acties.component';
@@ -52,7 +53,6 @@ export const TAGNAME_BERICHT_DETAIL = 'sl-bericht-detail';
 })
 export class BerichtDetailComponent implements OnInit {
     private readonly router = inject(Router);
-    private readonly modalService = inject(ModalService);
     private readonly injector = inject(Injector);
     private readonly berichtService = inject(BerichtService);
 
@@ -111,13 +111,9 @@ export class BerichtDetailComponent implements OnInit {
     }
 
     openVerwijderConfirm() {
-        const popup = this.modalService.modal(
-            VerwijderConfirmationComponent,
-            { label: 'Gesprek verwijderen?' },
-            createModalSettings({ title: 'Gesprek verwijderen?' })
-        ) as VerwijderConfirmationComponent;
-        popup.confirmed.subscribe(() => this.verwijder.emit());
-        popup.canceled.subscribe(() => this.modalService.animateAndClose());
+        const modal = this.berichtService.createVerwijderDialog();
+
+        modal.confirmResult.pipe(filter((confirmResult) => confirmResult === 'Positive')).subscribe(() => this.verwijder.emit());
     }
 
     handleMeerOntvangersPillClick(boodschapId: number) {

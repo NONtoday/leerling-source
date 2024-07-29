@@ -33,6 +33,7 @@ import { SConversatie, formatNL, getPreviewInhoudBoodschap } from 'leerling/stor
 import { orderBy } from 'lodash-es';
 import { NgxInjectDrag, injectDrag } from 'ngxtension/gestures';
 import { P, match } from 'ts-pattern';
+import { BerichtService } from '../../../services/bericht.service';
 import { meestRecentOntvangenBericht, meestRecentVerstuurdeBericht } from '../../../services/conversatie.service';
 import { BerichtenTabLink } from '../berichten.component';
 
@@ -64,6 +65,7 @@ type MobileSwipeState = 'confirmMarkeren' | 'default' | 'confirmVerwijderen';
 })
 export class BerichtSamenvattingComponent {
     private readonly swipeThreshold = 120;
+    private readonly berichtService = inject(BerichtService);
     popupService = inject(PopupService);
     router = inject(Router);
     deviceService = inject(DeviceService);
@@ -176,6 +178,21 @@ export class BerichtSamenvattingComponent {
         });
     }
 
+    verwijderenMetPopup() {
+        const modal = this.berichtService.createVerwijderDialog();
+
+        let alreadyPositive = false;
+        modal.confirmResult.subscribe((confirmResult) => {
+            if (confirmResult === 'Positive') {
+                alreadyPositive = true;
+                this.confirmVerwijderSwipe();
+            }
+            if ((confirmResult === 'Negative' || confirmResult === 'Closed') && !alreadyPositive) {
+                this.resetElement();
+            }
+        });
+    }
+
     private onDragInDefaultState(state: NgxInjectDrag['state']) {
         match(state)
             .with({ last: false }, ({ offset: [x] }) => {
@@ -187,7 +204,7 @@ export class BerichtSamenvattingComponent {
                 );
             })
             .with({ offset: P.when(([x]) => x > this.swipeThreshold) }, () => this.confirmMarkeerSwipe())
-            .with({ offset: P.when(([x]) => x < -this.swipeThreshold) }, () => this.confirmVerwijderSwipe())
+            .with({ offset: P.when(([x]) => x < -this.swipeThreshold) }, () => this.verwijderenMetPopup())
             .otherwise(() => this.resetElement());
     }
 

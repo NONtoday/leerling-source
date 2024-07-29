@@ -2350,19 +2350,37 @@
                 "uuid": "7521aec7-ec91-4344-bd3e-7d15b61af6d3",
                 "naam": "Maerlant Lyceum",
                 "plaats": "'S-GRAVENHAGE",
-                "oidcurls": []
+                "oidcurls": [
+                    {
+                        "omschrijving": "Maerlant-Lyceum leerling/medewerker",
+                        "url": "https://login.microsoftonline.com/maerlantoffice365.onmicrosoft.com/v2.0",
+                        "domain_hint": "maerlantoffice365.onmicrosoft.com"
+                    }
+                ]
             },
             {
                 "uuid": "5d0c8c45-0baf-480b-9b43-dd3cfae2c0a6",
                 "naam": "Lyceum Ypenburg",
                 "plaats": "RIJSWIJK ZH",
-                "oidcurls": []
+                "oidcurls": [
+                    {
+                        "omschrijving": "Lyceum Ypenburg leerling/medewerker",
+                        "url": "https://login.microsoftonline.com/lyceumypenburg.onmicrosoft.com/v2.0",
+                        "domain_hint": "lyceumypenburg.onmicrosoft.com"
+                    }
+                ]
             },
             {
                 "uuid": "d8a9128c-31ff-4984-91b6-e5ea4347f9a5",
                 "naam": "Maris College",
                 "plaats": "'S-GRAVENHAGE",
-                "oidcurls": []
+                "oidcurls": [
+                    {
+                        "omschrijving": "Maris College leerling/medewerker",
+                        "url": "https://login.microsoftonline.com/Mariscollege.onmicrosoft.com/v2.0",
+                        "domain_hint": "Mariscollege.onmicrosoft.com"
+                    }
+                ]
             }
         ]
     }
