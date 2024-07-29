@@ -318,12 +318,6 @@
                 ]
             },
             {
-                "uuid": "99ec084a-6412-40c3-af8d-4e18815e1c63",
-                "naam": "CVO-AV",
-                "plaats": "GORINCHEM",
-                "oidcurls": []
-            },
-            {
                 "uuid": "7b6d1799-09e9-4338-bd49-66ce7788ad1d",
                 "naam": "Northgo College",
                 "plaats": "NOORDWIJK ZH",
@@ -842,23 +836,6 @@
                     {
                         "omschrijving": "OSG De Ring van Putten OIDC WIS",
                         "url": "https://beheer.deringvanputten.nl",
-                        "domain_hint": ""
-                    }
-                ]
-            },
-            {
-                "uuid": "7cea699b-f4d0-4c74-aadf-269507d98dc9",
-                "naam": "Willem van Oranje College",
-                "plaats": "WAALWIJK",
-                "oidcurls": [
-                    {
-                        "omschrijving": "wvoranje.onmicrosoft.com",
-                        "url": "https://login.microsoftonline.com/wvoranje.nl/v2.0",
-                        "domain_hint": "wvoranje.nl"
-                    },
-                    {
-                        "omschrijving": "Willem van Oranje OIDC WIS",
-                        "url": "https://beheer.het-willem.nl",
                         "domain_hint": ""
                     }
                 ]

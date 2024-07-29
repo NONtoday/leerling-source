@@ -1,6 +1,7 @@
 import { Injectable, Renderer2, RendererFactory2, inject } from '@angular/core';
 import { DarkMode, DarkModeListenerData, DarkModeListenerHandle } from '@aparajita/capacitor-dark-mode';
 import { StatusBar, Style } from '@capacitor/status-bar';
+import { isIOS } from 'leerling-util';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Theme } from '../theme';
 import {
@@ -62,7 +63,9 @@ export class WeergaveService {
                 this._renderer.addClass(document.documentElement, 'dark');
                 break;
         }
-        StatusBar.setStyle({ style: 'dark' === theme ? Style.Dark : Style.Light });
+        if (isIOS()) {
+            StatusBar.setStyle({ style: 'dark' === theme ? Style.Dark : Style.Light });
+        }
         this._selectedTheme.next(theme);
         saveThemePreference(theme);
     }
