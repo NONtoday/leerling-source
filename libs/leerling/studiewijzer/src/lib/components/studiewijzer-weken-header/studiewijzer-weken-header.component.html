@@ -2,7 +2,7 @@
     <div class="container links">
         <div class="datepicker">{{ maanden[maandnummer()] }}</div>
         <div class="buttons">
-            <div class="button previous" (click)="vorigeWeekEnabled() && onNavigation('previous')" aria-label="Vorige week" role="link">
+            <div class="button previous" (click)="vorigeWeekEnabled() && onNavigation('previous')" aria-label="Vorige week" role="button">
                 <i
                     #previous
                     [class.disabled]="!vorigeWeekEnabled()"
@@ -13,7 +13,7 @@
                     hmyTooltip="Vorige week"
                     tabindex="100"></i>
             </div>
-            <div class="button next" (click)="volgendeWeekEnabled() && onNavigation('next')" role="link" aria-label="Volgende week">
+            <div class="button next" (click)="volgendeWeekEnabled() && onNavigation('next')" role="button" aria-label="Volgende week">
                 <i
                     [class.disabled]="!volgendeWeekEnabled()"
                     [color]="!volgendeWeekEnabled() ? 'disabled-fg' : undefined"

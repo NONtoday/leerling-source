@@ -182,7 +182,13 @@ export class RoosterItemDetailComponent implements OnInit, OnDestroy {
         return `<span class="opacity-80">${info}</span> <span>${tijd}</span>`;
     });
 
-    public lesurenLabel = computed(() => RoosterService.formatBeginEindLesuurForAriaLabel(this.roosterItem().afspraakItem));
+    public lesurenLabel = computed(
+        () =>
+            (this.roosterItem().isToets ? 'Toets, ' : '') +
+            RoosterService.formatBeginEindLesuurForAriaLabel(this.roosterItem().afspraakItem) +
+            ', ' +
+            format(this.roosterItem().afspraakItem.beginDatumTijd, 'H:mm')
+    );
 
     public modus = signal('Omschrijving' as Modus);
     public tabs = TABS;

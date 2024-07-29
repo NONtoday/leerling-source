@@ -4,7 +4,11 @@
             <h1>{{ huidigeMaand }}</h1>
             <div class="weeknummer" [attr.aria-label]="'Week ' + huidigeWeek" tabindex="100">Week {{ huidigeWeek }}</div>
             <div class="buttons">
-                <div class="button previous" (click)="vorigeWeekEnabled() && onNavigation('previous')" aria-label="Vorige week" role="link">
+                <div
+                    class="button previous"
+                    (click)="vorigeWeekEnabled() && onNavigation('previous')"
+                    aria-label="Vorige week"
+                    role="button">
                     <i
                         [class.disabled]="!vorigeWeekEnabled()"
                         [color]="vorigeWeekEnabled() ? 'fg-on-primary-weak' : 'disabled-fg'"
@@ -14,7 +18,7 @@
                         hmyTooltip="Vorige week"
                         tabindex="100"></i>
                 </div>
-                <div class="button next" (click)="volgendeWeekEnabled() && onNavigation('next')" role="link" aria-label="Volgende week">
+                <div class="button next" (click)="volgendeWeekEnabled() && onNavigation('next')" role="button" aria-label="Volgende week">
                     <i
                         [class.disabled]="!volgendeWeekEnabled()"
                         [color]="volgendeWeekEnabled() ? 'fg-on-primary-weak' : 'disabled-fg'"
