@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, input } from '@angular/core';
-import { AvatarComponent, IconDirective } from 'harmony';
+import { AvatarComponent, IconDirective, SpinnerComponent } from 'harmony';
 import { IconPijlRechts, provideIcons } from 'harmony-icons';
 import { GegevensService, SchoolContactgegevensComponent } from 'leerling-account-modal';
 import { derivedAsync } from 'ngxtension/derived-async';
@@ -10,7 +10,7 @@ import { derivedAsync } from 'ngxtension/derived-async';
     standalone: true,
     templateUrl: './schoolgegevens.component.html',
     styleUrls: ['./schoolgegevens.component.scss'],
-    imports: [CommonModule, IconDirective, AvatarComponent, SchoolContactgegevensComponent],
+    imports: [CommonModule, IconDirective, AvatarComponent, SchoolContactgegevensComponent, SpinnerComponent],
     providers: [provideIcons(IconPijlRechts)]
 })
 export class SchoolgegevensComponent {

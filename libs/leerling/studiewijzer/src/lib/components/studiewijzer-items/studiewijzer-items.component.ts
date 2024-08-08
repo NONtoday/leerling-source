@@ -5,6 +5,8 @@ import {
     ElementRef,
     HostBinding,
     HostListener,
+    OnChanges,
+    SimpleChanges,
     computed,
     effect,
     inject,
@@ -29,7 +31,7 @@ const MIN_ITEMS_TO_STACK = 3;
     styleUrl: './studiewijzer-items.component.scss',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class StudiewijzerItemsComponent {
+export class StudiewijzerItemsComponent implements OnChanges {
     public items = input.required<SStudiewijzerItem[]>();
     public peildatum = input.required<Date>();
     public toonAfvinkKnop = input(true);
@@ -53,17 +55,28 @@ export class StudiewijzerItemsComponent {
 
     public sortedItems = computed(() => sorteerStudiewijzerItems([...this.items()]));
 
+    private _updateSetStacked = false;
+
     constructor() {
-        effect(
-            () => {
-                // Bij wisseling peildatum setStacked aanroepen, vandaar de &&
-                this.peildatum() && this.setStacked();
-                this._elementRef.nativeElement.style.setProperty('--aantal-items', this.items().length);
-            },
-            {
-                allowSignalWrites: true
-            }
-        );
+        effect(() => {
+            this._elementRef.nativeElement.style.setProperty('--aantal-items', this.items().length);
+        });
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        // De stack moet geupdate worden als de peildatum veranderd is en de nieuwe items geladen zijn.
+        // Het komt voor dat in changes eerst de peildatum geupdate wordt en in een latere change pas de items.
+        // Om deze reden staan de change checks in losse statements
+        const peildatumChanges = changes['peildatum'];
+        if (peildatumChanges?.previousValue !== peildatumChanges?.currentValue) {
+            this._updateSetStacked = true;
+        }
+
+        const items = changes['items'];
+        if (this._updateSetStacked && items?.previousValue !== items?.currentValue) {
+            this.setStacked();
+            this._updateSetStacked = false;
+        }
     }
 
     toggleAfgevinkt(item: SStudiewijzerItem) {

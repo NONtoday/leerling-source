@@ -1,7 +1,12 @@
 <div class="settings" [cdkTrapFocusAutoCapture]="true" cdkTrapFocus>
     <div class="leerlinginfo-divider">
         <div class="leerling">
-            <hmy-avatar [lazyLoading]="false" [initialen]="leerling().initialen" [src]="leerling().avatarSrc" [naam]="leerling().naam" />
+            <hmy-avatar
+                [lazyLoading]="false"
+                [initialen]="leerling().initialen"
+                [src]="leerling().avatarSrc"
+                [profielfotoVerbergen]="profielfotoVerbergen()"
+                [naam]="leerling().naam" />
             <div class="leerling-info">
                 <span class="naam text-content-semi text-strong">{{ leerling().naam }}</span>
                 <span class="school text-content-smallest text-weak">{{ leerling().organisatienaam ?? 'Onbekende school' }}</span>
@@ -15,9 +20,9 @@
             <span>Studiemateriaal</span>
         </div>
         @if (heeftRegistratieOverzichtRechten()) {
-            <div class="selector-option registraties" (click)="registraties()" tabindex="0" role="link">
+            <div class="selector-option registraties" (click)="registraties()" tabindex="0" role="button">
                 <i hmyIcon="lijst" size="small"></i>
-                <span>{{ isVerzorger() ? 'Maatregelen' : 'Registraties' }}</span>
+                <span>{{ 'Registraties' }}</span>
             </div>
         }
 

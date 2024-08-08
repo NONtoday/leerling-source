@@ -9,24 +9,28 @@
                     (click)="vorigeWeekEnabled() && onNavigation('previous')"
                     aria-label="Vorige week"
                     role="button">
-                    <i
-                        [class.disabled]="!vorigeWeekEnabled()"
-                        [color]="vorigeWeekEnabled() ? 'fg-on-primary-weak' : 'disabled-fg'"
-                        (keydown.enter)="onNavigation('previous')"
-                        hmyIcon="chevronLinks"
-                        size="small"
-                        hmyTooltip="Vorige week"
-                        tabindex="100"></i>
+                    <div class="inner-button">
+                        <i
+                            [class.disabled]="!vorigeWeekEnabled()"
+                            [color]="vorigeWeekEnabled() ? 'fg-on-primary-weak' : 'disabled-fg'"
+                            (keydown.enter)="onNavigation('previous')"
+                            hmyIcon="chevronLinks"
+                            size="small"
+                            hmyTooltip="Vorige week"
+                            tabindex="100"></i>
+                    </div>
                 </div>
                 <div class="button next" (click)="volgendeWeekEnabled() && onNavigation('next')" role="button" aria-label="Volgende week">
-                    <i
-                        [class.disabled]="!volgendeWeekEnabled()"
-                        [color]="volgendeWeekEnabled() ? 'fg-on-primary-weak' : 'disabled-fg'"
-                        (keydown.enter)="onNavigation('next')"
-                        hmyIcon="chevronRechts"
-                        size="small"
-                        hmyTooltip="Volgende week"
-                        tabindex="100"></i>
+                    <div class="inner-button">
+                        <i
+                            [class.disabled]="!volgendeWeekEnabled()"
+                            [color]="volgendeWeekEnabled() ? 'fg-on-primary-weak' : 'disabled-fg'"
+                            (keydown.enter)="onNavigation('next')"
+                            hmyIcon="chevronRechts"
+                            size="small"
+                            hmyTooltip="Volgende week"
+                            tabindex="100"></i>
+                    </div>
                 </div>
             </div>
             <hmy-button

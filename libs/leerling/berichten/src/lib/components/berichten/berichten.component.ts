@@ -98,6 +98,11 @@ export class BerichtenComponent {
     datumOudsteOngelezenBoodschap = signal<Date | undefined>(undefined);
     alleConversatiesOpgehaald = derivedAsync<boolean | undefined>(() => this.berichtService.alleConversatiesOpgehaald());
 
+    heeftBerichtenBekijkenRecht = toSignal(
+        this.rechtenService.getCurrentAccountRechten().pipe(map((rechten) => Boolean(rechten.berichtenBekijkenAan))),
+        { initialValue: false }
+    );
+
     heeftBerichtenVerzendenRecht = toSignal(
         this.rechtenService.getCurrentAccountRechten().pipe(map((rechten) => Boolean(rechten.berichtenVerzendenAan))),
         { initialValue: false }
@@ -191,6 +196,7 @@ export class BerichtenComponent {
 
     // implementatie van ConfirmDeactivatableGuard bij nieuw bericht
     canDeactivate(): boolean | Observable<boolean> {
+        if (!this.heeftBerichtenBekijkenRecht()) return true;
         const editComponent = this.berichtEditComponent();
         const beantwoordComponent = this.beantwoordBerichtComponent();
         if (!editComponent?.formIsDirty() && !beantwoordComponent?.formIsDirty()) return true;

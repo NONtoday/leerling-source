@@ -1,16 +1,19 @@
 import { Injectable, Renderer2, RendererFactory2, inject } from '@angular/core';
 import { DarkMode, DarkModeListenerData, DarkModeListenerHandle } from '@aparajita/capacitor-dark-mode';
 import { StatusBar, Style } from '@capacitor/status-bar';
+import { AuthenticationService } from 'leerling-authentication';
 import { isIOS } from 'leerling-util';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, map } from 'rxjs';
 import { Theme } from '../theme';
 import {
     getDyslexiePreference,
     getOnvoldoendePreference,
+    getProfielfotoVerbergen,
     getSysteemPreference,
     getThemePreference,
     saveDyslexiePreference,
     saveOnvoldoendePreference,
+    saveProfielfotoVerbergen,
     saveSysteemPreference,
     saveThemePreference
 } from './weergave-preferences-storage-util';
@@ -19,9 +22,12 @@ import {
     providedIn: 'root'
 })
 export class WeergaveService {
+    private _authenticationService = inject(AuthenticationService);
+
     private static DEFAULT_DYSLEXIA_VOORKEUR = false;
     private static DEFAULT_SYSTEEM_VOORKEUR = true;
     private static DEFAULT_ONVOLDOENDE_ROOD_VOORKEUR = true;
+    private static DEFAULT_PROFIELFOTO_VERBERGEN_VOORKEUR = false;
 
     private _rendererFactory = inject(RendererFactory2);
     private _renderer: Renderer2;
@@ -29,6 +35,7 @@ export class WeergaveService {
     private _systeemVoorkeur = new BehaviorSubject<boolean>(true);
     private _dyslexieLettertype = new BehaviorSubject<boolean>(false);
     private _toonOnvoldoendeRood = new BehaviorSubject<boolean>(false);
+    private _profielfotoVerbergen = new BehaviorSubject<boolean>(false);
 
     private _darkModeListenerHandle: DarkModeListenerHandle | undefined;
 
@@ -50,6 +57,12 @@ export class WeergaveService {
 
     public getToonOnvoldoendeRood$(): Observable<boolean> {
         return this._toonOnvoldoendeRood.asObservable();
+    }
+
+    public getProfielFotoVerbergen$(): Observable<boolean> {
+        return this._profielfotoVerbergen
+            .asObservable()
+            .pipe(map((profielfotoVerbergen) => profielfotoVerbergen && this._authenticationService.isCurrentContextLeerling));
     }
 
     private _setTheme(theme: Theme) {
@@ -104,6 +117,11 @@ export class WeergaveService {
         saveOnvoldoendePreference(voorkeur);
     }
 
+    public setProfielfotoVerbergen(voorkeur: boolean) {
+        this._profielfotoVerbergen.next(voorkeur);
+        saveProfielfotoVerbergen(voorkeur);
+    }
+
     public toggleDyslexieLettertype() {
         this.setDyslexieLettertype(!this._dyslexieLettertype.value);
     }
@@ -116,6 +134,10 @@ export class WeergaveService {
         return this.setToonOnvoldoendeRood(!this._toonOnvoldoendeRood.value);
     }
 
+    public async toggleProfielfotoVerbergen() {
+        return this.setProfielfotoVerbergen(!this._profielfotoVerbergen.value);
+    }
+
     public async initializeFromPreferences() {
         await DarkMode.init({
             cssClass: 'system-preference-dark'
@@ -124,9 +146,13 @@ export class WeergaveService {
         const systeem: boolean | null = await getSysteemPreference();
         const dyslexie: boolean | null = await getDyslexiePreference();
         const toonOnvoldoendeRood: boolean | null = await getOnvoldoendePreference();
+        const profielfotoVerbergen: boolean | null = await getProfielfotoVerbergen();
         this._setTheme(theme);
         await this.setSysteemVoorkeur(systeem === null ? WeergaveService.DEFAULT_SYSTEEM_VOORKEUR : systeem);
         this.setDyslexieLettertype(dyslexie === null ? WeergaveService.DEFAULT_DYSLEXIA_VOORKEUR : dyslexie);
         this.setToonOnvoldoendeRood(toonOnvoldoendeRood === null ? WeergaveService.DEFAULT_ONVOLDOENDE_ROOD_VOORKEUR : toonOnvoldoendeRood);
+        this.setProfielfotoVerbergen(
+            profielfotoVerbergen === null ? WeergaveService.DEFAULT_PROFIELFOTO_VERBERGEN_VOORKEUR : profielfotoVerbergen
+        );
     }
 }

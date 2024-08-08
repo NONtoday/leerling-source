@@ -32,7 +32,7 @@
         (touchend)="onTouchEnd($event)">
         @switch (selectedTab()) {
             @case ('Mijn gegevens') {
-                <sl-gegevens (title)="changeTitle($event)" />
+                <sl-gegevens (title)="setHeaderTitleWithFocus($event)" />
             }
             @case ('Notificaties') {
                 <sl-notificatie-settings />

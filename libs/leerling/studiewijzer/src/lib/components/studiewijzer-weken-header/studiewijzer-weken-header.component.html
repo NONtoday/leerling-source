@@ -3,25 +3,29 @@
         <div class="datepicker">{{ maanden[maandnummer()] }}</div>
         <div class="buttons">
             <div class="button previous" (click)="vorigeWeekEnabled() && onNavigation('previous')" aria-label="Vorige week" role="button">
-                <i
-                    #previous
-                    [class.disabled]="!vorigeWeekEnabled()"
-                    [color]="!vorigeWeekEnabled() ? 'disabled-fg' : undefined"
-                    (keydown.enter)="vorigeWeekEnabled() && onNavigation('previous')"
-                    hmyIcon="chevronBoven"
-                    size="small"
-                    hmyTooltip="Vorige week"
-                    tabindex="100"></i>
+                <div class="inner-button">
+                    <i
+                        #previous
+                        [class.disabled]="!vorigeWeekEnabled()"
+                        [color]="!vorigeWeekEnabled() ? 'disabled-fg' : undefined"
+                        (keydown.enter)="vorigeWeekEnabled() && onNavigation('previous')"
+                        hmyIcon="chevronBoven"
+                        size="small"
+                        hmyTooltip="Vorige week"
+                        tabindex="100"></i>
+                </div>
             </div>
             <div class="button next" (click)="volgendeWeekEnabled() && onNavigation('next')" role="button" aria-label="Volgende week">
-                <i
-                    [class.disabled]="!volgendeWeekEnabled()"
-                    [color]="!volgendeWeekEnabled() ? 'disabled-fg' : undefined"
-                    (keydown.enter)="volgendeWeekEnabled() && onNavigation('next')"
-                    hmyIcon="chevronOnder"
-                    size="small"
-                    hmyTooltip="Volgende week"
-                    tabindex="0"></i>
+                <div class="inner-button">
+                    <i
+                        [class.disabled]="!volgendeWeekEnabled()"
+                        [color]="!volgendeWeekEnabled() ? 'disabled-fg' : undefined"
+                        (keydown.enter)="volgendeWeekEnabled() && onNavigation('next')"
+                        hmyIcon="chevronOnder"
+                        size="small"
+                        hmyTooltip="Volgende week"
+                        tabindex="0"></i>
+                </div>
             </div>
         </div>
         <hmy-button
@@ -36,7 +40,6 @@
             [vakkeuzes]="vakkeuzes()"
             [attr.aria-label]="filterButtonText()"
             (filters)="setNumberSelected($event)"
-            hmyTooltip="Filter"
             tabindex="0"
             role="link" />
     </div>

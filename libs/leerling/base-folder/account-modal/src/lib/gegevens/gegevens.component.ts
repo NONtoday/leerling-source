@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, inject, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, output, signal, viewChild } from '@angular/core';
 import { SpinnerComponent } from 'harmony';
 import { IconBewerken, provideIcons } from 'harmony-icons';
 import { AuthenticationService, SomtodayAccountProfiel } from 'leerling-authentication';
-import { Observable, combineLatest, map } from 'rxjs';
+import { derivedAsync } from 'ngxtension/derived-async';
+import { combineLatest, map } from 'rxjs';
 import { GegevensBekijkenComponent } from '../gegevens-bekijken/gegevens-bekijken.component';
 import { GegevensBewerkenComponent } from '../gegevens-bewerken/gegevens-bewerken.component';
 import { AccountModel, GegevensService } from './service/gegevens.service';
@@ -24,25 +25,25 @@ type State = 'bekijken' | 'bewerken';
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [provideIcons(IconBewerken)]
 })
-export class GegevensComponent implements OnInit {
+export class GegevensComponent {
+    private _gegevensBewerken = viewChild(GegevensBewerkenComponent);
     private _gegevensService = inject(GegevensService);
-    private _authService = inject(AuthenticationService);
-
-    public state = signal<State>('bekijken');
-    public huidigProfielEnAccount: Observable<ProfielAccount>;
+    private _authenticationService = inject(AuthenticationService);
 
     title = output<string>();
 
-    ngOnInit(): void {
-        this.huidigProfielEnAccount = combineLatest([this._authService.currentProfiel$, this._gegevensService.getCurrentAccount$()]).pipe(
+    public huidigProfielEnAccount = derivedAsync(() =>
+        combineLatest([this._authenticationService.currentProfiel$, this._gegevensService.getCurrentAccount$()]).pipe(
             map(([profiel, account]) => {
                 return {
                     profiel,
                     account
                 };
             })
-        );
-    }
+        )
+    );
+    public state = signal<State>('bekijken');
+    public isVerzorger = this._authenticationService.isCurrentContextOuderVerzorger;
 
     public changeState(state: State) {
         this.title.emit(state === 'bekijken' ? 'Mijn gegevens' : 'Gegevens bewerken');
@@ -53,6 +54,7 @@ export class GegevensComponent implements OnInit {
      * @returns true als de actie al afgehandeld is, anders false.
      */
     public onHeaderTerug(): boolean {
+        if (this._gegevensBewerken()?.isSubmitting()) return true;
         if (this.state() === 'bewerken') {
             this.changeState('bekijken');
             return true;

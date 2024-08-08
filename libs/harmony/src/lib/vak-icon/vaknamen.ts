@@ -86,7 +86,7 @@ export const vaknamen: VakType[] = [
         icon: 'chinees'
     },
     {
-        keywords: ['duitse taal en literatuur', 'duitse taal'],
+        keywords: ['duitse taal en literatuur', 'duitse taal', 'duits'],
         abreviation: ['du', 'dui', 'dutl'],
         icon: 'duits'
     },

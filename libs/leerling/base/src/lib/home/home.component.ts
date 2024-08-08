@@ -4,7 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterOutlet } from '@angular/router';
 import { Store } from '@ngxs/store';
 import { info } from 'debugger';
-import { DeviceService, ModalService, SpinnerComponent } from 'harmony';
+import { ButtonComponent, DeviceService, ModalService, SpinnerComponent } from 'harmony';
 import {
     APP_SPINNER,
     AuthenticationEventType,
@@ -13,7 +13,7 @@ import {
     SomtodayLeerlingIngelogdAccount
 } from 'leerling-authentication';
 import { DeploymentConfiguration, environment } from 'leerling-environment';
-import { InfoMessageService, isWeb, RefreshService } from 'leerling-util';
+import { AccessibilityService, InfoMessageService, isWeb, RefreshService } from 'leerling-util';
 import { SanitizeRechten, SharedSelectors, SwitchContext } from 'leerling/store';
 import { isEqual } from 'lodash-es';
 import { ToastrService } from 'ngx-toastr';
@@ -27,7 +27,7 @@ const TAB_BAR_HEIGHT = 56;
 @Component({
     selector: 'sl-home',
     standalone: true,
-    imports: [CommonModule, TabBarComponent, RouterOutlet, SpinnerComponent],
+    imports: [CommonModule, TabBarComponent, RouterOutlet, SpinnerComponent, ButtonComponent],
     templateUrl: './home.component.html',
     styleUrls: ['./home.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
@@ -42,6 +42,7 @@ export class HomeComponent implements OnInit {
     private _refreshService = inject(RefreshService);
     private _modalService = inject(ModalService);
     private _toastr = inject(ToastrService);
+    private _accessibilityService = inject(AccessibilityService);
 
     private previousAccountLeerling: SomtodayLeerlingIngelogdAccount = {};
     public appSpinner = inject(APP_SPINNER);
@@ -150,5 +151,10 @@ export class HomeComponent implements OnInit {
                 ONBOARDING_MODAL_SETTINGS
             );
         }
+    }
+
+    goToContent() {
+        document.getElementById('mainContent')?.focus();
+        this._accessibilityService.goToContent();
     }
 }

@@ -156,16 +156,21 @@ export class AccountModalComponent implements OnInit, ISwipable, ModalScrollable
         this.selectedTab.set(item?.titel);
         this.accountModalDetailsComponent.contentRef.nativeElement.scrollTop = 0;
         if (focusOnDetails) {
-            setTimeout(() => {
-                if (this._accessibilityService.isAccessedByKeyboard()) {
-                    this.accountModalDetailsComponent.accountModalHeader?.titleRef?.nativeElement.focus();
-                }
-            }, 250); // wacht animatie af, anders is die janky
+            this.setFocusOnDetailsTitle();
         }
     }
 
-    changeTitle(title: string) {
+    setHeaderTitleWithFocus(title: string) {
         this.accountModalDetailsComponent.setTitle(title);
+        this.setFocusOnDetailsTitle();
+    }
+
+    setFocusOnDetailsTitle() {
+        setTimeout(() => {
+            if (this._accessibilityService.isAccessedByKeyboard()) {
+                this.accountModalDetailsComponent.accountModalHeader?.titleRef?.nativeElement.focus();
+            }
+        }, 250); // wacht animatie af, anders is die janky
     }
 
     forceUitloggen() {

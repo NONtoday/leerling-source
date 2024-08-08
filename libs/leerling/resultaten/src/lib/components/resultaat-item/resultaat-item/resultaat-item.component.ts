@@ -12,11 +12,13 @@ import { ResultaatItemAriaLabelPipe } from './resultaat-item-aria-label.pipe';
     templateUrl: './resultaat-item.component.html',
     styleUrls: ['./resultaat-item.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [provideIcons(IconDeeltoets, IconHerkansing, IconReacties)]
+    providers: [provideIcons(IconDeeltoets, IconHerkansing, IconReacties)],
+    host: { '[class.ellipsis]': 'ellipsis()' }
 })
 export class ResultaatItemComponent {
     public resultaatItem = input.required<ResultaatItem>();
     public toonVakIcon = input<boolean>(true);
+    public ellipsis = input<boolean>(true);
 
     public tooltip(): string | null {
         if (this.resultaatItem().isVoldoende === 'neutraal') {

@@ -1,29 +1,25 @@
-<hmy-button
-    class="go-to-content"
-    (click)="goToContent()"
-    label="Ga direct naar inhoud"
-    mode="primary"
-    tabindex="1"
-    customTabindex="-1"></hmy-button>
 @if (viewModel(); as viewModel) {
     @if (viewModel.showUserInfoWithAvatar && !viewModel.showBackButton) {
         <div
             class="menu-avatar"
             #menuavatar
             [class.is-leerling]="!viewModel.isVerzorger"
+            [class.nohover]="!isOnline()"
             [tabindex]="!viewModel.isVerzorger ? avatarTabIndex : -1"
-            (click)="leerlingMenuAvatarClick()">
-            <i
-                class="hamburger"
-                #hamburger
-                [tabindex]="viewModel.isVerzorger ? avatarTabIndex : -1"
-                (click)="verzorgerHamburgerClick()"
-                hmyIcon="hamburger"
-                size="medium"
-                role="button"
-                hmyTooltip="Menu"
-                position="bottom"
-                aria-label="Menu met links en instellingen"></i>
+            (click)="!isOnline() || leerlingMenuAvatarClick()">
+            @if (isOnline()) {
+                <i
+                    class="hamburger"
+                    #hamburger
+                    [tabindex]="viewModel.isVerzorger ? avatarTabIndex : -1"
+                    (click)="verzorgerHamburgerClick()"
+                    hmyIcon="hamburger"
+                    size="medium"
+                    role="button"
+                    hmyTooltip="Menu"
+                    position="bottom"
+                    aria-label="Menu met links en instellingen"></i>
+            }
             <div
                 class="avatar"
                 #avatar
@@ -37,6 +33,7 @@
                     [lazyLoading]="false"
                     [initialen]="viewModel.initialen"
                     [src]="viewModel.avatarSrc"
+                    [profielfotoVerbergen]="profielfotoVerbergen()"
                     [naam]="viewModel.leerlingNaam"></hmy-avatar>
                 @if (viewModel.isVerzorger) {
                     <div>

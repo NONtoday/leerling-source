@@ -37,11 +37,12 @@ import {
     IconSettings,
     provideIcons
 } from 'harmony-icons';
+import { WeergaveService } from 'leerling-account-modal';
 import { AppStatusService } from 'leerling-app-status';
 import { TabBarComponent } from 'leerling-base';
 import { LeerlingMenuActiesComponent } from 'leerling-menu-acties';
 import { LeerlingSwitcherComponent } from 'leerling-menu-leerling-switcher';
-import { AVATAR_TAB_INDEX, AccessibilityService, PopupOpenDirective } from 'leerling-util';
+import { AVATAR_TAB_INDEX, PopupOpenDirective } from 'leerling-util';
 import { HeeftRechtDirective } from 'leerling/store';
 import { HeaderService } from './service/header.service';
 
@@ -118,8 +119,10 @@ export class HeaderComponent implements AfterViewInit {
     public headerService = inject(HeaderService);
     private _changeDetector = inject(ChangeDetectorRef);
     private _overlayService = inject(OverlayService);
-    accessibilityService = inject(AccessibilityService);
     private _statusService = inject(AppStatusService);
+
+    private _weergaveService = inject(WeergaveService);
+    profielfotoVerbergen = toSignal(this._weergaveService.getProfielFotoVerbergen$());
 
     menuActiesTemplateRef = viewChild.required('menuacties', { read: TemplateRef });
     leerlingSwitcherTemplateRef = viewChild.required('leerlingswitcher', { read: TemplateRef });
@@ -156,11 +159,6 @@ export class HeaderComponent implements AfterViewInit {
         if (!this.viewModel().isVerzorger || !this.isOnline().valueOf()) return;
 
         this.openLeerlingSwitcherComponent();
-    }
-
-    goToContent() {
-        document.getElementById('mainContent')?.focus();
-        this.accessibilityService.goToContent();
     }
 
     openLeerlingSettingsComponent(ref: ViewContainerRef | undefined) {

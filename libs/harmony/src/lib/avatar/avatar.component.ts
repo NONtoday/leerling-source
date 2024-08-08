@@ -18,6 +18,7 @@ export class AvatarComponent {
     @Input() public naam: string | undefined;
     @Input() public initialen: string | undefined;
     @Input() public lazyLoading = false;
+    @Input() public profielfotoVerbergen: boolean | undefined = false;
 
     public loading = true;
 

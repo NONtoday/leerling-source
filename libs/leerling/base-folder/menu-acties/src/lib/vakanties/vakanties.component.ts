@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, input } from '@angular/core';
-import { AvatarComponent } from 'harmony';
+import { AvatarComponent, SpinnerComponent } from 'harmony';
 import { GeenDataComponent } from 'leerling-util';
 import { derivedAsync } from 'ngxtension/derived-async';
 import { VakantieService } from './service/vakantie.service';
@@ -11,7 +11,7 @@ import { VakantieSubtitlePipe } from './vakantie-subtitle.pipe';
     standalone: true,
     templateUrl: './vakanties.component.html',
     styleUrls: ['./vakanties.component.scss'],
-    imports: [AvatarComponent, GeenDataComponent, CommonModule, VakantieSubtitlePipe]
+    imports: [AvatarComponent, GeenDataComponent, CommonModule, VakantieSubtitlePipe, SpinnerComponent]
 })
 export class VakantiesComponent {
     private _vakantieService = inject(VakantieService);

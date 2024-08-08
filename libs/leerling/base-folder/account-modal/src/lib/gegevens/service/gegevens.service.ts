@@ -62,7 +62,7 @@ export class GegevensService {
 
         await firstValueFrom(this._requestService.put('verzorgers/contactgegevens', new RequestInformationBuilder().body(body).build()));
 
-        this.refreshCurrentAccountGegevens();
+        await this.refreshCurrentAccountGegevens();
     }
 
     public async updateContactGegevensLeerling(mobielnummer: string, email: string): Promise<void> {
@@ -72,7 +72,7 @@ export class GegevensService {
         } as RLeerling;
 
         await firstValueFrom(this._requestService.put('leerlingen/contactgegevens', new RequestInformationBuilder().body(body).build()));
-        this.refreshCurrentAccountGegevens();
+        await this.refreshCurrentAccountGegevens();
     }
 
     public async refreshCurrentAccountGegevens(): Promise<void> {

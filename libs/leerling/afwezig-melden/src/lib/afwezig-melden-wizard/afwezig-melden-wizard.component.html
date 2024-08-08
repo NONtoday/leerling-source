@@ -82,7 +82,23 @@
                         @if (versturenError(); as errorMessage) {
                             <div class="message message-error" id="versturen-error" tabindex="0">
                                 <i hmyIcon="noRadio" size="medium"></i>
-                                <div>{{ errorMessage }}</div>
+                                <div class="error-content">
+                                    <div>{{ errorMessage }}</div>
+                                    @if (schoolgegevens(); as schoolgegevens) {
+                                        @if (schoolgegevens.telefoonnummer) {
+                                            <div
+                                                class="link"
+                                                (click)="openUrl('tel:' + schoolgegevens.telefoonnummer)"
+                                                tabindex="0"
+                                                role="link">
+                                                <i hmyIcon="telefoon" size="medium" color="action-negative-strong"></i>
+                                                <p [attr.aria-label]="'Bel naar ' + schoolgegevens.telefoonnummer">
+                                                    {{ 'Bel ' + schoolgegevens.telefoonnummer }}
+                                                </p>
+                                            </div>
+                                        }
+                                    }
+                                </div>
                             </div>
                         }
                         <div
@@ -164,13 +180,19 @@
                 customTabindex="0" />
         }
         @if (volgendeKnop(); as knop) {
-            <hmy-button
-                [label]="knop.label"
-                [disabled]="knop.disabled"
-                (click)="volgende()"
-                data-testid="wizard-volgende"
-                mode="primary"
-                customTabindex="0" />
+            @if (versturenInProgress()) {
+                <div class="spinner-button">
+                    <hmy-spinner [isWhite]="true"></hmy-spinner>
+                </div>
+            } @else {
+                <hmy-button
+                    [label]="knop.label"
+                    [disabled]="knop.disabled"
+                    (click)="volgende()"
+                    data-testid="wizard-volgende"
+                    mode="primary"
+                    customTabindex="0" />
+            }
         }
         @if (huidigeStapNaam() === 'Klaar') {
             <hmy-button

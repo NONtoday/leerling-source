@@ -1,14 +1,26 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, ElementRef, computed, effect, inject, input, model, output, signal } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    DestroyRef,
+    ElementRef,
+    computed,
+    effect,
+    inject,
+    input,
+    model,
+    output,
+    signal
+} from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { isSameDay, isSameYear, setHours, setMilliseconds, setMinutes, setSeconds } from 'date-fns';
-import { ButtonComponent, IconDirective, SignalInputs, isPresent } from 'harmony';
-import { IconBewerken, IconKalenderToevoegen, IconNoRadio, IconYesRadio, provideIcons } from 'harmony-icons';
-import { SchoolContactgegevensComponent } from 'leerling-account-modal';
+import { ButtonComponent, IconDirective, SignalInputs, SpinnerComponent, isPresent } from 'harmony';
+import { IconBewerken, IconKalenderToevoegen, IconNoRadio, IconTelefoon, IconYesRadio, provideIcons } from 'harmony-icons';
+import { GegevensService, SchoolContactgegevensComponent } from 'leerling-account-modal';
 import { SomtodayLeerling } from 'leerling-authentication';
 import { AccessibilityService, SidebarService, SidebarSettings, capitalize, createSidebarSettings, formatNL } from 'leerling-util';
-import { SAbsentieMeldingInvoer, SAbsentieReden } from 'leerling/store';
+import { SAbsentieMeldingInvoer, SAbsentieReden, SLeerlingSchoolgegevens } from 'leerling/store';
 import { catchError, filter, of, pairwise } from 'rxjs';
 import { AbsentieService } from '../services/absentie.service';
 import { DagOptie, TijdOptieMinuten, TijdOptieUren } from './afwezig-melden-model';
@@ -17,8 +29,8 @@ import { DatumSelectieComponent } from './datum-selectie/datum-selectie.componen
 @Component({
     selector: 'sl-afwezig-melden-wizard',
     standalone: true,
-    imports: [SchoolContactgegevensComponent, ButtonComponent, DatumSelectieComponent, FormsModule, IconDirective],
-    providers: [provideIcons(IconYesRadio, IconNoRadio, IconBewerken, IconKalenderToevoegen)],
+    imports: [SchoolContactgegevensComponent, ButtonComponent, DatumSelectieComponent, FormsModule, IconDirective, SpinnerComponent],
+    providers: [provideIcons(IconYesRadio, IconNoRadio, IconBewerken, IconKalenderToevoegen, IconTelefoon)],
     templateUrl: './afwezig-melden-wizard.component.html',
     styleUrl: './afwezig-melden-wizard.component.scss',
     changeDetection: ChangeDetectionStrategy.OnPush
@@ -27,6 +39,8 @@ export class AfwezigMeldenWizardComponent {
     private absentieService = inject(AbsentieService);
     private accessibilityService = inject(AccessibilityService);
     private elementRef = inject(ElementRef);
+    private _gegevensService = inject(GegevensService);
+    private _destroyRef = inject(DestroyRef);
 
     // inputs
     absentieRedenen = input.required<SAbsentieReden[]>();
@@ -55,6 +69,7 @@ export class AfwezigMeldenWizardComponent {
     progressBarCompletedSteps = computed(() => StapNamen.map((_, stapIndex) => stapIndex <= this.huidigeStapIndex()));
     versturenError = signal<string | undefined>(undefined);
     versturenInProgress = signal(false);
+    schoolgegevens = signal<SLeerlingSchoolgegevens | undefined>(undefined);
 
     isHuidigeStapValid = computed<boolean>(() => {
         switch (this.huidigeStapNaam()) {
@@ -222,6 +237,10 @@ export class AfwezigMeldenWizardComponent {
         this.gaNaarEersteStap();
     }
 
+    openUrl(url: string) {
+        window.open(url, '_blank');
+    }
+
     private isEinddatumIngevuld(eindDag: DagOptie | undefined, absentieReden: SAbsentieReden | undefined): boolean {
         if (eindDag) return true;
 
@@ -286,6 +305,10 @@ export class AfwezigMeldenWizardComponent {
                 this.versturenInProgress.set(false);
 
                 if (result instanceof HttpErrorResponse) {
+                    this._gegevensService
+                        .getSchoolgegevens$()
+                        .pipe(takeUntilDestroyed(this._destroyRef))
+                        .subscribe((schoolgegevens) => this.schoolgegevens.set(schoolgegevens));
                     const errorMessage = result.error?.message;
                     if (errorMessage) {
                         this.onVersturenError(errorMessage);

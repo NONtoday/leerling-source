@@ -5,6 +5,7 @@ const themeKey = 'SLL-settings-theme';
 const systeemKey = 'SLL-settings-systeem';
 const dyslexieKey = 'SLL-settings-dyslexie';
 const onvoldoendeRoodKey = 'SLL-settings-onvoldoende-rood';
+const profielfotoVerbergenKey = 'SLL-profielfoto-verbergen';
 
 export const saveThemePreference = async (theme: Theme) => {
     await Preferences.set({
@@ -53,6 +54,19 @@ export const saveOnvoldoendePreference = async (voorkeur: boolean) => {
 
 export const getOnvoldoendePreference = async (): Promise<boolean | null> => {
     const res = (await Preferences.get({ key: onvoldoendeRoodKey })).value;
+    if (!res) return null;
+    return res === 'true';
+};
+
+export const saveProfielfotoVerbergen = async (voorkeur: boolean) => {
+    await Preferences.set({
+        key: profielfotoVerbergenKey,
+        value: voorkeur.toString()
+    });
+};
+
+export const getProfielfotoVerbergen = async (): Promise<boolean | null> => {
+    const res = (await Preferences.get({ key: profielfotoVerbergenKey })).value;
     if (!res) return null;
     return res === 'true';
 };

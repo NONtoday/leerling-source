@@ -1,4 +1,4 @@
-<sl-header>
+<sl-header [hideBorderBottomMobile]="true">
     <sl-header-action-button
         *slHeeftRecht="'berichtenVerzendenAan'"
         [hideWhenOffline]="true"
@@ -9,7 +9,7 @@
 </sl-header>
 <div class="container" [class.in-edit]="inEdit()" [class.in-detail]="selectedConversatie()">
     @if (isPhoneOrTabletPortrait()) {
-        <sl-scrollable-title class="scrollable-title" [title]="'Berichten'" />
+        <sl-scrollable-title class="scrollable-title" [title]="'Berichten'" [ellipsis]="false" />
     }
     <div class="tabs">
         @for (tab of tabs(); track tab.label) {
@@ -73,11 +73,11 @@
                 @if (alleConversatiesOpgehaald() === false) {
                     <span class="action-primary-normal">Laad eerdere berichten</span>
                 } @else if (alleConversatiesOpgehaald() === undefined) {
-                    <hmy-spinner [centeredInParent]="true" />
+                    <hmy-spinner />
                 }
             </div>
         } @else {
-            <hmy-spinner [centeredInParent]="true" />
+            <hmy-spinner />
         }
     </div>
 

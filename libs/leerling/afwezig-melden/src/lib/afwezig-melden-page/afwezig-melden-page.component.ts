@@ -71,6 +71,7 @@ export class AfwezigMeldenPageComponent {
     }
 
     public canDeactivate(): Observable<boolean> {
+        if (!this.heeftAfwezigMeldenFeatureRechten()) return of(true);
         if (this.wizardIsDirty()) {
             // in sommige gevallen kan een andere modal open zijn, bijv. bij leerling switch op mobile
             if (this.modalService.isOpen()) {

@@ -62,9 +62,6 @@ export function mapRechten(rechten: REloRestricties): SRechten {
 }
 
 export const verifyRegistratiesRechten = (accountContext: AccountContextMetRechten): boolean => {
-    if (accountContext.currentAccountIsVerzorger) {
-        return false;
-    }
     const rechten = accountContext.rechten;
 
     return (
@@ -77,7 +74,6 @@ export const verifyMaatregelRechten = (rechten: REloRestricties): boolean =>
     !!rechten.absentiesBekijkenAan && !!rechten.absentieMaatregelBekijkenAan;
 
 /**
- * Registraties zijn momenteel alleen beschikbaar voor leerlingaccounts.
  * Absentieregistraties vereisen het algemene absenties recht, en daarnaast zowel constatering als melding- rechten aangezien dit een combinatie van beide gegevens betreft.
  * Voor de huiswerk- en materiaal niet in orde registratieblokjes is alleen het huiswerkrecht vereist.
  * Maatregelen zijn voor zowel ouders als leerlingaccounts beschikbaar, mits de rechten ervoor aanstaan.

@@ -19,6 +19,7 @@ import { AutoFocusDirective, DeviceService, ModalService, PopupService, TagCompo
 import { onRefresh } from 'leerling-util';
 import { SMedewerker } from 'leerling/store';
 import { derivedAsync } from 'ngxtension/derived-async';
+import * as removeAccents from 'remove-accents';
 import { Subject, filter } from 'rxjs';
 import { BerichtService } from '../../../services/bericht.service';
 import { BerichtOntvangerOptieComponent } from '../bericht-ontvanger-optie/bericht-ontvanger-optie.component';
@@ -167,13 +168,13 @@ export class BerichtOntvangerSelectieComponent implements ControlValueAccessor {
 
     private filterMedewerkers = (medewerkers: SMedewerker[], search: string, selectedMedewerkers: SMedewerker[]) => {
         const possibleResults = medewerkers.filter((medewerker) => !selectedMedewerkers.includes(medewerker));
+
         if (!search) {
             return possibleResults;
         }
-        const searchLower = search.toLowerCase();
-        return possibleResults.filter(
-            (medewerker) =>
-                medewerker.achternaam?.toLowerCase().includes(searchLower) || medewerker.afkorting?.toLowerCase().includes(searchLower)
-        );
+        //accenten verwijderen, lowercase, punten en () weghalen
+        const searchLower = removeAccents.remove(search.toLowerCase().split('.').join('').replace('(', '').replace(')', '')).trim();
+
+        return possibleResults.filter((medewerker) => medewerker.zoekNaam?.includes(searchLower));
     };
 }

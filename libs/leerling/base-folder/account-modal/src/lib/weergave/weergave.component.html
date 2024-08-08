@@ -67,5 +67,23 @@
                 aria-label="Maak gebruik van een dyslexie lettertype voor een betere leeservaring"
                 role="checkbox"></hmy-toggle>
         </div>
+        <div class="setting-divider" [ngClass]="{ 'verberg-profielfoto-optie': isOuder }"></div>
+        <div class="settings with-preview" [ngClass]="{ 'verberg-profielfoto-optie': isOuder }">
+            <div class="setting-preview profielfoto">
+                <i hmyIcon="persoon" size="medium"></i>
+            </div>
+            <span class="settings-span"
+                >Verberg profielfoto
+                <p class="settings-subtext">Toon je voorletter in plaats van je profielfoto</p>
+            </span>
+            <hmy-toggle
+                class="toggle-profielfoto-verbergen"
+                [ngModel]="profielfotoVerbergen()"
+                [attr.aria-checked]="profielfotoVerbergen()"
+                (click)="toggleProfielfotoVerbergen()"
+                tabindex="0"
+                aria-label="Toon je voorletter in plaats van je profielfoto"
+                role="checkbox"></hmy-toggle>
+        </div>
     </div>
 </div>

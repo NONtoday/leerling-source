@@ -5,7 +5,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { AvatarComponent, IconDirective, OverlayService } from 'harmony';
 import { IconHelp, IconKalenderToevoegen, IconLijst, IconLink, IconSchool, IconSettings, IconUitloggen, provideIcons } from 'harmony-icons';
-import { AccountModalComponent } from 'leerling-account-modal';
+import { AccountModalComponent, WeergaveService } from 'leerling-account-modal';
 import { AppStatusService } from 'leerling-app-status';
 import { REGISTRATIES } from 'leerling-base';
 import { StudiemateriaalVakselectieComponent } from 'leerling-studiemateriaal';
@@ -40,6 +40,9 @@ export class LeerlingMenuActiesComponent {
     private _rechtenService = inject(RechtenService);
     private _supportLink = viewChild.required('supportLink', { read: ElementRef });
     private _accessibilityService = inject(AccessibilityService);
+    private _weergaveService = inject(WeergaveService);
+
+    profielfotoVerbergen = toSignal(this._weergaveService.getProfielFotoVerbergen$());
 
     isOnline = inject(AppStatusService).isOnlineSignal();
 

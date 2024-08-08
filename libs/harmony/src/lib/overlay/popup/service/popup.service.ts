@@ -42,12 +42,12 @@ export class PopupService {
         const popupElement = getHTMLElement(popupComponentRef);
 
         // Zorg ervoor dat klikken op het connectedElement de popup niet opnieuw opent.
-        connectedElement.element.nativeElement.style.pointerEvents = 'none';
+        this.renderer.setStyle(connectedElement.element.nativeElement, 'pointer-events', 'none');
 
         popupComponentRef.instance.closePopup.subscribe(() => {
             settings.onClose?.();
-            connectedElement.element.nativeElement.style.pointerEvents = 'auto';
             this.renderer.removeClass(connectedElement.element.nativeElement, settings.popupOpenClass);
+            this.renderer.removeStyle(connectedElement.element.nativeElement, 'pointer-events');
             enableBodyScroll(popupElement);
             popupComponentRef.destroy();
             this.openPopups.delete(connectedElement);

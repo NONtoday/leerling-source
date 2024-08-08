@@ -13,7 +13,7 @@
             }
         }
 
-        @if (toonAlgemeneLeermiddelen()) {
+        @if (toonAlgemeneLeermiddelen() && leermiddelen.algemeneLeermiddelen.length > 0) {
             <sl-bijlagen-map
                 [jaarBijlageOfLeermiddel]="{ leermiddelen: leermiddelen.algemeneLeermiddelen }"
                 [isMapOpen]="leermiddelen.leermiddelen.length === 0 ? true : false"

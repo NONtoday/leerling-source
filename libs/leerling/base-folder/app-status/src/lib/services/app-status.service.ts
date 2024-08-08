@@ -53,13 +53,17 @@ export class AppStatusService {
     private _versionSubject = new BehaviorSubject<string | undefined>(undefined);
 
     constructor() {
-        this._httpClient
-            .get<Versioning>('/assets/version.json')
-            .pipe(
-                map((version: Versioning) => version.version),
-                take(1)
-            )
-            .subscribe((value) => this._versionSubject.next(value));
+        if (isWeb()) {
+            this._httpClient
+                .get<Versioning>('/assets/version.json')
+                .pipe(
+                    map((version: Versioning) => version.version),
+                    take(1)
+                )
+                .subscribe((value) => this._versionSubject.next(value));
+        } else {
+            AppVersion.getAppVersion().then((version) => this._versionSubject.next(version.version));
+        }
     }
 
     public getVersion$(): Observable<string> {
