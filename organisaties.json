@@ -319,7 +319,7 @@
             },
             {
                 "uuid": "0e3cc2f1-5460-4d06-b711-674b2c614c64",
-                "naam": "CVO-AV oud",
+                "naam": "xCVO-AV oud",
                 "plaats": "GORINCHEM",
                 "oidcurls": []
             },
@@ -842,7 +842,7 @@
             },
             {
                 "uuid": "200b9370-497a-4628-821b-b86178639ff7",
-                "naam": "Willem van Oranje oud",
+                "naam": "xWillem van Oranje oud",
                 "plaats": "WAALWIJK",
                 "oidcurls": [
                     {
