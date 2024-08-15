@@ -8,6 +8,22 @@ import { APP_VIEWCONTAINER_REF } from '../app-container-ref-token';
 import { ModalComponent } from '../component/modal.component';
 import { createModalSettings, ModalSettings } from '../component/modal.settings';
 
+interface ModalInput {
+    settings?: Partial<ModalSettings> | undefined;
+}
+
+interface ComponentModalInput<Component> extends ModalInput {
+    component: Type<Component>;
+    template?: never;
+    inputs?: SignalInputs<Component> | undefined;
+}
+
+interface TemplateModalInput<Template> extends ModalInput {
+    template: TemplateRef<Template>;
+    component?: never;
+    inputs?: never;
+}
+
 @Injectable({
     providedIn: 'root'
 })
@@ -22,27 +38,26 @@ export class ModalService {
         if (this.modalRef) this.modalRef.instance.closingBlocked = isBlocked;
     }
 
-    confirmModal(inputs: SignalInputs<ConfirmModalComponent>, settings: ModalSettings = createModalSettings()) {
-        return this.modal(ConfirmModalComponent, inputs, settings) as ConfirmModalComponent;
+    confirmModal(inputs: SignalInputs<ConfirmModalComponent>, settings?: Partial<ModalSettings>) {
+        return this.modal({ component: ConfirmModalComponent, inputs, settings });
     }
 
-    modal<T, C>(
-        componentType: Type<T> | TemplateRef<C>,
-        inputs: SignalInputs<T> | undefined = undefined,
-        settings: ModalSettings = createModalSettings()
-    ): T | EmbeddedViewRef<C> {
+    modal<Component>(input: ComponentModalInput<Component>): Component;
+    modal<Template>(input: TemplateModalInput<Template>): EmbeddedViewRef<Template>;
+    modal<Component, Template>({ template, component, inputs, settings }: ComponentModalInput<Component> | TemplateModalInput<Template>) {
+        const fullSettings = createModalSettings(settings);
         if (this.modalRef) {
             this.animateAndClose();
             throw new Error('Er is al een modal window open, er wordt er maar 1 ondersteund');
         }
 
         const modalComponentRef = this.appContainerRef.createComponent(ModalComponent);
-        modalComponentRef.setInput('settings', settings);
+        modalComponentRef.setInput('settings', fullSettings);
 
         const modalElement = getHTMLElement(modalComponentRef);
         modalComponentRef.instance.closeModal.subscribe(() => {
             if (this.modalRef) {
-                settings.onClose?.();
+                fullSettings.onClose?.();
                 enableBodyScroll(modalComponentRef.instance.containerRef().nativeElement);
                 this.modalRef.destroy();
                 // give the modal ref time to be destroyed
@@ -50,11 +65,17 @@ export class ModalService {
             }
         });
 
-        const contentComponent =
-            componentType instanceof TemplateRef
-                ? modalComponentRef.instance.contentRef.createEmbeddedView(componentType)
-                : modalComponentRef.instance.contentRef.createComponent(componentType);
+        this.renderer.appendChild(document.body, modalElement);
 
+        disableBodyScrollWithTouchMove(modalComponentRef.instance.containerRef().nativeElement);
+
+        this.modalRef = modalComponentRef;
+
+        if (template) {
+            return modalComponentRef.instance.contentRef.createEmbeddedView(template);
+        }
+
+        const contentComponent = modalComponentRef.instance.contentRef.createComponent(component);
         if (contentComponent instanceof ComponentRef && inputs) {
             const contentElement = getHTMLElement(contentComponent);
             Object.entries(inputs).forEach(([key, value]) => {
@@ -63,12 +84,7 @@ export class ModalService {
             this.renderer.addClass(contentElement, 'in-modal');
         }
 
-        this.renderer.appendChild(document.body, modalElement);
-
-        disableBodyScrollWithTouchMove(modalComponentRef.instance.containerRef().nativeElement);
-
-        this.modalRef = modalComponentRef;
-        return contentComponent instanceof ComponentRef ? contentComponent.instance : contentComponent;
+        return contentComponent.instance;
     }
 
     isOpen = () => !!this.modalRef;

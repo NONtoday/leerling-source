@@ -8,6 +8,23 @@ import { AnimationState, PopupComponent } from '../component/popup.component';
 import { BoundingClientRect } from '../popup.model';
 import { createPopupSettings, PopupSettings } from '../settings/popup-settings';
 
+interface PopupInput {
+    element: ViewContainerRef;
+    settings?: Partial<PopupSettings> | undefined;
+}
+
+interface ComponentPopupInput<Component> extends PopupInput {
+    component: Type<Component>;
+    template?: never;
+    inputs?: SignalInputs<Component> | undefined;
+}
+
+interface TemplatePopupInput<Template> extends PopupInput {
+    template: TemplateRef<Template>;
+    component?: never;
+    inputs?: never;
+}
+
 @Injectable({
     providedIn: 'root'
 })
@@ -15,24 +32,29 @@ export class PopupService {
     private renderer = inject(RendererFactory2).createRenderer(null, null);
     private openPopups = new Map<ViewContainerRef, ComponentRef<PopupComponent>>();
 
-    popup<T, C>(
-        componentOrTemplate: Type<T> | TemplateRef<C>,
-        connectedElement: ViewContainerRef,
-        inputs: SignalInputs<T> | undefined = undefined,
-        settings: PopupSettings = createPopupSettings()
-    ): T | EmbeddedViewRef<C> {
+    popup<Component>(input: ComponentPopupInput<Component>): Component;
+    popup<Template>(input: TemplatePopupInput<Template>): EmbeddedViewRef<Template>;
+    popup<Component, Template>({
+        component,
+        template,
+        element,
+        inputs,
+        settings
+    }: ComponentPopupInput<Component> | TemplatePopupInput<Template>) {
+        const fullSettings = createPopupSettings(settings);
+
         this.scrollElementVerticalInViewport(
-            connectedElement.element.nativeElement.getBoundingClientRect() satisfies BoundingClientRect,
-            settings.offsets.top,
-            settings.offsets.bottom,
-            settings.scrollOffset
+            element.element.nativeElement.getBoundingClientRect() satisfies BoundingClientRect,
+            fullSettings.offsets.top,
+            fullSettings.offsets.bottom,
+            fullSettings.scrollOffset
         );
 
-        const popupComponentRef = connectedElement.createComponent(PopupComponent);
-        popupComponentRef.setInput('settings', settings);
-        popupComponentRef.setInput('connectedElement', connectedElement);
+        const popupComponentRef = element.createComponent(PopupComponent);
+        popupComponentRef.setInput('settings', fullSettings);
+        popupComponentRef.setInput('connectedElement', element);
         popupComponentRef.instance.animationState.set(
-            match(settings.animation)
+            match(fullSettings.animation)
                 .returnType<AnimationState>()
                 .with('fade', () => 'fade-visible')
                 .with('slide', () => 'slide-visible')
@@ -42,38 +64,37 @@ export class PopupService {
         const popupElement = getHTMLElement(popupComponentRef);
 
         // Zorg ervoor dat klikken op het connectedElement de popup niet opnieuw opent.
-        this.renderer.setStyle(connectedElement.element.nativeElement, 'pointer-events', 'none');
+        this.renderer.setStyle(element.element.nativeElement, 'pointer-events', 'none');
 
         popupComponentRef.instance.closePopup.subscribe(() => {
-            settings.onClose?.();
-            this.renderer.removeClass(connectedElement.element.nativeElement, settings.popupOpenClass);
-            this.renderer.removeStyle(connectedElement.element.nativeElement, 'pointer-events');
+            fullSettings.onClose?.();
+            this.renderer.removeClass(element.element.nativeElement, fullSettings.popupOpenClass);
+            this.renderer.removeStyle(element.element.nativeElement, 'pointer-events');
             enableBodyScroll(popupElement);
             popupComponentRef.destroy();
-            this.openPopups.delete(connectedElement);
+            this.openPopups.delete(element);
         });
-
-        const contentComponentRef =
-            componentOrTemplate instanceof TemplateRef
-                ? popupComponentRef.instance.contentRef.createEmbeddedView(componentOrTemplate)
-                : popupComponentRef.instance.contentRef.createComponent(componentOrTemplate);
-        if (contentComponentRef instanceof ComponentRef && inputs) {
-            const contentElement = getHTMLElement(contentComponentRef);
-            this.renderer.addClass(contentElement, 'in-popup');
-            Object.entries(inputs).forEach(([key, value]) => {
-                contentComponentRef.setInput(key, value);
-            });
-            this.renderer.appendChild(popupElement, contentElement);
-        }
-
-        this.renderer.addClass(connectedElement.element.nativeElement, settings.popupOpenClass);
-        this.renderer.appendChild(this.getDomElement(connectedElement, settings), popupElement);
+        this.renderer.addClass(element.element.nativeElement, fullSettings.popupOpenClass);
+        this.renderer.appendChild(this.getDomElement(element, fullSettings), popupElement);
 
         disableBodyScrollWithTouchMove(popupElement);
 
-        this.openPopups.set(connectedElement, popupComponentRef);
+        this.openPopups.set(element, popupComponentRef);
 
-        return contentComponentRef instanceof ComponentRef ? contentComponentRef.instance : contentComponentRef;
+        if (component) {
+            const contentComponentRef = popupComponentRef.instance.contentRef.createComponent(component);
+            const contentElement = getHTMLElement(contentComponentRef);
+            this.renderer.addClass(contentElement, 'in-popup');
+            if (inputs) {
+                Object.entries(inputs).forEach(([key, value]) => {
+                    contentComponentRef.setInput(key, value);
+                });
+            }
+            this.renderer.appendChild(popupElement, contentElement);
+            return contentComponentRef.instance;
+        }
+
+        return popupComponentRef.instance.contentRef.createEmbeddedView(template);
     }
 
     private getDomElement(connectedElement: ViewContainerRef, settings: PopupSettings) {

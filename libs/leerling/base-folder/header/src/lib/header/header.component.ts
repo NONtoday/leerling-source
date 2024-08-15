@@ -15,16 +15,7 @@ import {
     viewChild
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import {
-    AvatarComponent,
-    ButtonComponent,
-    IconDirective,
-    OverlayService,
-    SpinnerComponent,
-    TooltipDirective,
-    createModalSettings,
-    createPopupSettings
-} from 'harmony';
+import { AvatarComponent, ButtonComponent, IconDirective, OverlayService, SpinnerComponent, TooltipDirective } from 'harmony';
 import {
     IconBoek,
     IconChevronOnder,
@@ -164,32 +155,23 @@ export class HeaderComponent implements AfterViewInit {
     openLeerlingSettingsComponent(ref: ViewContainerRef | undefined) {
         if (!ref || this._overlayService.isOpen(ref)) return;
 
-        this._overlayService.popupOrModal(
-            this.menuActiesTemplateRef(),
-            ref,
-            {
-                leerling: {
-                    avatarSrc: this.viewModel().avatarSrc,
-                    initialen: this.viewModel().initialen,
-                    naam: this.viewModel().leerlingNaam,
-                    organisatienaam: this.viewModel().organisatienaam
-                }
-            },
-            createPopupSettings({ width: '280px' }),
-            createModalSettings({ contentPadding: 0 })
-        );
+        this._overlayService.popupOrModal({
+            template: this.menuActiesTemplateRef(),
+            element: ref,
+            popupSettings: { width: '280px' },
+            modalSettings: { contentPadding: 0 }
+        });
     }
 
     openLeerlingSwitcherComponent() {
         const avatarRef = this.avatarRef();
         if (!avatarRef || this._overlayService.isOpen(avatarRef)) return;
-        this._overlayService.popupOrModal(
-            this.leerlingSwitcherTemplateRef(),
-            avatarRef,
-            {},
-            createPopupSettings({ position: 'under', alignment: 'start' }),
-            createModalSettings({ title: 'Mijn accounts', contentPadding: 0, showClose: false })
-        ) as LeerlingSwitcherComponent;
+        this._overlayService.popupOrModal({
+            template: this.leerlingSwitcherTemplateRef(),
+            element: avatarRef,
+            popupSettings: { position: 'under', alignment: 'start' },
+            modalSettings: { title: 'Mijn accounts', contentPadding: 0, showClose: false }
+        });
     }
 
     onBackButtonClicked() {

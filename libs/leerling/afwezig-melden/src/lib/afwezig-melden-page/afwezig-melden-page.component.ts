@@ -1,15 +1,15 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { DeviceService, ModalService, SpinnerComponent, createModalSettings, isPresent } from 'harmony';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { createModalSettings, DeviceService, isPresent, ModalService, SpinnerComponent } from 'harmony';
 import { SchoolContactgegevensComponent } from 'leerling-account-modal';
 import { AuthenticationService } from 'leerling-authentication';
-import { TabBarComponent, registerContextSwitchInterceptor } from 'leerling-base';
+import { registerContextSwitchInterceptor, TabBarComponent } from 'leerling-base';
 import { REloRestricties } from 'leerling-codegen';
 import { HeaderComponent, ScrollableTitleComponent } from 'leerling-header';
-import { onRefreshOrRedirectHome } from 'leerling-util';
+import { GeenDataComponent, onRefreshOrRedirectHome } from 'leerling-util';
 import { PlaatsingService, RechtenService } from 'leerling/store';
 import { derivedAsync } from 'ngxtension/derived-async';
-import { Observable, Subject, delay, filter, finalize, map, of, switchMap, take } from 'rxjs';
+import { delay, distinctUntilChanged, filter, finalize, map, Observable, of, Subject, switchMap, take } from 'rxjs';
 import { AfwezigMeldenWizardComponent } from '../afwezig-melden-wizard/afwezig-melden-wizard.component';
 import { AbsentieService } from '../services/absentie.service';
 
@@ -22,7 +22,8 @@ import { AbsentieService } from '../services/absentie.service';
         TabBarComponent,
         ScrollableTitleComponent,
         SchoolContactgegevensComponent,
-        SpinnerComponent
+        SpinnerComponent,
+        GeenDataComponent
     ],
     providers: [AbsentieService],
     templateUrl: './afwezig-melden-page.component.html',
@@ -36,6 +37,7 @@ export class AfwezigMeldenPageComponent {
     private modalService = inject(ModalService);
     private plaatsingService = inject(PlaatsingService);
     private rechtenService = inject(RechtenService);
+    private _destroyRef = inject(DestroyRef);
 
     private leerling$ = this.authenticationService.currentAccountLeerling$.pipe(
         map(({ leerling }) => leerling),
@@ -43,12 +45,15 @@ export class AfwezigMeldenPageComponent {
     );
 
     private heeftAfwezigMeldenFeatureRechten$ = this.leerling$.pipe(
+        takeUntilDestroyed(this._destroyRef),
         switchMap(() => this.rechtenService.getCurrentAccountRechten()),
         map((rechten) => !!rechten[AfwezigMeldenFeatureRecht])
     );
 
     private absentieRedenen$ = this.heeftAfwezigMeldenFeatureRechten$.pipe(
+        takeUntilDestroyed(this._destroyRef),
         switchMap((heeftRechten) => (heeftRechten ? this.plaatsingService.getHuidigeVestiging() : of(undefined))),
+        distinctUntilChanged(),
         filter(isPresent),
         switchMap((vestiging) => this.absentieService.absentieRedenen(vestiging.id)),
         filter(isPresent)

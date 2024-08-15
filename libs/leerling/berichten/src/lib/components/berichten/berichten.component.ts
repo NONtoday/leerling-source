@@ -82,6 +82,9 @@ export class BerichtenComponent {
     private rechtenService = inject(RechtenService);
     private document = inject(DOCUMENT);
 
+    public alleBerichtenLaden = signal(false);
+    public geenNieuweBerichten = signal(false);
+
     // named route path param, see routes in leerling app
     activeTab = input.required<BerichtenTabLink>();
     selectedConversatieId = injectQueryParams('conversatie');
@@ -162,7 +165,15 @@ export class BerichtenComponent {
     focusLaatsteInboxBericht = () => (<HTMLElement>this.document.querySelector('sl-bericht-samenvatting:last-of-type'))?.focus();
 
     laadEerdereBerichten() {
-        this.berichtService.refreshConversaties({ alleConversaties: true });
+        if (this.geenNieuweBerichten()) return;
+        const aantalBerichten = this.conversaties()?.length;
+        this.alleBerichtenLaden.set(true);
+        this.berichtService.refreshConversaties({ alleConversaties: true }).subscribe(() => {
+            this.alleBerichtenLaden.set(false);
+            if (this.conversaties()?.length === aantalBerichten) {
+                this.geenNieuweBerichten.set(true);
+            }
+        });
 
         (<HTMLElement>this.document.querySelector('.laad-eerdere'))?.blur();
         this.focusLaatsteInboxBericht();

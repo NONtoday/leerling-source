@@ -16,6 +16,7 @@ export const BERICHTEN_EDIT = 'edit';
 export const LOGIN = 'login';
 export const REGISTRATIES = 'registraties';
 export const AFWEZIG_MELDEN = 'leerling-afwezig-melden';
+export const GEEN_PLAATSING = 'geen-plaatsing';
 
 export const REDIRECT = 'redirect';
 export const OAUTH_CALLBACK = 'oauth/callback';

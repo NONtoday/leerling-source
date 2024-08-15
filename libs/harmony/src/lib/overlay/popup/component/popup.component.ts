@@ -88,7 +88,6 @@ export class PopupComponent implements AfterViewInit {
 
                 const connectedLocation = this.connectedElement().element.nativeElement.getBoundingClientRect() as BoundingClientRect;
                 const popupLocation = this.viewContainerRef.element.nativeElement.getBoundingClientRect() as BoundingClientRect;
-
                 this.top.set(calculateTop(connectedLocation, popupLocation, this.settings()));
                 const left = this.settings().left ?? calculateLeft(connectedLocation, popupLocation, this.settings());
                 this.left.set(left);

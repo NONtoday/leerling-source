@@ -10,7 +10,7 @@ import {
     input,
     viewChild
 } from '@angular/core';
-import { DeviceService, IconDirective, OverlayService, createModalSettings, createPopupSettings } from 'harmony';
+import { DeviceService, IconDirective, OverlayService } from 'harmony';
 import { IconChevronOnder, IconReacties, provideIcons } from 'harmony-icons';
 import { MaatregelItemAriaLabelPipe, MaatregelItemComponent } from 'leerling-registraties-ui';
 import { SMaatregelToekenning } from 'leerling/store';
@@ -51,21 +51,20 @@ export class RoosterMaatregelenComponent {
             const overlay = this._maatregelenOverlay() as TemplateRef<any>;
             const width = this._host.element.nativeElement.clientWidth;
 
-            const overlayElement: EmbeddedViewRef<any> = this._overlayService.popupOrModal(
-                overlay,
-                this._host,
-                { context: {} },
-                createPopupSettings({
+            const overlayElement: EmbeddedViewRef<any> = this._overlayService.popupOrModal({
+                template: overlay,
+                element: this._host,
+                popupSettings: {
                     alignment: 'start',
                     animation: 'slide',
                     width: `${Math.max(width, 264)}px`,
                     maxHeight: '380px'
-                }),
-                createModalSettings({
+                },
+                modalSettings: {
                     contentPadding: 0,
                     title: this.maatregelen().length > 1 ? 'Maatregelen' : 'Maatregel'
-                })
-            );
+                }
+            });
 
             const overlayClass = this._deviceService.isTabletOrDesktop() ? 'in-popup' : 'in-modal';
             overlayElement.rootNodes[0].classList.add(overlayClass);

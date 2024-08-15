@@ -34,7 +34,6 @@ import {
     TabRowComponent,
     TagComponent,
     VakIconComponent,
-    createModalSettings as createHarmonyModalSettings,
     isPresent
 } from 'harmony';
 import { IconBijlage, IconChevronOnder, IconPijlLinks, IconSluiten, IconWaarschuwing, provideIcons } from 'harmony-icons';
@@ -220,16 +219,15 @@ export class RoosterItemDetailComponent implements OnInit, OnDestroy {
             this.getHerhalendeAfspraakInfo();
         }
         this.isGuardOpen.set(true);
-        this._harmonyModalService.modal(
-            this.confirmModalComponentTemplate(),
-            undefined,
-            createHarmonyModalSettings({
+        this._harmonyModalService.modal({
+            template: this.confirmModalComponentTemplate(),
+            settings: {
                 title: 'Weet je het zeker?',
                 widthModal: '460px',
                 titleIcon: this._deviceService.isPhoneOrTabletPortrait() ? undefined : 'waarschuwing',
                 titleIconColor: 'fg-negative-normal'
-            })
-        ) as KwtUitschrijvenConfirmModalComponent;
+            }
+        });
     }
 
     public schrijfUitVoorKWT() {

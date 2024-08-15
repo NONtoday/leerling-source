@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ViewContainerRef, inject, output, viewChild } from '@angular/core';
-import { IconDirective, OverlayService, VerwijderConfirmationComponent, createPopupSettings } from 'harmony';
+import { IconDirective, OverlayService, VerwijderConfirmationComponent } from 'harmony';
 import { IconMarkerenOngelezen, IconVerwijderen, provideIcons } from 'harmony-icons';
 
 @Component({
@@ -21,17 +21,12 @@ export class BerichtActiesComponent {
     verwijder = output();
 
     openVerwijderConfirm() {
-        const popup = this.overlayService.popupOrModal(
-            VerwijderConfirmationComponent,
-            this.verwijderActie(),
-            { label: 'Gesprek verwijderen?' },
-            createPopupSettings({
-                width: '200px',
-                alignment: 'center',
-                elementOffset: 48,
-                position: 'left'
-            })
-        ) as VerwijderConfirmationComponent;
+        const popup = this.overlayService.popupOrModal({
+            component: VerwijderConfirmationComponent,
+            element: this.verwijderActie(),
+            inputs: { label: 'Gesprek verwijderen?' },
+            popupSettings: { width: '200px', alignment: 'center', elementOffset: 48, position: 'left' }
+        });
         popup.confirmed.subscribe(() => this.verwijder.emit());
         popup.canceled.subscribe(() => this.overlayService.close(this.verwijderActie()));
     }

@@ -143,13 +143,13 @@ export class HomeComponent implements OnInit {
 
     private showOnboardingSplash() {
         if (!isWeb() && !localStorage[ONBOARDING_LOCALSTORAGE_KEY]) {
-            this._modalService.modal(
-                OnboardingSplashComponent,
-                {
+            this._modalService.modal({
+                component: OnboardingSplashComponent,
+                inputs: {
                     isVerzorger: this._authenticationService.isCurrentContextOuderVerzorger
                 },
-                ONBOARDING_MODAL_SETTINGS
-            );
+                settings: ONBOARDING_MODAL_SETTINGS
+            });
         }
     }
 

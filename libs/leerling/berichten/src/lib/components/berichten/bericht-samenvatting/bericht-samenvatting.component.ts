@@ -150,12 +150,11 @@ export class BerichtSamenvattingComponent {
 
     meerOptiesClick(event: Event) {
         event.stopPropagation();
-        this.popupService.popup(
-            this.meerOptiesTemplate(),
-            this.meerOptiesIcon(),
-            undefined,
-            createPopupSettings({ width: '246px', onClose: () => this.showVerwijderConfirmButtons.set(false) })
-        );
+        this.popupService.popup({
+            template: this.meerOptiesTemplate(),
+            element: this.meerOptiesIcon(),
+            settings: createPopupSettings({ width: '246px', onClose: () => this.showVerwijderConfirmButtons.set(false) })
+        });
     }
 
     markeerAlsGelezen() {

@@ -715,7 +715,7 @@
             },
             {
                 "uuid": "2c41ad69-3d5b-43c2-afa2-9d00e6603500",
-                "naam": "Jan van Brabant College OUD",
+                "naam": "Jan van Brabant College Deltaweg OUD",
                 "plaats": "HELMOND",
                 "oidcurls": [
                     {
@@ -863,9 +863,9 @@
                 "plaats": "DEURNE",
                 "oidcurls": [
                     {
-                        "omschrijving": "Azure Willibrord Gymnasium",
-                        "url": "https://login.microsoftonline.com/commanderijcollege.onmicrosoft.com/v2.0",
-                        "domain_hint": "commanderijcollege.onmicrosoft.com"
+                        "omschrijving": "OnderwijsGroep Oost-Brabant",
+                        "url": "https://login.microsoftonline.com/onderwijsgroepoostbrabant.nl/v2.0",
+                        "domain_hint": "onderwijsgroepoostbrabant.nl"
                     },
                     {
                         "omschrijving": "St. Willibrord Gymnasium OIDC WIS",
@@ -1984,7 +1984,7 @@
                 "plaats": "ZEVENAAR",
                 "oidcurls": [
                     {
-                        "omschrijving": "Liemers College Azure",
+                        "omschrijving": "Quadraam Azure",
                         "url": "https://login.microsoftonline.com/2f2e8c11-4710-4677-8f54-8b94c9ae7efa/v2.0",
                         "domain_hint": "2f2e8c11-4710-4677-8f54-8b94c9ae7efa"
                     }
@@ -2284,49 +2284,9 @@
                 "plaats": "HELMOND",
                 "oidcurls": [
                     {
-                        "omschrijving": "Jan van Brabant Molenstraat OIDC WIS",
-                        "url": "https://bm.janvanbrabant.nl",
-                        "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "Jan van brabant Topleveldomain",
-                        "url": "https://accounts.google.com",
-                        "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "Jan van Brabant Secundair domain",
-                        "url": "https://accounts.google.com",
-                        "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "Jan van Brabant Deltaweg",
-                        "url": "https://bd.janvanbrabant.nl",
-                        "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "Jan van Brabant Secundair domain",
-                        "url": "https://accounts.google.com",
-                        "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "Jan van Brabant Secundair domain",
-                        "url": "https://accounts.google.com",
-                        "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "Jan van brabant Topleveldomain",
-                        "url": "https://accounts.google.com",
-                        "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "St. Willibrord Gymnasium OIDC WIS",
-                        "url": "https://beheersportal.willibrordgymnasium.nl",
-                        "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "Azure Willibrord Gymnasium",
-                        "url": "https://login.microsoftonline.com/commanderijcollege.onmicrosoft.com/v2.0",
-                        "domain_hint": "commanderijcollege.onmicrosoft.com"
+                        "omschrijving": "OnderwijsGroep Oost-Brabant",
+                        "url": "https://login.microsoftonline.com/onderwijsgroepoostbrabant.nl/v2.0",
+                        "domain_hint": "onderwijsgroepoostbrabant.nl"
                     }
                 ]
             },

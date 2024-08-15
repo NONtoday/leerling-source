@@ -9,15 +9,20 @@ import { catchError, map, of, timeout } from 'rxjs';
     selector: 'sl-root-redirect',
     standalone: true,
     imports: [SpinnerComponent],
-    template: `<hmy-spinner></hmy-spinner>`,
+    template: `<hmy-spinner></hmy-spinner>
+        <h2>Momentje, we checken wat gegevens.</h2>`,
     styles: `
         :host {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            hmy-spinner {
-                margin-top: 32px;
-            }
+            place-content: center;
+            gap: 16px;
+            min-height: calc(var(--min-content-vh) - var(--safe-area-inset-top) - var(--safe-area-inset-bottom));
+        }
+
+        h2 {
+            text-align: center;
         }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
@@ -38,7 +43,7 @@ export class RootRedirectComponent {
                 }),
                 catchError(() => {
                     // hier in de toekomst nog auth-state checken en evt offline mode supporten door naar andere route te redirecten?
-                    return of('error');
+                    return of('geen-plaatsing');
                 }),
                 takeUntilDestroyed()
             )

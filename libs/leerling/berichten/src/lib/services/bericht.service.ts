@@ -1,6 +1,6 @@
 import { inject, Injectable, untracked } from '@angular/core';
 import { Store } from '@ngxs/store';
-import { ConfirmModalComponent, createModalSettings, isPresent, ModalService } from 'harmony';
+import { ConfirmModalComponent, isPresent, ModalService } from 'harmony';
 import { InfoMessageService } from 'leerling-util';
 import {
     BerichtState,
@@ -40,18 +40,18 @@ export class BerichtService {
     }
 
     createVerwijderDialog(): ConfirmModalComponent {
-        return this._modalService.modal(
-            ConfirmModalComponent,
-            {
+        return this._modalService.modal({
+            component: ConfirmModalComponent,
+            inputs: {
                 text: 'Dit kan niet ongedaan worden gemaakt.',
                 annulerenButtonText: 'Annuleren',
                 bevestigenButtonText: 'Verwijderen',
                 bevestigenButtonMode: 'delete'
             },
-            createModalSettings({
+            settings: {
                 title: 'Gesprek verwijderen?'
-            })
-        ) as ConfirmModalComponent;
+            }
+        });
     }
 
     markeerOngelezen(conversatie: SConversatie) {

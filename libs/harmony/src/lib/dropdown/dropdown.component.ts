@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import {
     ChangeDetectionStrategy,
     Component,
-    EmbeddedViewRef,
     TemplateRef,
     ViewContainerRef,
     computed,
@@ -94,11 +93,11 @@ export class DropdownComponent<T> {
         dropdownBoxRef: ViewContainerRef,
         popupSettings: PopupSettings,
         modalSettings: ModalSettings
-    ): EmbeddedViewRef<any> {
+    ) {
         if (modalOnMobile) {
-            return this.overlayService.popupOrModal(template, dropdownBoxRef, { context: {} }, popupSettings, modalSettings);
+            return this.overlayService.popupOrModal({ template, element: dropdownBoxRef, popupSettings, modalSettings });
         }
-        return this.popupService.popup(template, dropdownBoxRef, { context: {} }, popupSettings);
+        return this.popupService.popup({ template, element: dropdownBoxRef });
     }
 
     private scrollToSelected(hostElement: HTMLElement) {

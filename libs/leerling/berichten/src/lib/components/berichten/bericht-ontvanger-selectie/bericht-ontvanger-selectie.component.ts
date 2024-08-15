@@ -115,7 +115,7 @@ export class BerichtOntvangerSelectieComponent implements ControlValueAccessor {
                 ? createPopupSettings({ alignment: 'start', width: '344px', domPosition: 'sibling' })
                 : createPopupSettings({ left: 16, maxWidth: '344px', domPosition: 'sibling' });
 
-            this._popupService.popup(this.zoekresultatenPopup(), this.textInput(), {}, popupSettings);
+            this._popupService.popup({ template: this.zoekresultatenPopup(), element: this.textInput(), settings: popupSettings });
         }
     }
 

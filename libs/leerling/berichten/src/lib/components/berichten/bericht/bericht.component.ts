@@ -139,7 +139,7 @@ export class BerichtComponent {
                 ? createPopupSettings({ alignment: 'start', width: '320px' })
                 : createPopupSettings({ width: '320px', left: 16 });
 
-            this.popupService.popup(this.meerOntvangersPopup(), this.meerOntvangersPill(), {}, popupSettings);
+            this.popupService.popup({ template: this.meerOntvangersPopup(), element: this.meerOntvangersPill(), settings: popupSettings });
 
             if (this.accessibilityService.isAccessedByKeyboard()) {
                 setTimeout(() => this.accessibilityService.focusElementWithTabIndex(202));

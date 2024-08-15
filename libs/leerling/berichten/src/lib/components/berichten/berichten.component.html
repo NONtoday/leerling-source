@@ -58,22 +58,23 @@
                             <span class="action-primary-normal cursor-pointer" (click)="startNieuwBericht()">Maak nieuw bericht</span>
                         }
                     </sl-geen-data>
-                    <div class="geen-bericht eerdere-berichten-geladen" tabindex="0">Geen bericht ontvangen</div>
                 } @else {
                     <div class="geen-bericht" tabindex="0">Geen bericht ontvangen afgelopen 60 dagen</div>
                 }
             }
             <div
-                class="laad-eerdere cursor-pointer"
+                class="laad-eerdere"
                 [class.ongeladen]="alleConversatiesOpgehaald() === undefined"
                 [tabIndex]="alleConversatiesOpgehaald() ? -1 : 0"
                 (click)="laadEerdereBerichten()"
                 tabindex="0"
                 role="button">
-                @if (alleConversatiesOpgehaald() === false) {
-                    <span class="action-primary-normal">Laad eerdere berichten</span>
-                } @else if (alleConversatiesOpgehaald() === undefined) {
+                @if (alleBerichtenLaden()) {
                     <hmy-spinner />
+                } @else if (geenNieuweBerichten() || alleConversatiesOpgehaald()) {
+                    <span class="geen-berichten text-weakest" tabindex="0">Geen eerdere berichten gevonden</span>
+                } @else {
+                    <span class="action-primary-normal" tabindex="0">Laad eerdere berichten</span>
                 }
             </div>
         } @else {
@@ -106,9 +107,9 @@
                 <sl-geen-data>
                     @if (heeftBerichtenVerzendenRecht() && isOnline()) {
                         Selecteer of
-                        <span class="action-primary-normal cursor-pointer" (click)="startNieuwBericht()" tabindex="0" role="button"
-                            >maak nieuw bericht</span
-                        >
+                        <span class="action-primary-normal cursor-pointer" (click)="startNieuwBericht()" tabindex="0" role="button">
+                            maak nieuw bericht
+                        </span>
                     } @else {
                         Selecteer een bericht
                     }

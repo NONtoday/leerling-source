@@ -43,9 +43,10 @@ export class ButtonComponent {
     get getLabelColor(): ColorToken {
         return match(this.mode())
             .returnType<ColorToken>()
-            .with('primary', 'secondary', () => 'fg-on-primary-normal')
-            .with('tertiary', () => 'fg-on-primary-weak')
-            .with('quaternary', () => 'fg-on-neutral-weak')
+            .with('primary', () => 'fg-on-positive-normal')
+            .with('secondary', () => 'fg-on-primary-normal')
+            .with('tertiary', () => 'action-primary-normal')
+            .with('quaternary', () => 'action-neutral-normal')
             .with('delete', () => 'fg-on-negative-weak')
             .exhaustive();
     }

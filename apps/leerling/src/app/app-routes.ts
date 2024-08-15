@@ -11,6 +11,7 @@ import {
     CIJFERS,
     CIJFERS_VAKGEMIDDELDEN,
     CIJFERS_VAKRESULTATEN,
+    GEEN_PLAATSING,
     HomeComponent,
     LOGIN,
     OAUTH_CALLBACK,
@@ -23,6 +24,7 @@ import {
 import type { BerichtenComponent } from 'leerling-berichten';
 import { ERROR, SupportedErrorTypes } from 'leerling-error-models';
 import { ErrorComponent } from 'leerling-error-ui';
+import { GeenPlaatsingComponent } from 'leerling-geen-plaatsing';
 import { RedirectComponent } from 'leerling-redirect';
 import { RegistratiesState } from 'leerling-registraties-data-access';
 import { VandaagComponent } from 'leerling-vandaag';
@@ -129,6 +131,10 @@ export const routes: Routes = [
     {
         path: OAUTH_CALLBACK,
         component: OauthCallbackComponent
+    },
+    {
+        path: GEEN_PLAATSING,
+        component: GeenPlaatsingComponent
     },
     {
         path: ERROR,

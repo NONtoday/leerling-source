@@ -2,15 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, TemplateRef, ViewContainerRef, inject, input, output, viewChild } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import {
-    ButtonComponent,
-    DeviceService,
-    IconDirective,
-    NotifyPopupModalComponent,
-    OverlayService,
-    createModalSettings,
-    createPopupSettings
-} from 'harmony';
+import { ButtonComponent, DeviceService, IconDirective, NotifyPopupModalComponent, OverlayService } from 'harmony';
 import { IconVerzenden, provideIcons } from 'harmony-icons';
 import { HeaderActionButtonComponent, HeaderComponent, ScrollableTitleComponent, injectHeaderConfig } from 'leerling-header';
 import { NieuwBerichtInput, SMedewerker } from 'leerling/store';
@@ -81,17 +73,16 @@ export class BerichtNieuwComponent {
                 onderwerp: formValue.onderwerp
             });
         } else if (errorMessage) {
-            this._overlayService.popupOrModal(
-                NotifyPopupModalComponent,
-                this._viewContainerRef,
-                {
+            this._overlayService.popupOrModal({
+                component: NotifyPopupModalComponent,
+                element: this._viewContainerRef,
+                inputs: {
                     text: errorMessage.foutmelding,
                     buttonLabel: 'Sluiten',
                     sluitenClick: () => this._overlayService.close(this._viewContainerRef)
                 },
-                createPopupSettings(),
-                createModalSettings({ title: errorMessage.titel })
-            );
+                modalSettings: { title: errorMessage.titel }
+            });
         }
     }
 
