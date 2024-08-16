@@ -2294,6 +2294,11 @@
                         "domain_hint": ""
                     },
                     {
+                        "omschrijving": "Jan van Brabant Deltaweg",
+                        "url": "https://bd.janvanbrabant.nl",
+                        "domain_hint": ""
+                    },
+                    {
                         "omschrijving": "OnderwijsGroep Oost-Brabant",
                         "url": "https://login.microsoftonline.com/onderwijsgroepoostbrabant.nl/v2.0",
                         "domain_hint": "onderwijsgroepoostbrabant.nl"
