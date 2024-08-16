@@ -13,7 +13,7 @@
     (click)="openOptionsList()"
     role="listbox"
     aria-controls="dropdown-list">
-    <span class="dropdown-value" [class.placeholder]="!selected()">
+    <span class="dropdown-value ellipsis" [class.placeholder]="!selected()">
         {{ selected()?.label ?? placeholder() }}
     </span>
     <i class="dropdown-chevron" hmyIcon="chevronOnder" size="smallest"></i>

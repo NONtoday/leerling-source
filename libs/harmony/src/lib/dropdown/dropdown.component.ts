@@ -42,7 +42,8 @@ const DEFAULT_TABINDEX = '0';
     styleUrl: './dropdown.component.scss',
     host: {
         '[class.small]': "size() === 'small'",
-        '[class.medium]': "size() === 'medium'"
+        '[class.medium]': "size() === 'medium'",
+        '[class.with-border]': 'withBorder()'
     },
     changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -67,6 +68,7 @@ export class DropdownComponent<T> {
     public listAlignment = input<PopupSettings['alignment']>(DEFAULT_LIST_ALIGNMENT);
     public mobileModalTitle = input<string | undefined>();
     public buttonHeight = input<number>(48);
+    public withBorder = input<boolean>(true);
 
     public onSelectionChanged = output<T>();
 
@@ -150,6 +152,7 @@ export class DropdownComponent<T> {
             }),
             createModalSettings({
                 title: this.mobileModalTitle(),
+                showClose: !!this.mobileModalTitle(),
                 onClose: () => this.isOpen.set(false)
             })
         );

@@ -2284,6 +2284,16 @@
                 "plaats": "HELMOND",
                 "oidcurls": [
                     {
+                        "omschrijving": "St. Willibrord Gymnasium OIDC WIS",
+                        "url": "https://beheersportal.willibrordgymnasium.nl",
+                        "domain_hint": ""
+                    },
+                    {
+                        "omschrijving": "Jan van Brabant Molenstraat OIDC WIS",
+                        "url": "https://bm.janvanbrabant.nl",
+                        "domain_hint": ""
+                    },
+                    {
                         "omschrijving": "OnderwijsGroep Oost-Brabant",
                         "url": "https://login.microsoftonline.com/onderwijsgroepoostbrabant.nl/v2.0",
                         "domain_hint": "onderwijsgroepoostbrabant.nl"
