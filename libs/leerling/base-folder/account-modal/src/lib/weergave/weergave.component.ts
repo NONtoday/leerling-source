@@ -25,6 +25,8 @@ export class WeergaveComponent {
     public onvoldoendeRood = toSignal(this._weergaveService.getToonOnvoldoendeRood$(), { initialValue: false });
     public profielfotoVerbergen = toSignal(this._weergaveService.getProfielFotoVerbergen$(), { initialValue: false });
 
+    public accountLeerling = toSignal(this._authenticationService.currentAccountLeerling$);
+
     public toggleThemeLight() {
         this._weergaveService.setTheme('light');
     }
