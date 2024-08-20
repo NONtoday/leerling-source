@@ -3,7 +3,14 @@ import { ApplicationConfig, ErrorHandler, enableProdMode, importProvidersFrom, s
 import { HttpErrorResponse, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { BrowserModule, bootstrapApplication } from '@angular/platform-browser';
 import { provideAnimations, provideNoopAnimations } from '@angular/platform-browser/animations';
-import { PreloadAllModules, provideRouter, withComponentInputBinding, withInMemoryScrolling, withPreloading } from '@angular/router';
+import {
+    PreloadAllModules,
+    provideRouter,
+    withComponentInputBinding,
+    withInMemoryScrolling,
+    withPreloading,
+    withRouterConfig
+} from '@angular/router';
 import Bugsnag from '@bugsnag/js';
 import { BugsnagErrorHandler } from '@bugsnag/plugin-angular';
 import { Capacitor } from '@capacitor/core';
@@ -121,7 +128,13 @@ const appConfig: ApplicationConfig = {
         ),
         animationPovider,
         provideHttpClient(withInterceptors([authInterceptorFn, errorInterceptorFn])),
-        provideRouter(routes, withPreloading(PreloadAllModules), withInMemoryScrolling(), withComponentInputBinding()),
+        provideRouter(
+            routes,
+            withPreloading(PreloadAllModules),
+            withInMemoryScrolling(),
+            withComponentInputBinding(),
+            withRouterConfig({ onSameUrlNavigation: 'reload' })
+        ),
         provideOAuthClient(),
         quicklinkProviders,
         appViewContainerRefProvider('_viewContainerRef'),
