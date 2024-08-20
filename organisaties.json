@@ -574,28 +574,6 @@
                 "oidcurls": []
             },
             {
-                "uuid": "0f7f0258-063e-46fb-966e-04792abfedc4",
-                "naam": "Jan van Brabant College OUD",
-                "plaats": "HELMOND",
-                "oidcurls": [
-                    {
-                        "omschrijving": "Jan van brabant Topleveldomain",
-                        "url": "https://accounts.google.com",
-                        "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "Jan van Brabant Molenstraat OIDC WIS",
-                        "url": "https://bm.janvanbrabant.nl",
-                        "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "Jan van Brabant Secundair domain",
-                        "url": "https://accounts.google.com",
-                        "domain_hint": ""
-                    }
-                ]
-            },
-            {
                 "uuid": "b3638046-35b0-4d61-82a4-fe6ae09d1f36",
                 "naam": "GSR",
                 "plaats": "ROTTERDAM",
@@ -714,33 +692,6 @@
                 ]
             },
             {
-                "uuid": "2c41ad69-3d5b-43c2-afa2-9d00e6603500",
-                "naam": "Jan van Brabant College Deltaweg OUD",
-                "plaats": "HELMOND",
-                "oidcurls": [
-                    {
-                        "omschrijving": "Jan van Brabant Deltaweg",
-                        "url": "https://bd.janvanbrabant.nl",
-                        "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "Jan van Brabant Secundair domain",
-                        "url": "https://accounts.google.com",
-                        "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "Jan van Brabant Secundair domain",
-                        "url": "https://accounts.google.com",
-                        "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "Jan van brabant Topleveldomain",
-                        "url": "https://accounts.google.com",
-                        "domain_hint": ""
-                    }
-                ]
-            },
-            {
                 "uuid": "bb032d92-a1b6-4ba2-803f-afd0c393bca9",
                 "naam": "De Amsterdamse MAVO",
                 "plaats": "AMSTERDAM",
@@ -853,23 +804,6 @@
                     {
                         "omschrijving": "Willem van Oranje OIDC WIS",
                         "url": "https://beheer.het-willem.nl",
-                        "domain_hint": ""
-                    }
-                ]
-            },
-            {
-                "uuid": "f18c7b25-43fe-46a2-85d0-acd13fede4e2",
-                "naam": "Willibrord Gymnasium oud",
-                "plaats": "DEURNE",
-                "oidcurls": [
-                    {
-                        "omschrijving": "OnderwijsGroep Oost-Brabant",
-                        "url": "https://login.microsoftonline.com/onderwijsgroepoostbrabant.nl/v2.0",
-                        "domain_hint": "onderwijsgroepoostbrabant.nl"
-                    },
-                    {
-                        "omschrijving": "St. Willibrord Gymnasium OIDC WIS",
-                        "url": "https://beheersportal.willibrordgymnasium.nl",
                         "domain_hint": ""
                     }
                 ]
@@ -2225,12 +2159,6 @@
                 ]
             },
             {
-                "uuid": "f3cebda2-cdb4-4959-81f6-f48b39d850a0",
-                "naam": "Commanderij College oud",
-                "plaats": "GEMERT",
-                "oidcurls": []
-            },
-            {
                 "uuid": "14501062-5323-4e16-98aa-b66c52184748",
                 "naam": "Gymnasium Haganum",
                 "plaats": "'S-GRAVENHAGE",
@@ -2386,7 +2314,13 @@
                 "uuid": "25b26cbf-85be-4f1e-b4be-cf3a24da83f9",
                 "naam": "Test College",
                 "plaats": "DEVENTER",
-                "oidcurls": []
+                "oidcurls": [
+                    {
+                        "omschrijving": "Topicus Azure",
+                        "url": "https://login.microsoftonline.com/topicusonderwijs.onmicrosoft.com/v2.0",
+                        "domain_hint": "topicusonderwijs.onmicrosoft.com"
+                    }
+                ]
             }
         ]
     }

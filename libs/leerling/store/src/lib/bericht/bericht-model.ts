@@ -92,7 +92,11 @@ export function getPreviewInhoudBoodschap(text: string | undefined, options?: { 
 }
 
 export function kanReagerenOpBoodschap(boodschap: SBoodschap) {
-    return !boodschap.verzondenDoorGebruiker && !boodschap.verzenderCorrespondent.isSomtodayAutomatischBericht;
+    return (
+        !boodschap.verzondenDoorGebruiker &&
+        !boodschap.verzenderCorrespondent.isSomtodayAutomatischBericht &&
+        boodschap.notificatieType !== 'Mededeling'
+    );
 }
 
 export function mapRBoodschap(id: number): RBoodschap {

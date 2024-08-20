@@ -118,7 +118,7 @@ export class AppStatusService {
                 }
             })
             .catch((err) => {
-                Bugsnag.notify(err);
+                Bugsnag.notify(new Error('Error checking for app update: ' + JSON.stringify(err)));
             });
     }
 

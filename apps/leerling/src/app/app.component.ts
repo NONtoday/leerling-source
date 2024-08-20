@@ -146,7 +146,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     }
 
     ngAfterViewInit(): void {
-        SplashScreen.hide();
+        SplashScreen.hide({ fadeOutDuration: 500 });
     }
 
     initBugsnag() {
