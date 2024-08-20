@@ -16,7 +16,7 @@ import { IconDirective, VakIconComponent } from 'harmony';
 import { IconName, IconSluiten, provideIcons } from 'harmony-icons';
 import { IconInput } from '../sidebar-page/sidebar-page.component';
 
-const TITLE_TOP_BAR_HEIGHT = 62;
+const TITLE_TOP_BAR_HEIGHT = 60;
 
 @Component({
     selector: 'sl-mobile-sidebar-header',
