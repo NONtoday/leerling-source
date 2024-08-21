@@ -158,6 +158,7 @@ export class AppComponent implements OnInit, AfterViewInit {
                     school: profiel?.schoolnaam,
                     affiliation: profiel?.affiliation,
                     leerling: accountLeerling.leerling?.id,
+                    leerlingNummer: accountLeerling.leerling?.nr,
                     sessionIdentifier: profiel?.sessionIdentifier
                 });
             });

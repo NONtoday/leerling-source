@@ -1,9 +1,9 @@
-import { AnimationEvent } from '@angular/animations';
+import { animate, AnimationEvent, style, transition, trigger } from '@angular/animations';
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ElementRef, ViewChild, ViewContainerRef, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, inject, input, signal, ViewChild, ViewContainerRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationStart, Router } from '@angular/router';
-import { fadeInOnEnterAnimation, fadeOutAnimation, slideInRightOnEnterAnimation, slideOutRightAnimation } from 'angular-animations';
+import { fadeInOnEnterAnimation, fadeOutAnimation, slideInRightOnEnterAnimation } from 'angular-animations';
 import { debounceTime, filter } from 'rxjs';
 import { KeyPressedService } from '../keypressed/keypressed.service';
 import { CloseSidebarUtil } from './sidebar-model';
@@ -18,9 +18,7 @@ const ANIMATIONS = [
     slideInRightOnEnterAnimation({
         duration: 300
     }),
-    slideOutRightAnimation({
-        duration: 300
-    })
+    trigger('slideOutRight', [transition('* => *', [animate('300ms ease', style({ transform: 'translateX(100%)' }))])])
 ];
 
 @Component({
