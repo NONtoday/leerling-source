@@ -9,6 +9,7 @@ import { toLocalDateTime } from '../util/date-util';
 import { DEFAULT_STRING, SEntiteit, getEntiteitId, parseOptionalDate } from '../util/entiteit-model';
 import { SVak } from '../vakkeuze/vakkeuze-model';
 
+export const NO_VAK_UUID_AVAILABLE = 'NO_VAK_UUID_AVAILABLE';
 export type AfspraakCategorie =
     | 'Individueel'
     | 'Rooster'
@@ -197,6 +198,6 @@ function mapAfspraakVak(rAfspraakVak?: RAfspraakVak): SVak | undefined {
         id: rAfspraakVak.id ?? -1,
         afkorting: rAfspraakVak.afkorting ?? '',
         naam: rAfspraakVak.naam ?? DEFAULT_STRING,
-        uuid: rAfspraakVak.UUID ?? 'NO_VAK_UUID_AVAILABLE'
+        uuid: rAfspraakVak.UUID ?? NO_VAK_UUID_AVAILABLE
     };
 }

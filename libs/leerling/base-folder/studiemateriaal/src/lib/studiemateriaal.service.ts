@@ -6,6 +6,7 @@ import { AuthenticationService } from 'leerling-authentication';
 import { LesstofModel } from 'leerling-lesstof';
 import { sortLocale } from 'leerling-util';
 import {
+    NO_VAK_UUID_AVAILABLE,
     RefreshEduRoutePortalProducts,
     RefreshStudiemateriaal,
     RefreshVakkenMetStudiemateriaal,
@@ -48,8 +49,11 @@ export class StudiemateriaalService {
         aantalLesstofItems: number
     ): Observable<Studiemateriaal | undefined> {
         const uuid = vakUuid ?? lesgroepUuid;
-        if (!uuid) {
-            Bugsnag.notify(new Error('Studiemateriaal wordt opgevraagd zonder vak of lesgroep'));
+        if (!uuid || uuid === NO_VAK_UUID_AVAILABLE) {
+            if (!uuid) {
+                // Dit zou niet voor moeten kunnen komen, dus als het wel gebeurd hebben we ergens een bug.
+                Bugsnag.notify(new Error('Studiemateriaal wordt opgevraagd zonder vak of lesgroep, zou niet voor moeten kunnen komen.'));
+            }
             return of({
                 lesstof: undefined,
                 leermiddelen: undefined,
