@@ -2207,12 +2207,12 @@
                 "plaats": "HELMOND",
                 "oidcurls": [
                     {
-                        "omschrijving": "St. Willibrord Gymnasium OIDC WIS",
+                        "omschrijving": "St. Willibrord Gymnasium Ouders/verzorgers",
                         "url": "https://beheersportal.willibrordgymnasium.nl",
                         "domain_hint": ""
                     },
                     {
-                        "omschrijving": "Jan van Brabant Molenstraat OIDC WIS",
+                        "omschrijving": "Jan van Brabant Molenstraat Ouders/Verzorgers",
                         "url": "https://bm.janvanbrabant.nl",
                         "domain_hint": ""
                     },
