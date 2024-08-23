@@ -108,14 +108,14 @@ export function mapRBoodschap(id: number): RBoodschap {
 export function mapRNieuwBericht(nieuwBerichtInput: NieuwBerichtInput): RNieuwBericht {
     return {
         onderwerp: nieuwBerichtInput.onderwerp,
-        inhoud: nieuwBerichtInput.inhoud.replace(/\n/g, '<br>'),
+        inhoud: nieuwBerichtInput.inhoud,
         ontvangers: nieuwBerichtInput.ontvangerIds.map(mapRMedewerkerPrimer)
     };
 }
 
 export function mapRReactieBericht(reactieBerichtInput: ReactieBerichtInput): RReactieBericht {
     return {
-        inhoud: reactieBerichtInput.inhoud.replace(/\n/g, '<br>'),
+        inhoud: reactieBerichtInput.inhoud,
         reactieOp: mapRBoodschap(reactieBerichtInput.reactieOpBerichtId)
     };
 }

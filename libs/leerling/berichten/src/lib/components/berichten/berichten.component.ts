@@ -114,12 +114,12 @@ export class BerichtenComponent {
     showNieuwBerichtForm = computed(() => this.editQueryParam() === BERICHTEN_NIEUW && this.heeftBerichtenVerzendenRecht());
 
     reactieOpBericht = computed(() => {
-        // rechten check hier en niet met heeftRecht directive, omdat je dan een leeg detail krijgt bij een invalide url
-        const gevondenBericht = this.heeftBerichtenVerzendenRecht()
-            ? this.conversaties()
-                  ?.flatMap((c) => c.boodschappen)
-                  .find((b) => b.id.toString() === this.editQueryParam())
-            : undefined;
+        const gevondenBericht =
+            this.editQueryParam() !== BERICHTEN_NIEUW
+                ? this.conversaties()
+                      ?.flatMap((c) => c.boodschappen)
+                      .find((b) => b.id.toString() === this.editQueryParam())
+                : undefined;
 
         return gevondenBericht && kanReagerenOpBoodschap(gevondenBericht) ? gevondenBericht : undefined;
     });

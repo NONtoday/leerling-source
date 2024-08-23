@@ -91,7 +91,7 @@ export class BerichtComponent {
     meerOntvangersPill = viewChild.required('meerOntvangersPill', { read: ViewContainerRef });
 
     preview = computed(() => getPreviewInhoudBoodschap(this.boodschap().inhoud, { addEllipses: true }));
-    inhoud = computed(() => (this.collapsed() ? this.preview() : this.boodschap().inhoud));
+    inhoud = computed(() => (this.collapsed() ? this.preview() : this._replaceNewLinesOnPlaintext(this.boodschap().inhoud)));
     meerOntvangersPillText = computed(() =>
         this.boodschap().aantalExtraOntvangers > 0 ? '+' + this.boodschap().aantalExtraOntvangers + ' meer' : null
     );
@@ -162,6 +162,15 @@ export class BerichtComponent {
 
         const datum = formatDateNL(this.boodschap().verzendDatum, 'dag_kort_dagnummer_maand_kort_tijd');
         return `Bericht is ${this.collapsed() ? 'samengevouwen' : 'uitgevouwen'}. Datum: ${datum}. ${verzender ? `Verzender: ${verzender}. ` : ''} Ontvanger: ${ontvangers}`;
+    }
+
+    private _replaceNewLinesOnPlaintext(input: string | undefined): string | undefined {
+        // regex for detecting html content
+        const htmlRegex = /<[^>]*>/g;
+        if (!input || input.match(htmlRegex)) {
+            return input;
+        }
+        return input.replace(/\n/g, '<br>');
     }
 
     private getAriaLabelBerichtInhoud(): string {
