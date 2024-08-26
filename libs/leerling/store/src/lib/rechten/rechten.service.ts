@@ -37,6 +37,10 @@ export class RechtenService {
         this._store.dispatch(new RefreshRechten());
     }
 
+    public forceUpdateRechten() {
+        this._store.dispatch(new RefreshRechten(true));
+    }
+
     public async updateRechtenSynchronous(): Promise<void> {
         await firstValueFrom(this._store.dispatch(new RefreshRechten()));
     }

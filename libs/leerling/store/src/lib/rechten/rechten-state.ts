@@ -28,7 +28,7 @@ export class RechtenState extends AbstractState {
     private _oauthService: OAuthService = inject(OAuthService);
 
     @Action(RefreshRechten)
-    refreshRechten(ctx: StateContext<SRechtenModel>) {
+    refreshRechten(ctx: StateContext<SRechtenModel>, action: RefreshRechten) {
         const accountContextID = this.getContextID();
         const tokenAvailable = this._oauthService.hasValidAccessToken();
         if (!accountContextID || !tokenAvailable) {
@@ -38,7 +38,8 @@ export class RechtenState extends AbstractState {
         // We geven ook de account-id mee, om bij een verkeerde inlog sn
         return this.cachedGet<RAccount>(
             'account/me',
-            new RequestInformationBuilder().additional('restricties').parameter('dummy-param-account', accountContextID).build()
+            new RequestInformationBuilder().additional('restricties').parameter('dummy-param-account', accountContextID).build(),
+            { force: action.forceUpdate }
         )?.pipe(
             tap((account) => {
                 const combinedState = [...ctx.getState().accounts, mapAccountRechtenModel(account, accountContextID)];

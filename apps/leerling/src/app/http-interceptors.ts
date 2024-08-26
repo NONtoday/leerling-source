@@ -4,6 +4,7 @@ import { AuthorizationHeaderService } from 'iridium-authorization-header';
 import { environment } from 'leerling-environment';
 import { IGNORE_STATUS_CODES, SKIP_ERROR_MESSAGE_STATUS_CODES } from 'leerling-request';
 import { InfoMessageService } from 'leerling-util';
+import { RechtenService } from 'leerling/store';
 import { EMPTY, catchError, delay, map, of, switchMap, tap } from 'rxjs';
 
 const ANON_URLS = ['rest/v1/appinfo'].map((url) => url.replace(/\//g, '\\/').toLowerCase());
@@ -32,6 +33,7 @@ export const authInterceptorFn: HttpInterceptorFn = (req, next) => {
 export const errorInterceptorFn: HttpInterceptorFn = (request, next) => {
     const infoMessageService = inject(InfoMessageService);
     const authorizationHeaderService = inject(AuthorizationHeaderService);
+    const rechtenService = inject(RechtenService);
     const idpDiscoveryPostFix = '/.well-known/openid-configuration';
 
     if (!request.url.includes(environment.apiUrl)) {
@@ -52,6 +54,8 @@ export const errorInterceptorFn: HttpInterceptorFn = (request, next) => {
                         authorizationHeaderService.featureDisabledRefreshError();
                     })
                 );
+            } else if (403 === error.status) {
+                rechtenService.forceUpdateRechten();
             } else if (!request.url.endsWith(idpDiscoveryPostFix) && !skipErrorMessageStatusCodes) {
                 infoMessageService.handleHttpError(error);
             }

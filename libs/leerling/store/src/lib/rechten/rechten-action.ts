@@ -1,5 +1,6 @@
 export class RefreshRechten {
     static readonly type = '[Rechten] Refresh rechten';
+    constructor(public forceUpdate = false) {}
 }
 
 export class RemoveRechten {

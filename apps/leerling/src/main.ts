@@ -59,6 +59,7 @@ Bugsnag.start({
     releaseStage: isWeb() ? environment.config.toString() : 'native',
     enabledReleaseStages: ['nightly', 'acceptatie', 'test', 'inkijk', 'inkijk2', 'productie', 'native'],
     enabledBreadcrumbTypes: environment.production ? [] : ['error', 'navigation', 'request', 'user'],
+    trackInlineScripts: false,
     collectUserIp: false,
     onError: (event) => {
         if (event.originalError instanceof HttpErrorResponse && event.originalError.status === 401) {

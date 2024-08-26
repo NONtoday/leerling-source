@@ -23,7 +23,7 @@ import { RouterService, SomtodayAvailabilityService } from 'leerling-base';
 import { environment } from 'leerling-environment';
 import { RequestService } from 'leerling-request';
 import { AccessibilityService, InfoMessageService, RefreshService, isIOS } from 'leerling-util';
-import { AvailablePushType, RechtenService } from 'leerling/store';
+import { AccountContextMetRechten, AvailablePushType, RechtenService } from 'leerling/store';
 import { combineLatest, debounceTime, filter, fromEvent, map, pairwise, startWith } from 'rxjs';
 
 @Component({
@@ -91,6 +91,37 @@ export class AppComponent implements OnInit, AfterViewInit {
                     Bugsnag.notify('Authentication-event: ' + AuthenticationEventType[next.type]);
             }
         });
+        this._rechtenService
+            .getAccountContextMetRechten()
+            .pipe(takeUntilDestroyed(), pairwise())
+            .subscribe((rechten: [AccountContextMetRechten, AccountContextMetRechten]) => {
+                const eerdereRechten = rechten[0];
+                const huidigeRechten = rechten[1];
+                if (
+                    eerdereRechten.localAuthenticationContext !== huidigeRechten.localAuthenticationContext ||
+                    !eerdereRechten.rechten ||
+                    !huidigeRechten.rechten
+                )
+                    return;
+                const gewijzigdeRechten: string[] = [];
+                if (
+                    (eerdereRechten.rechten.studiewijzerAan && !huidigeRechten.rechten.studiewijzerAan) ||
+                    (!eerdereRechten.rechten.huiswerkBekijkenAan && huidigeRechten.rechten.huiswerkBekijkenAan)
+                )
+                    gewijzigdeRechten.push('de studiewijzer');
+                if (eerdereRechten.rechten.leermiddelenAan && !huidigeRechten.rechten.leermiddelenAan)
+                    gewijzigdeRechten.push('leermiddelen');
+                if (eerdereRechten.rechten.cijfersBekijkenAan && !huidigeRechten.rechten.cijfersBekijkenAan)
+                    gewijzigdeRechten.push('cijfers');
+                if (eerdereRechten.rechten.roosterBekijkenAan && !huidigeRechten.rechten.roosterBekijkenAan)
+                    gewijzigdeRechten.push('het rooster');
+                if (eerdereRechten.rechten.berichtenBekijkenAan && !huidigeRechten.rechten.berichtenBekijkenAan)
+                    gewijzigdeRechten.push('berichten');
+                if (gewijzigdeRechten.length > 0) {
+                    if (gewijzigdeRechten.length === 1) this._rechtUnavailableMessage(gewijzigdeRechten.join(', '));
+                    else this._rechtUnavailableMessage(gewijzigdeRechten.slice(0, -1).join(', ') + ' en ' + gewijzigdeRechten.slice(-1));
+                }
+            });
     }
 
     async ngOnInit() {
@@ -263,5 +294,9 @@ export class AppComponent implements OnInit, AfterViewInit {
         if (event && event.previousSessionIdentifier) {
             this._rechtenService.removeRechten(event.previousSessionIdentifier.UUID);
         }
+    }
+
+    private _rechtUnavailableMessage(humanReadableRecht: string) {
+        this._infoMessageService.dispatchInfoMessage(`Je kunt ${humanReadableRecht} niet meer zien, omdat je school het heeft uitgezet.`);
     }
 }
