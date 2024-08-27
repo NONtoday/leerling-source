@@ -463,7 +463,7 @@ export class AuthenticationService {
     private _createBasicAuthConfig(): AuthConfig {
         return {
             showDebugInformation: true,
-            clockSkewInSec: 5,
+            clockSkewInSec: 120,
             issuer: environment.idpIssuer,
             skipIssuerCheck: true,
             strictDiscoveryDocumentValidation: false,
