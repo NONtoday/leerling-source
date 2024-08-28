@@ -8,10 +8,11 @@ import { IconSomtoday, provideIcons } from 'harmony-icons';
 import { environment } from 'leerling-environment';
 import { InfoMessageService } from 'leerling-util';
 import { AddErrorMessage } from 'leerling/store';
-import { Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import {
     AffiliationDoesNotAllowMultipleContexts,
     AuthenticatedSuccessEvent,
+    AuthenticationEvent,
     MedewerkerNotAllowedEvent,
     OAuthIDPErrorEvent,
     OAuthRemovedDuplicateContextEvent
@@ -42,19 +43,40 @@ export class OauthCallbackComponent implements OnDestroy {
     private _infoMessageService: InfoMessageService = inject(InfoMessageService);
     private _ssoService = inject(SsoService);
 
+    public inlogServiceDeskUrl = 'https://somtoday-servicedesk.zendesk.com/hc/nl/articles/26527007105169-Hulp-bij-inloggen';
+
     // Observables
     public isDesktop$ = this._deviceService.isDesktop$;
 
     public message: WritableSignal<string | undefined> = signal(undefined);
     public tryAgain = false;
     private _timeoutId?: ReturnType<typeof setInterval>;
-    private _eventSub: Subscription;
+    private _authenticationEvents$: Observable<AuthenticationEvent>;
+    private _authenticationSubscription: Subscription;
     public _isAuthenticationReady = false;
 
     private static numberOfClicks = 0;
 
     constructor() {
-        this._eventSub = this._authenticationService.events$.pipe(takeUntilDestroyed()).subscribe((next) => {
+        this._authenticationEvents$ = this._authenticationService.events$.pipe(takeUntilDestroyed());
+        this._authenticationSubscription = this.subscribeToEvents();
+        this._authenticationService.isAuthenticationReady$.pipe(takeUntilDestroyed()).subscribe((isAuthenticationReady) => {
+            this._isAuthenticationReady = isAuthenticationReady;
+            // wanneer we niet meer naar events luisteren omdat er een error message getoond wordt, maar wel readyState is (andere sessie), moeten we de gebruiker alsnog doorsturen
+            if (this._authenticationSubscription.closed && this._isAuthenticationReady) {
+                if (this._timeoutId) {
+                    clearInterval(this._timeoutId);
+                    this._store.dispatch(
+                        new AddErrorMessage('Je kan geen medewerkeraccounts toevoegen, alleen ouder- of verzorgeraccounts zijn toegestaan.')
+                    );
+                    this._router.navigateByUrl('/');
+                }
+            }
+        });
+    }
+
+    private subscribeToEvents(): Subscription {
+        return this._authenticationEvents$.subscribe((next) => {
             if (next instanceof OAuthIDPErrorEvent) {
                 this.message.set(next.humanReadableErrorMessage);
                 this.tryAgain = true;
@@ -68,7 +90,7 @@ export class OauthCallbackComponent implements OnDestroy {
                     return;
                 }
                 this.tryAgain = true;
-                this._eventSub.unsubscribe();
+                this._authenticationSubscription.unsubscribe();
                 if (this._timeoutId) clearTimeout(this._timeoutId);
                 this._timeoutId = setTimeout(() => {
                     this._timeoutId = undefined;
@@ -100,21 +122,7 @@ export class OauthCallbackComponent implements OnDestroy {
                 }
             }
         });
-        this._authenticationService.isAuthenticationReady$.pipe(takeUntilDestroyed()).subscribe((isAuthenticationReady) => {
-            this._isAuthenticationReady = isAuthenticationReady;
-            // wanneer we niet meer naar events luisteren omdat er een error message getoond wordt, maar wel readyState is (andere sessie), moeten we de gebruiker alsnog doorsturen
-            if (this._eventSub.closed && this._isAuthenticationReady) {
-                if (this._timeoutId) {
-                    clearInterval(this._timeoutId);
-                    this._store.dispatch(
-                        new AddErrorMessage('Je kan geen medewerkeraccounts toevoegen, alleen ouder- of verzorgeraccounts zijn toegestaan.')
-                    );
-                    this._router.navigateByUrl('/');
-                }
-            }
-        });
     }
-
     tryAgainNow() {
         OauthCallbackComponent.numberOfClicks++;
         if (OauthCallbackComponent.numberOfClicks === 5) {
@@ -124,7 +132,10 @@ export class OauthCallbackComponent implements OnDestroy {
             environment.clear();
         }
 
+        if (this._timeoutId) clearTimeout(this._timeoutId);
         this.tryAgain = false;
+        this.message.set(undefined);
+        this._authenticationSubscription = this.subscribeToEvents();
         this._authenticationService.startLoginFlowOnCurrentContext(true);
     }
 

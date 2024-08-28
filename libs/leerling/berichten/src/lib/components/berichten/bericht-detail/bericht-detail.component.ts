@@ -11,6 +11,7 @@ import {
     effect,
     inject,
     input,
+    runInInjectionContext,
     viewChild
 } from '@angular/core';
 import { Router } from '@angular/router';
@@ -87,26 +88,27 @@ export class BerichtDetailComponent implements OnInit {
         const vanafIndex = this.conversatie().boodschappen.findIndex((bood) => bood.id === laatsteMainThreadBericht?.id) ?? 0 + 1;
         return this.conversatie().boodschappen.slice(vanafIndex + 1);
     });
-    previousConversatie = computedPrevious(this.conversatie);
 
     seperatorLabel = computed(
         () => `${this.nieuwereBerichten().length} ${this.nieuwereBerichten().length === 1 ? 'nieuwer bericht' : 'nieuwere berichten'}`
     );
     showNieuwereBerichten = false;
 
-    constructor() {
-        effect(() => {
-            if (this.conversatie().id !== this.previousConversatie()?.id) {
-                this.showNieuwereBerichten = false;
-            }
-        });
-    }
     ngOnInit() {
         injectHeaderConfig({
             onBackButtonClick: () => this.router.navigate([], { queryParams: { conversatie: undefined } }),
             title: this.meestRecentRelevanteBericht().onderwerp,
             injector: this.injector,
             headerActions: this.headerActions
+        });
+        // computedPrevious moet in dit geval in de ngOnInit omdat anders de input van conversatie nog niet beschikbaar is
+        runInInjectionContext(this.injector, () => {
+            const previousConversatie = computedPrevious(this.conversatie);
+            effect(() => {
+                if (this.conversatie().id !== previousConversatie()?.id) {
+                    this.showNieuwereBerichten = false;
+                }
+            });
         });
     }
 
