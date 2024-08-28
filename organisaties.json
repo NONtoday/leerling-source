@@ -1114,11 +1114,6 @@
                         "omschrijving": "Markland College (06XL)",
                         "url": "https://login.microsoftonline.com/596ef504-a68b-463d-b4a9-10cc240c0a9f/v2.0",
                         "domain_hint": "596ef504-a68b-463d-b4a9-10cc240c0a9f"
-                    },
-                    {
-                        "omschrijving": "Markland College OIDC/Wis",
-                        "url": "https://beheer.markland.nl",
-                        "domain_hint": ""
                     }
                 ]
             },
