@@ -22,7 +22,7 @@ import {
     IconWaarschuwing,
     provideIcons
 } from 'harmony-icons';
-import { AccessibilityService } from 'leerling-util';
+import { AccessibilityService, PreventThrottleDirective } from 'leerling-util';
 import { SStudiewijzerItem } from 'leerling/store';
 import { StudiewijzerItemIconColorPipe } from '../pipes/studiewijzer-item-icon-color.pipe';
 import { StudiewijzerItemIconPipe } from '../pipes/studiewijzer-item-icon.pipe';
@@ -39,7 +39,8 @@ import { TitelType, getTitel } from './studiewijzer-item.util';
         TooltipDirective,
         StudiewijzerItemIconPipe,
         StudiewijzerItemIconColorPipe,
-        PillComponent
+        PillComponent,
+        PreventThrottleDirective
     ],
     templateUrl: './studiewijzer-item.component.html',
     styleUrl: './studiewijzer-item.component.scss',
@@ -75,6 +76,7 @@ export class StudiewijzerItemComponent implements OnChanges {
         return labelVelden.filter(isPresent).join(', ');
     });
 
+    public throttleTimeout = 500;
     public toggleAfgevinkt = output<SStudiewijzerItem>();
 
     @HostBinding('class.afgevinkt') public afgevinkt = false;

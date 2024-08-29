@@ -22,6 +22,7 @@ import { ConnectGebruikService } from 'leerling-connect';
 import {
     FULL_SCREEN_MET_MARGIN,
     ModalSettings,
+    PreventThrottleDirective,
     SidebarService,
     SidebarSettings,
     SlDatePipe,
@@ -48,7 +49,8 @@ import { StudiewijzerItemIconPipe } from '../pipes/studiewijzer-item-icon.pipe';
         TagComponent,
         PillComponent,
         SlDatePipe,
-        SlTwoDatePipe
+        SlTwoDatePipe,
+        PreventThrottleDirective
     ],
     templateUrl: './studiewijzer-item-instructie.component.html',
     styleUrl: './studiewijzer-item-instructie.component.scss',
@@ -81,6 +83,7 @@ export class StudiewijzerItemInstructieComponent {
     public item = input.required<SStudiewijzerItem>();
 
     public afgevinkt = signal(false);
+    public trottleTimeout = 500;
     public afvinkenToegestaan = computed(
         () => !this._authenticationService.isCurrentContextOuderVerzorger && this.item().huiswerkType !== 'LESSTOF'
     );
@@ -149,7 +152,6 @@ export class StudiewijzerItemInstructieComponent {
 
     public toggleAfgevinkt() {
         if (!this.afvinkenToegestaan()) return;
-
         this.afgevinkt.set(!this.afgevinkt());
         this._store.dispatch(new ToggleAfgevinkt(this.item()));
     }

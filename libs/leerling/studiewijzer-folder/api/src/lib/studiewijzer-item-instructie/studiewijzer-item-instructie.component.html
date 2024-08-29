@@ -6,19 +6,16 @@
         [class.afvinkbaar]="afvinkenToegestaan()"
         [class.afgevinkt]="afgevinkt()"
         [attr.aria-checked]="afgevinkt()"
-        (click)="toggleAfgevinkt()"
+        [throttleTimeout]="trottleTimeout"
+        (throttleClick)="toggleAfgevinkt()"
+        slPreventThrottle
         tabindex="0"
         role="button">
         <i class="type-icon" [hmyIcon]="item() | studiewijzerItemIcon" size="medium"> </i>
         <span class="omschrijving">{{ typeOmschrijving() }}</span>
         @if (afvinkenToegestaan()) {
             <span class="afvinken">{{ afgevinkt() ? 'Afgevinkt' : 'Afvinken' }}</span>
-            <hmy-checkbox
-                [checked]="afgevinkt()"
-                [customTabIndex]="-1"
-                (click)="$event.stopPropagation()"
-                (valueChanged)="toggleAfgevinkt()"
-                color="positive" />
+            <hmy-checkbox [checked]="afgevinkt()" [customTabIndex]="-1" color="positive" />
         }
     </div>
     <div class="row datum" tabindex="0" role="text">

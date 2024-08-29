@@ -17,7 +17,13 @@
 }
 
 @if (toonAfvinkKnopZonderScreenReader()) {
-    <hmy-checkbox [checked]="afgevinkt" (click)="$event.stopPropagation()" (valueChanged)="onAfvinken()" color="positive" />
+    <hmy-checkbox
+        [checked]="afgevinkt"
+        [throttleTimeout]="throttleTimeout"
+        (throttleClick)="onAfvinken()"
+        (valueChanged)="onAfvinken()"
+        slPreventThrottle
+        color="positive" />
 }
 @if (toonChevron()) {
     <i class="chevron" [color]="item().gemaakt ? 'fg-on-positive-weak' : 'action-neutral-weak'" hmyIcon="chevronRechts" size="smallest"></i>
