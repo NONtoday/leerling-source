@@ -30,6 +30,7 @@ import {
     HuiswerkState,
     InfoMessageState,
     LaatsteResultaatState,
+    LandelijkeMededelingenState,
     MaatregelState,
     PlaatsingState,
     PushActionState,
@@ -90,6 +91,7 @@ const appConfig: ApplicationConfig = {
                 CallState,
                 HuiswerkState,
                 InfoMessageState,
+                LandelijkeMededelingenState,
                 LaatsteResultaatState,
                 PlaatsingState,
                 StudiemateriaalState,
@@ -117,7 +119,7 @@ const appConfig: ApplicationConfig = {
             withNgxsStoragePlugin({
                 keys: nxgsStorageKeys,
                 beforeSerialize(obj, key) {
-                    if (key === 'rechten') {
+                    if (key === 'rechten' || key === 'landelijkeMededelingen') {
                         return obj;
                     }
                     return saveHuidigeWekenBereik(obj);

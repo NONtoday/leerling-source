@@ -31,6 +31,7 @@ export class CallService {
     public static readonly ABSENTIE_TIMEOUT = _15_MIN;
 
     public static readonly BERICHTEN_TIMEOUT = UUR;
+    public static readonly LANDELIJKE_MEDEDELINGEN_TIMEOUT = UUR;
 
     public static readonly EDUROUTEPORTAL_TIMEOUT = _8_UUR; // Wordt nachtelijks ververst in Somtoday.
     public static readonly VAKKEN_TIMEOUT = _8_UUR;

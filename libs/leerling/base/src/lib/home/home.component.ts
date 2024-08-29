@@ -13,7 +13,7 @@ import {
     SomtodayLeerlingIngelogdAccount
 } from 'leerling-authentication';
 import { DeploymentConfiguration, environment } from 'leerling-environment';
-import { AccessibilityService, InfoMessageService, isWeb, RefreshService } from 'leerling-util';
+import { AccessibilityService, InfoMessageService, isWeb, LandelijkeMededelingenService, RefreshService } from 'leerling-util';
 import { SanitizeRechten, SharedSelectors, SwitchContext } from 'leerling/store';
 import { isEqual } from 'lodash-es';
 import { ToastrService } from 'ngx-toastr';
@@ -43,6 +43,7 @@ export class HomeComponent implements OnInit {
     private _modalService = inject(ModalService);
     private _toastr = inject(ToastrService);
     private _accessibilityService = inject(AccessibilityService);
+    private _landelijkeMededelingenService = inject(LandelijkeMededelingenService);
 
     private previousAccountLeerling: SomtodayLeerlingIngelogdAccount = {};
     public appSpinner = inject(APP_SPINNER);
@@ -100,6 +101,7 @@ export class HomeComponent implements OnInit {
                 this._refreshService.resuming();
             });
         this._deviceService.onDeviceChange$.pipe(takeUntilDestroyed()).subscribe(() => this.updateCssMinContentVh());
+        this._landelijkeMededelingenService.refreshLandelijkeMededelingen();
     }
 
     private _formatAccountLeerling(accountLeerling: SomtodayLeerlingIngelogdAccount): string {
