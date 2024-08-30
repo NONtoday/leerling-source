@@ -109,6 +109,9 @@ export class AfspraakState extends AbstractState {
                     // Verwijder alle bestaande afspraak-items met hetzelfde id.
                     // Bij een 'wijziging' voegen we de items daarna opnieuw toe.
                     for (let dagIndex = beginIndex; dagIndex <= eindIndex; dagIndex++) {
+                        if (!draftDagen[dagIndex]) {
+                            continue;
+                        }
                         draftDagen[dagIndex].items = draftDagen[dagIndex].items.filter(
                             (item) => item.uniqueIdentifier !== uniqueIdentifier
                         );
@@ -118,7 +121,9 @@ export class AfspraakState extends AbstractState {
                     if (!afspraakWijziging.isVerwijderd) {
                         mapAfspraakItem(afspraakWijziging.afspraakItem).forEach((sAfspraakItem) => {
                             const dagIndex = differenceInCalendarDays(sAfspraakItem.beginDatumTijd, maandag);
-                            draftDagen[dagIndex].items.push(sAfspraakItem);
+                            // Als deze niet gevonden wordt in de lijst, dan is het afspraak over weken heen waarbij de
+                            // context dus nog van vorige of volgende week kan zijn. Deze kunnen genegeerd worden.
+                            draftDagen[dagIndex]?.items.push(sAfspraakItem);
                         });
                     }
                 });
@@ -137,7 +142,9 @@ export class AfspraakState extends AbstractState {
         rAfspraakItems.forEach((rAfspraakItem) => {
             mapAfspraakItem(rAfspraakItem).forEach((afspraakItem) => {
                 const dagIndex = differenceInCalendarDays(afspraakItem.beginDatumTijd, maandag);
-                afspraakDagen[dagIndex].items.push(afspraakItem);
+                // Als deze niet gevonden wordt in de lijst, dan is het afspraak over weken heen waarbij de
+                // context dus nog van vorige of volgende week kan zijn. Deze kunnen genegeerd worden.
+                afspraakDagen[dagIndex]?.items.push(afspraakItem);
             });
         });
 
