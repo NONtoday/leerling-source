@@ -104,10 +104,7 @@ export class AppComponent implements OnInit, AfterViewInit {
                 )
                     return;
                 const gewijzigdeRechten: string[] = [];
-                if (
-                    (eerdereRechten.rechten.studiewijzerAan && !huidigeRechten.rechten.studiewijzerAan) ||
-                    (!eerdereRechten.rechten.huiswerkBekijkenAan && huidigeRechten.rechten.huiswerkBekijkenAan)
-                )
+                if (eerdereRechten.rechten.huiswerkBekijkenAan && !huidigeRechten.rechten.huiswerkBekijkenAan)
                     gewijzigdeRechten.push('de studiewijzer');
                 if (eerdereRechten.rechten.leermiddelenAan && !huidigeRechten.rechten.leermiddelenAan)
                     gewijzigdeRechten.push('leermiddelen');

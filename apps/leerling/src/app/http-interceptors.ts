@@ -45,7 +45,8 @@ export const errorInterceptorFn: HttpInterceptorFn = (request, next) => {
                 // Negeer het probleem en doe net of we niets terug hebben gekregen
                 return of(new HttpResponse({ body: {}, status: error.status }));
             }
-            const skipErrorMessageStatusCodes = request.context.get(SKIP_ERROR_MESSAGE_STATUS_CODES).includes(error.status);
+            const skipErrorMessageStatusCodes =
+                request.context.get(SKIP_ERROR_MESSAGE_STATUS_CODES).includes(error.status) || error.status === 0;
             if (402 === error.status) {
                 infoMessageService.dispatchInfoMessage('De school heeft de leerlingomgeving uitgeschakeld.');
                 return of(new HttpResponse({ body: {}, status: error.status })).pipe(

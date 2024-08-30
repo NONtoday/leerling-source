@@ -48,7 +48,10 @@ export class ModalService {
         const fullSettings = createModalSettings(settings);
         if (this.modalRef) {
             this.animateAndClose();
-            throw new Error('Er is al een modal window open, er wordt er maar 1 ondersteund');
+            throw new Error(
+                'Er is al een modal window open, er wordt er maar 1 ondersteund. Modal dat al open is: ' +
+                    this.modalRef.instance?.settings()?.title
+            );
         }
 
         const modalComponentRef = this.appContainerRef.createComponent(ModalComponent);
