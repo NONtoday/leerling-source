@@ -115,8 +115,8 @@ export class HeaderComponent implements AfterViewInit {
     private _weergaveService = inject(WeergaveService);
     profielfotoVerbergen = toSignal(this._weergaveService.getProfielFotoVerbergen$());
 
-    menuActiesTemplateRef = viewChild.required('menuacties', { read: TemplateRef });
-    leerlingSwitcherTemplateRef = viewChild.required('leerlingswitcher', { read: TemplateRef });
+    menuActiesTemplateRef = viewChild('menuacties', { read: TemplateRef });
+    leerlingSwitcherTemplateRef = viewChild('leerlingswitcher', { read: TemplateRef });
     hamburgerRef = viewChild('hamburger', { read: ViewContainerRef });
     avatarRef = viewChild('avatar', { read: ViewContainerRef });
     menuAvatarRef = viewChild('menuavatar', { read: ViewContainerRef });
@@ -153,10 +153,11 @@ export class HeaderComponent implements AfterViewInit {
     }
 
     openLeerlingSettingsComponent(ref: ViewContainerRef | undefined) {
-        if (!ref || this._overlayService.isOpen(ref)) return;
+        const settingsTemplate = this.menuActiesTemplateRef();
+        if (!settingsTemplate || !ref || this._overlayService.isOpen(ref)) return;
 
         this._overlayService.popupOrModal({
-            template: this.menuActiesTemplateRef(),
+            template: settingsTemplate,
             element: ref,
             popupSettings: { width: '280px' },
             modalSettings: { contentPadding: 0 }
@@ -165,9 +166,10 @@ export class HeaderComponent implements AfterViewInit {
 
     openLeerlingSwitcherComponent() {
         const avatarRef = this.avatarRef();
-        if (!avatarRef || this._overlayService.isOpen(avatarRef)) return;
+        const switcherTemplate = this.leerlingSwitcherTemplateRef();
+        if (!avatarRef || !switcherTemplate || this._overlayService.isOpen(avatarRef)) return;
         this._overlayService.popupOrModal({
-            template: this.leerlingSwitcherTemplateRef(),
+            template: switcherTemplate,
             element: avatarRef,
             popupSettings: { position: 'under', alignment: 'start' },
             modalSettings: { title: 'Mijn accounts', contentPadding: 0, showClose: false }
