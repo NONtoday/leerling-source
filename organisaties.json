@@ -153,7 +153,13 @@
                 "uuid": "1e1e5bbb-d899-4d4f-9017-29f2199dc832",
                 "naam": "csvvg - Vincent van Gogh",
                 "plaats": "ASSEN",
-                "oidcurls": []
+                "oidcurls": [
+                    {
+                        "omschrijving": "inloggen medewerkers en leerlingen NassauVincent",
+                        "url": "https://login.microsoftonline.com/nassauvincent.nl/v2.0",
+                        "domain_hint": "nassauvincent.nl"
+                    }
+                ]
             },
             {
                 "uuid": "432530ad-0895-4555-9a1b-10acd35f375d",
@@ -601,7 +607,13 @@
                 "uuid": "3dbe5e2f-edf1-4f58-b13b-12b25076617f",
                 "naam": "Dr. Nassau College",
                 "plaats": "ASSEN",
-                "oidcurls": []
+                "oidcurls": [
+                    {
+                        "omschrijving": "inloggen medewerkers en leerlingen NassauVincent",
+                        "url": "https://login.microsoftonline.com/nassauvincent.nl/v2.0",
+                        "domain_hint": "nassauvincent.nl"
+                    }
+                ]
             },
             {
                 "uuid": "6894ffb4-c30b-44a6-9d43-f06acc5497ae",
