@@ -11,7 +11,6 @@ import {
     forwardRef,
     inject,
     signal,
-    untracked,
     viewChild
 } from '@angular/core';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
@@ -82,11 +81,14 @@ export class BerichtOntvangerSelectieComponent implements ControlValueAccessor {
 
     constructor() {
         onRefresh(() => this._berichtService.refreshToegestaneOntvangers());
-        effect(() => {
-            if (this.search().length > 0) {
-                untracked(() => this.openSearchOptions());
-            }
-        });
+        effect(
+            () => {
+                if (this.search().length > 0) {
+                    this.openSearchOptions();
+                }
+            },
+            { allowSignalWrites: true }
+        );
     }
 
     selectMedewerker(medewerker: SMedewerker) {

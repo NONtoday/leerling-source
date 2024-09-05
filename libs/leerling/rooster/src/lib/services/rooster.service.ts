@@ -1,4 +1,4 @@
-import { inject, Injectable, untracked } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Preferences } from '@capacitor/preferences';
 import { Store } from '@ngxs/store';
 import { endOfDay, startOfDay } from 'date-fns';
@@ -98,7 +98,7 @@ export class RoosterService {
     }
 
     public refreshMaatregelen(): void {
-        untracked(() => this._store.dispatch(new RefreshMaatregelen()));
+        this._store.dispatch(new RefreshMaatregelen());
     }
 
     public refreshRooster(beginDatum: Date): void {
@@ -107,12 +107,10 @@ export class RoosterService {
     }
 
     private _refreshRooster(jaarWeek: string): void {
-        // TODO: untracked eruit schrijven? -> SLL-1780
-        untracked(() => this._store.dispatch(new RefreshHuiswerk(jaarWeek)));
+        this._store.dispatch(new RefreshHuiswerk(jaarWeek));
         const jaar = parseInt(jaarWeek.substring(0, 4));
         const week = parseInt(jaarWeek.substring(5));
-        // TODO: untracked eruit schrijven? -> SLL-1780
-        untracked(() => this._store.dispatch(new RefreshAfspraak(jaar, week)));
+        this._store.dispatch(new RefreshAfspraak(jaar, week));
     }
 
     public set scrollableTitle(title: string | undefined) {

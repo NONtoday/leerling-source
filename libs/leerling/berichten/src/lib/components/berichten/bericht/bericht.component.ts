@@ -11,7 +11,6 @@ import {
     model,
     output,
     signal,
-    untracked,
     viewChild
 } from '@angular/core';
 import { Router } from '@angular/router';
@@ -111,13 +110,15 @@ export class BerichtComponent {
     showBeantwoorden = computed(() => kanReagerenOpBoodschap(this.boodschap()) && !this.hideBeantwoorden());
 
     constructor() {
-        effect(() => {
-            const canCollapse = this.collapsable() && this.preview() !== this.boodschap().inhoud;
-            untracked(() => {
+        effect(
+            () => {
+                const canCollapse = this.collapsable() && this.preview() !== this.boodschap().inhoud;
+
                 this.collapsable.set(canCollapse);
                 this.collapsed.set(canCollapse);
-            });
-        });
+            },
+            { allowSignalWrites: true }
+        );
     }
 
     openBijlage(url: string) {

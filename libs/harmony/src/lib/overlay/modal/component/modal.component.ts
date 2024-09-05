@@ -13,7 +13,6 @@ import {
     input,
     output,
     signal,
-    untracked,
     viewChild
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -73,12 +72,14 @@ export class ModalComponent implements OnInit {
     isDestroyed = false;
 
     constructor() {
-        effect(() => {
-            this.calculateScroll.listen();
-            untracked(() => {
+        effect(
+            () => {
+                this.calculateScroll.listen();
+
                 this.isScrolling.set(this.containerRef().nativeElement.scrollTop !== 0);
-            });
-        });
+            },
+            { allowSignalWrites: true }
+        );
         this.router.events
             .pipe(
                 filter((event) => event instanceof NavigationStart && !this.settings().keepOnNavigation),

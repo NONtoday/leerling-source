@@ -1,4 +1,4 @@
-import { inject, Injectable, untracked } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { ConfirmModalComponent, isPresent, ModalService } from 'harmony';
 import { InfoMessageService } from 'leerling-util';
@@ -30,7 +30,7 @@ export class BerichtService {
     refreshConversaties = (refreshOptions?: RefreshConversatieOptions) => this._store.dispatch(new RefreshConversaties(refreshOptions));
     postvakIn = () => this._store.select(BerichtState.postvakIn);
     postvakUit = () => this._store.select(BerichtState.postvakUit);
-    refreshToegestaneOntvangers = () => untracked(() => this._store.dispatch(new RefreshToegestaneOntvangers()));
+    refreshToegestaneOntvangers = () => this._store.dispatch(new RefreshToegestaneOntvangers());
     aantalOngelezenConversatiesPostvakIn = () => this._store.select(BerichtState.aantalOngelezenConversatiesPostvakIn);
 
     markeerGelezen(conversatie: SConversatie | undefined) {

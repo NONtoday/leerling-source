@@ -1,4 +1,4 @@
-import { Injectable, inject, untracked } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { endOfDay, startOfDay, startOfToday } from 'date-fns';
 import { RefreshVakantie, Vakantie, VakantieSelectors, getEindDatumSchooljaar, getStartDatumSchooljaar } from 'leerling/store';
@@ -14,7 +14,7 @@ export class VakantieService {
         const vandaag = startOfToday();
         const beginDatum = startOfDay(getStartDatumSchooljaar(vandaag));
         const eindDatum = endOfDay(getEindDatumSchooljaar(vandaag));
-        untracked(() => this._store.dispatch(new RefreshVakantie()));
+        this._store.dispatch(new RefreshVakantie());
 
         return this._store.select(VakantieSelectors.getVakanties(beginDatum, eindDatum, false));
     }

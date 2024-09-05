@@ -1,4 +1,4 @@
-import { Injectable, inject, untracked } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import Bugsnag from '@bugsnag/js';
 import { Store } from '@ngxs/store';
 import { isPresent } from 'harmony';
@@ -71,14 +71,12 @@ export class StudiemateriaalService {
     }
 
     private refreshStudiemateriaal(vakUuid: string | undefined, lesgroepUuid: string | undefined) {
-        // TODO: untracked eruit schrijven? -> SLL-1780
-        untracked(() => this._store.dispatch(new RefreshStudiemateriaal(vakUuid, lesgroepUuid)));
+        this._store.dispatch(new RefreshStudiemateriaal(vakUuid, lesgroepUuid));
         this.refreshEduroutePortalProducts();
     }
 
     private refreshEduroutePortalProducts() {
-        // TODO: untracked eruit schrijven? -> SLL-1780
-        untracked(() => this._store.dispatch(new RefreshEduRoutePortalProducts(this._authenticationService.isCurrentContextLeerling)));
+        this._store.dispatch(new RefreshEduRoutePortalProducts(this._authenticationService.isCurrentContextLeerling));
     }
 
     private _refreshVakkenMetStudiemateriaal() {

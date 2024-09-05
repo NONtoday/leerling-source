@@ -1,17 +1,6 @@
 import { CdkTrapFocus } from '@angular/cdk/a11y';
 import { CommonModule } from '@angular/common';
-import {
-    ChangeDetectionStrategy,
-    Component,
-    EventEmitter,
-    Output,
-    computed,
-    effect,
-    inject,
-    input,
-    output,
-    untracked
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Output, computed, effect, inject, input, output } from '@angular/core';
 import { ButtonComponent, ButtonMode, ErrorBarComponent, ModalService, SpinnerComponent } from 'harmony';
 
 @Component({
@@ -42,11 +31,14 @@ export class KwtUitschrijvenConfirmModalComponent {
     );
 
     constructor() {
-        effect(() => {
-            if (this.shouldCloseAfterConfirm()) {
-                untracked(() => this.sluiten());
-            }
-        });
+        effect(
+            () => {
+                if (this.shouldCloseAfterConfirm()) {
+                    this.sluiten();
+                }
+            },
+            { allowSignalWrites: true }
+        );
     }
 
     annulerenClick() {

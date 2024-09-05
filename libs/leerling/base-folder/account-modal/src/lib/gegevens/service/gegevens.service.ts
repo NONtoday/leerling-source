@@ -1,4 +1,4 @@
-import { Injectable, inject, untracked } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { format, parseISO } from 'date-fns';
 import { RAccount, RAdres, REloRestricties, RLeerling, RVerzorger } from 'leerling-codegen';
@@ -49,7 +49,7 @@ export class GegevensService {
     }
 
     public getSchoolgegevens$(): Observable<SLeerlingSchoolgegevens | undefined> {
-        untracked(() => this._store.dispatch(new RefreshSchoolgegevens()));
+        this._store.dispatch(new RefreshSchoolgegevens());
         return this._store.select(PlaatsingSelectors.getSchoolgegevens());
     }
 
