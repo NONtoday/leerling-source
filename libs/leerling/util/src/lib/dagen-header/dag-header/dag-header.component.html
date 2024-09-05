@@ -1,9 +1,0 @@
-@for (datum of dates(); track $index) {
-    <sl-dag-header-tab
-        [datum]="datum"
-        [tabindex]="customTabindex() === 0 ? ($index + 1) * 100 : -1"
-        [attr.aria-label]="datum | dagHeaderAriaLabel"
-        [attr.aria-selected]="datum.isActive"
-        (click)="onNavigation(datum)"
-        role="button" />
-}

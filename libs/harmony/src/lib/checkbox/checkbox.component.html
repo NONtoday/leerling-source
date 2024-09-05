@@ -1,6 +1,0 @@
-<label class="checkbox-container">
-    <input [(ngModel)]="checked" [tabIndex]="customTabIndex()" [disabled]="disabled" (change)="toggleCheckbox($event)" type="checkbox" />
-    <div class="checkmark" [class.checked]="checked" [class.disabled]="disabled">
-        <i [size]="isDesktop() ? 'smallest' : 'small'" hmyIcon="check"></i>
-    </div>
-</label>

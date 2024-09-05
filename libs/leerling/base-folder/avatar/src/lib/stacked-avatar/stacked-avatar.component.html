@@ -1,8 +1,0 @@
-<div class="ouder-container" [attr.aria-label]="accountProfile?.schoolnaam" tabindex="200">
-    <h1>{{ accountProfile?.schoolnaam }}</h1>
-    <div class="avatarcontainer">
-        <div class="avatar" *ngFor="let leerling of accountProfile?.subLeerlingen; let i = index" [style.z-index]="i + 1">
-            <hmy-avatar [lazyLoading]="true" [initialen]="leerling.initialen" [src]="leerling.avatarSrc"></hmy-avatar>
-        </div>
-    </div>
-</div>
