@@ -287,7 +287,7 @@ export class BerichtState extends AbstractState implements NgxsAfterBootstrap {
     @Action(IncomingPushAction)
     incomingPushAction(ctx: StateContext<any>, action: IncomingPushAction): void {
         // Berichten push notification: haal conversaties opnieuw op.
-        if (action.type === AvailablePushType.BERICHTEN) {
+        if (action.type === AvailablePushType.BERICHTEN || action.type === AvailablePushType.INLEVERPERIODEBERICHT) {
             ctx.dispatch(new RefreshConversaties({ forceRequest: true }));
         }
     }

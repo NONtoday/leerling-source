@@ -160,6 +160,7 @@ export class AppComponent implements OnInit, AfterViewInit {
         this._pushNotificationService.setupListenersOnly();
         this._pushNotificationService.clickedPushNotications.pipe(takeUntilDestroyed()).subscribe((pushAction) => {
             switch (pushAction.type) {
+                case AvailablePushType.INLEVERPERIODEBERICHT:
                 case AvailablePushType.BERICHTEN:
                     this._routerService.routeToBerichten();
                     break;

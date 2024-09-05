@@ -1,7 +1,8 @@
 export enum AvailablePushType {
     CIJFERS = 'CIJFERS',
     BERICHTEN = 'BERICHTEN',
-    AFWEZIGHEID = 'AFWEZIGHEID'
+    AFWEZIGHEID = 'AFWEZIGHEID',
+    INLEVERPERIODEBERICHT = 'INLEVERPERIODEBERICHT'
 }
 export interface SPushAction {
     type: AvailablePushType;
