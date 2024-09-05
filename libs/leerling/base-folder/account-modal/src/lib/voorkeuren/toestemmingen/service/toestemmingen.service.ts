@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import { AuthenticationService } from 'leerling-authentication';
 import { RLeerlingToestemmingen } from 'leerling-codegen';
 import { RequestInformationBuilder, RequestService } from 'leerling-request';
 import { Observable, firstValueFrom } from 'rxjs';
@@ -8,6 +9,8 @@ import { Observable, firstValueFrom } from 'rxjs';
 })
 export class ToestemmingenService {
     private _requestService = inject(RequestService);
+    private _authenticationService = inject(AuthenticationService);
+    public isVerzorger = this._authenticationService.isCurrentContextOuderVerzorger;
 
     public getToestemmingen(): Observable<RLeerlingToestemmingen[]> {
         return this._requestService.unwrappedGet<RLeerlingToestemmingen>('leerlingen/toestemmingen');

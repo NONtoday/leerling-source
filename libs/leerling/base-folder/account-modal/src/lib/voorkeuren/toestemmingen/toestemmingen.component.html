@@ -17,6 +17,7 @@
                         [toelichting]="toestemming?.toelichting"
                         [waarde]="!!toestemming.waarde"
                         [disabled]="!toestemming.bewerkbaar"
+                        [isVerzorger]="isVerzorger()"
                         (update)="updateToestemming(leerlingToestemmingen.leerling, toestemming.UUID, $event)" />
                 }
             </div>

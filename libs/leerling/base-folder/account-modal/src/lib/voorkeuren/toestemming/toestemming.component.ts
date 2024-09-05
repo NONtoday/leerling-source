@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input, model, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IconDirective, SpinnerComponent, ToggleComponent, TooltipDirective } from 'harmony';
-import { IconInformatie, provideIcons } from 'harmony-icons';
+import { IconInformatie, IconSlot, provideIcons } from 'harmony-icons';
 import { StackedAvatarComponent } from 'leerling-avatar';
 
 @Component({
@@ -12,13 +12,14 @@ import { StackedAvatarComponent } from 'leerling-avatar';
     templateUrl: './toestemming.component.html',
     styleUrls: ['./toestemming.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [provideIcons(IconInformatie)]
+    providers: [provideIcons(IconInformatie, IconSlot)]
 })
 export class ToestemmingComponent {
     public naam = input.required<string>();
     public toelichting = input<string>();
     public waarde = model.required<boolean>();
     public disabled = input<boolean>(false);
+    public isVerzorger = input<boolean>(false);
 
     public naamToelichtingAriaLabel = computed(() => {
         if (this.toelichting()) return this.naam() + ' - ' + this.toelichting();
