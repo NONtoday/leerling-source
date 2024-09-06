@@ -11,7 +11,6 @@ import { SsoService } from 'leerling-authentication';
     styles: [
         `
             :host {
-                white-space: break-spaces;
                 word-wrap: break-word;
 
                 .content::ng-deep {
