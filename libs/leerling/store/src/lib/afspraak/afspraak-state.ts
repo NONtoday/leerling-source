@@ -2,14 +2,14 @@ import { Injectable } from '@angular/core';
 import { Action, State, StateContext, StateToken } from '@ngxs/store';
 import { patch } from '@ngxs/store/operators';
 import { addDays, differenceInCalendarDays, getWeek, getWeekYear, isMonday, previousMonday } from 'date-fns';
-import { produce } from 'immer';
+import { WritableDraft, produce } from 'immer';
 import { RAfspraakActieResultaat, RAfspraakItem, RAfspraakItemWijziging } from 'leerling-codegen';
 import { RequestInformationBuilder } from 'leerling-request';
 import { catchError, of, tap } from 'rxjs';
 import { CallService } from '../call/call.service';
 import { SwitchContext } from '../shared/shared-actions';
 import { AbstractState, insertOrUpdateItem } from '../util/abstract-state';
-import { getJaarWeek, getMaandagVanWeek, toLocalDateTime } from '../util/date-util';
+import { getJaarWeek, getJaarWeken, getMaandagVanWeek, toLocalDateTime } from '../util/date-util';
 import { KwtActieUitvoerenReady, RefreshAfspraak, VoerKwtActieUit } from './afspraak-actions';
 import { SAfspraakDag, SAfspraakModel, SAfspraakWeek, mapAfspraakItem } from './afspraak-model';
 
@@ -94,36 +94,40 @@ export class AfspraakState extends AbstractState {
                     const beginDatum = toLocalDateTime(afspraakWijziging.afspraakItem.beginDatumTijd);
                     const eindDatum = toLocalDateTime(afspraakWijziging.afspraakItem.eindDatumTijd);
                     const uniqueIdentifier = afspraakWijziging.afspraakItem.uniqueIdentifier;
-                    const jaarWeek = getJaarWeek(beginDatum);
+                    const jaarWeken = getJaarWeken(beginDatum, eindDatum);
 
-                    const weekIndex = draft.jaarWeken.findIndex((afspraakWeek) => afspraakWeek.jaarWeek === jaarWeek);
-                    if (weekIndex < 0) {
-                        // Indien we nog geen data van deze week ooit hebben opgehaald, hoeven we niets met dit afspraakitem.
+                    const jaarWekenState = draft.jaarWeken.filter((afspraakWeek) => {
+                        return jaarWeken.filter((jaarWeek) => afspraakWeek.jaarWeek === jaarWeek);
+                    });
+                    if (!jaarWekenState.length) {
+                        // Indien we nog geen data van deze weken ooit hebben opgehaald, hoeven we niets met dit afspraakitem.
                         return;
                     }
 
-                    const maandag = isMonday(beginDatum) ? beginDatum : previousMonday(beginDatum);
-                    const beginIndex = differenceInCalendarDays(beginDatum, maandag);
-                    const eindIndex = differenceInCalendarDays(eindDatum, maandag);
-                    const draftDagen = draft.jaarWeken[weekIndex].dagen;
-                    // Verwijder alle bestaande afspraak-items met hetzelfde id.
-                    // Bij een 'wijziging' voegen we de items daarna opnieuw toe.
-                    for (let dagIndex = beginIndex; dagIndex <= eindIndex; dagIndex++) {
-                        if (!draftDagen[dagIndex]) {
-                            continue;
+                    for (const jaarWeekIndex of jaarWekenState) {
+                        const draftDagen = jaarWeekIndex.dagen;
+                        // Verwijder alle bestaande afspraak-items met hetzelfde id.
+                        // Bij een 'wijziging' voegen we de items daarna opnieuw toe.
+                        for (const draftDag of draftDagen) {
+                            if (!draftDag) {
+                                continue;
+                            }
+                            draftDag.items = draftDag.items.filter((item) => item.uniqueIdentifier !== uniqueIdentifier);
                         }
-                        draftDagen[dagIndex].items = draftDagen[dagIndex].items.filter(
-                            (item) => item.uniqueIdentifier !== uniqueIdentifier
-                        );
                     }
-
                     // Indien het item niet verwijderd had moeten worden: voeg hem maar weer toe.
                     if (!afspraakWijziging.isVerwijderd) {
                         mapAfspraakItem(afspraakWijziging.afspraakItem).forEach((sAfspraakItem) => {
+                            const jaarWeek = getJaarWeek(sAfspraakItem.beginDatumTijd);
+                            const jaarWeekToUpdate: WritableDraft<SAfspraakWeek> | undefined = jaarWekenState.find(
+                                (jaarWeekState) => jaarWeekState.jaarWeek === jaarWeek
+                            );
+                            if (!jaarWeekToUpdate) return;
+                            const maandag = isMonday(sAfspraakItem.beginDatumTijd)
+                                ? sAfspraakItem.beginDatumTijd
+                                : previousMonday(sAfspraakItem.beginDatumTijd);
                             const dagIndex = differenceInCalendarDays(sAfspraakItem.beginDatumTijd, maandag);
-                            // Als deze niet gevonden wordt in de lijst, dan is het afspraak over weken heen waarbij de
-                            // context dus nog van vorige of volgende week kan zijn. Deze kunnen genegeerd worden.
-                            draftDagen[dagIndex]?.items.push(sAfspraakItem);
+                            jaarWeekToUpdate.dagen[dagIndex]?.items.push(sAfspraakItem);
                         });
                     }
                 });

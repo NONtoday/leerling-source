@@ -1,7 +1,10 @@
 import {
+    addWeeks,
     endOfWeek,
     format,
+    getISOWeek,
     getWeekYear,
+    isBefore,
     isDate,
     isFriday,
     isMonday,
@@ -40,7 +43,22 @@ export function valtBinnenHuidigeSchooljaar(datum: Date): boolean {
 }
 
 export function getJaarWeek(peildatum: Date): string {
-    return getWeekYear(peildatum) + '~' + format(peildatum, 'I');
+    return getWeekYear(peildatum) + '~' + getISOWeek(peildatum);
+}
+
+export function getJaarWeken(startDatum: Date, eindDatum: Date) {
+    const jaarWekenArray: string[] = [];
+    let currentDate = startDatum;
+    while (isBeforeAndNotSameWeekAndYear(currentDate, eindDatum)) {
+        jaarWekenArray.push(getJaarWeek(currentDate));
+        currentDate = addWeeks(currentDate, 1);
+    }
+    jaarWekenArray.push(getJaarWeek(eindDatum));
+    return jaarWekenArray;
+}
+
+export function isBeforeAndNotSameWeekAndYear(date1: Date, date2: Date) {
+    return isBefore(date1, date2) && (getISOWeek(date1) !== getISOWeek(date2) || getWeekYear(date1) !== getWeekYear(date2));
 }
 
 export function getMaandagVanJaarWeek(jaarWeek: string): Date {

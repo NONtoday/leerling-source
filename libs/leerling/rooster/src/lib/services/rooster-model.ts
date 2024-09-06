@@ -233,7 +233,6 @@ function isHuiswerkVoorAfspraakVak(studiewijzerItem: SStudiewijzerItem, afspraak
 
 function mapKwtInfo(afspraakItem: SAfspraakItem): KWTInfo | undefined {
     if (!afspraakItem.kwtInfo) return undefined;
-
     const skwtInfo = afspraakItem.kwtInfo;
     const isIngeschreven = skwtInfo.inschrijfStatus === 'WEL' || skwtInfo.inschrijfStatus === 'DEFINITIEF';
     const afspraakActies = skwtInfo.afspraakActies;
@@ -241,8 +240,7 @@ function mapKwtInfo(afspraakItem: SAfspraakItem): KWTInfo | undefined {
     const gekozenKWTItem = afspraakActies.find(
         (actie) =>
             actie.ingeschreven &&
-            isEqual(actie.beginDatumTijd, afspraakItem.beginDatumTijd) &&
-            isEqual(actie.eindDatumTijd, afspraakItem.eindDatumTijd)
+            isIntervalWithinInterval(afspraakItem.beginDatumTijd, afspraakItem.eindDatumTijd, actie.beginDatumTijd, actie.eindDatumTijd)
     );
 
     return {
@@ -320,6 +318,10 @@ function getOndertitel(afspraakActies: SAfspraakActie[]): string | undefined {
 function isBinnenInschrijfTermijn(actie: SAfspraakActie): boolean {
     if (!actie.inschrijfBeginDatum || !actie.inschrijfEindDatum) return true;
     return isWithinInterval(nu, { start: actie.inschrijfBeginDatum, end: actie.inschrijfEindDatum });
+}
+
+function isIntervalWithinInterval(startOne: Date, endOne: Date, startTwo: Date, endTwo: Date) {
+    return (isAfter(startOne, startTwo) || isEqual(startOne, startTwo)) && (isBefore(endOne, endTwo) || isEqual(endOne, endTwo));
 }
 
 function isInschrijfDatumInToekomst(datum?: Date): boolean {

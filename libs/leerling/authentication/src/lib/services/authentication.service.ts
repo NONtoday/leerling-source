@@ -504,6 +504,7 @@ export class AuthenticationService {
         if (this._authenticationState.getAantalAccountProfielen() > 1 || forceAuth) {
             additionParameters['prompt'] = 'login';
             additionParameters['session'] = 'no_session';
+            additionParameters['force_authn'] = true;
         }
 
         this._authenticationState.saveCurrentSessionToStorage(this.inMemoryOauthStorage.backup()).then(() => {
