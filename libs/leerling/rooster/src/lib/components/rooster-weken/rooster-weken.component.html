@@ -1,0 +1,23 @@
+<sl-rooster-tijden class="tijden" />
+<sl-rooster-week
+    class="week"
+    [datum]="datums() | drieluikData: 0"
+    [toonWeekend]="toonWeekend()"
+    (naarVolgendeWeek)="focusVolgendeWeekMaandag.emit()"
+    data-position="left"
+    inert="true"
+    aria-hidden="true" />
+<sl-rooster-week
+    class="week"
+    [datum]="datums() | drieluikData: 1"
+    [toonWeekend]="toonWeekend()"
+    (naarVolgendeWeek)="focusVolgendeWeekMaandag.emit()"
+    data-position="center" />
+<sl-rooster-week
+    class="week"
+    [datum]="datums() | drieluikData: 2"
+    [toonWeekend]="toonWeekend()"
+    (naarVolgendeWeek)="focusVolgendeWeekMaandag.emit()"
+    data-position="right"
+    inert="true"
+    aria-hidden="true" />

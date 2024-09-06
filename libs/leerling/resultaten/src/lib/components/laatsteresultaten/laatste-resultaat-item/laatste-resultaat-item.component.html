@@ -1,0 +1,9 @@
+<sl-resultaat-item [resultaatItem]="resultaatItem" [ellipsis]="!toonDetails" />
+<sl-resultaat-item-detail
+    *ngIf="toonDetails"
+    [@collapseOnLeave]
+    [@expandOnEnter]
+    [resultaatItem]="resultaatItem"
+    [toonTitel]="false"
+    [toonVakCijferlijstKnop]="true"
+    (openVakCijferlijst)="openVakCijferlijst.emit()" />

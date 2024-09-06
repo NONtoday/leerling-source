@@ -1,0 +1,74 @@
+<sl-header [hideBorderBottomMobile]="true">
+    <sl-header-action-button
+        [hideWhenOffline]="false"
+        [disabled]="!vorigeWeekNavigatieMogelijk()"
+        (click)="vorigeWeekNavigatieMogelijk() && onNavigation('previous')"
+        iconName="chevronLinks"
+        label="Navigeer naar vorige week"
+        tabindex="10" />
+    <sl-header-action-button
+        [hideWhenOffline]="false"
+        [disabled]="!volgendeWeekNavigatieMogelijk()"
+        (click)="volgendeWeekNavigatieMogelijk() && onNavigation('next')"
+        iconName="chevronRechts"
+        label="Navigeer naar volgende week"
+        tabindex="10" />
+</sl-header>
+
+<div class="container">
+    @if (isTabletOfDesktop()) {
+        <div class="headers-container">
+            <sl-rooster-week-header
+                [datum]="peildatum()"
+                [toonWeekend]="toonWeekend()"
+                [vorigeWeekEnabled]="vorigeWeekNavigatieMogelijk()"
+                [volgendeWeekEnabled]="volgendeWeekNavigatieMogelijk()"
+                (weekend)="toggleWeekendBekijken($event)"
+                (navigation)="onNavigation($event)" />
+            <sl-vakantie-header
+                class="weekvakantie"
+                [beginDatum]="peildatum() | weekBegindatum"
+                [eindDatum]="peildatum() | weekEinddatum: toonWeekend()" />
+        </div>
+
+        <sl-rooster-weken
+            [peildatum]="peildatum()"
+            [toonWeekend]="toonWeekend()"
+            (peildatumChange)="updatePeildatum($event)"
+            (focusVolgendeWeekMaandag)="focusVolgendeWeekMaandag()" />
+    } @else {
+        @if (scrollableTitle$ | async; as title) {
+            <sl-scrollable-title [title]="title" />
+        }
+        <sl-dagen-header
+            [peildatum]="peildatum()"
+            [allowKeyEvents]="false"
+            [ngClass]="{ hideborder: showStack() }"
+            [huiswerkItems]="huiswerkIndicaties()"
+            (dateChange)="updatePeildatum($event)"
+            (peildatumChange)="updatePeildatum($event)" />
+        @if (showStack()) {
+            <div class="stack">
+                @if (weekEnDagItems(); as huiswerk) {
+                    @if (huiswerk.weekitems.length > 0 || huiswerk.dagitems.length > 0) {
+                        <sl-rooster-huiswerk-stack
+                            [datum]="peildatum()"
+                            [weekItems]="huiswerk.weekitems"
+                            [dagItems]="huiswerk.dagitems"
+                            role="button"
+                            tabindex="900" />
+                    }
+                }
+                @if (dagMaatregelen(); as maatregelen) {
+                    @if (maatregelen.length > 0) {
+                        <sl-rooster-maatregelen [maatregelen]="maatregelen" tabindex="900" />
+                    }
+                }
+            </div>
+        }
+        <sl-vakantie-header class="dagvakantie" [beginDatum]="peildatum()" [eindDatum]="peildatum()" />
+        <sl-rooster-dagen [peildatum]="peildatum()" (peildatumChange)="updatePeildatum($event)" />
+    }
+</div>
+
+<sl-tab-bar />

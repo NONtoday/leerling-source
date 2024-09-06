@@ -1,0 +1,7 @@
+@for (registratie of registratieCategorie().registraties; track $index) {
+    <sl-registratie
+        [registratie]="registratie"
+        [attr.cdkFocusInitial]="$index === 0"
+        [categorie]="registratieCategorie().naam"
+        tabindex="0" />
+}

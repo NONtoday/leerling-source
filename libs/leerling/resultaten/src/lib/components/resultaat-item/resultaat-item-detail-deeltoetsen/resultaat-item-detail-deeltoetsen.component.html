@@ -1,0 +1,22 @@
+@defer (when deeltoetsen$ | async; on timer(5000)) {
+    @if (deeltoetsen$ | async; as deeltoetsen) {
+        <div class="resultaatitems" [@expandOnEnter]>
+            @for (deeltoets of deeltoetsen$ | async; track deeltoets) {
+                <div tabindex="200">
+                    <sl-resultaat-item
+                        [resultaatItem]="deeltoets | deeltoetsToResultaatItem: isAlternatieveNormering"
+                        [toonVakIcon]="false"
+                        [ellipsis]="false"
+                        tabindex="0" />
+                    @if (deeltoets.opmerkingen) {
+                        <p class="opmerking">{{ deeltoets.opmerkingen }}</p>
+                    }
+                </div>
+            }
+        </div>
+    } @else {
+        <hmy-spinner />
+    }
+} @loading (after 200ms; minimum 150ms) {
+    <hmy-spinner />
+}

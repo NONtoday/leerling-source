@@ -1,0 +1,32 @@
+<sl-header [hideBorderBottomMobile]="true" />
+
+<div class="container" id="mainContent" [class.with-wizard]="showWizard()" tabindex="-1">
+    @if (isPhoneOrTabletPortrait()) {
+        <sl-scrollable-title [title]="pageTitle" />
+    } @else {
+        <div class="text-heading-1">{{ pageTitle }}</div>
+    }
+
+    @if (finishedLoading()) {
+        @if (showWizard()) {
+            <sl-afwezig-melden-wizard
+                [absentieRedenen]="absentieRedenen()!"
+                [leerling]="leerling()!"
+                (isDirty)="wizardIsDirty.set($event)" />
+        } @else if (leerling() && absentieRedenen()?.length === 0) {
+            <div class="school-contactgegevens">
+                <sl-geen-data />
+                <p tabindex="0">Afwezig melden via Somtoday is door je school uitgeschakeld</p>
+
+                <!--Schoolgegevens worden op dit moment niet getoond vanwege klachten over absent melden van scholen met een alternatieve methode hiervoor -->
+                <!-- <sl-school-contactgegevens [alwaysShowBorder]="true" [leerlingID]="leerling()!.id" /> -->
+            </div>
+        }
+    } @else {
+        <div class="page-loading">
+            <hmy-spinner [large]="true" />
+        </div>
+    }
+</div>
+
+<sl-tab-bar />

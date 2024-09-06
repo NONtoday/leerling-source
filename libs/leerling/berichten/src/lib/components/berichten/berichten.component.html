@@ -1,0 +1,122 @@
+<sl-header [hideBorderBottomMobile]="true">
+    <sl-header-action-button
+        *slHeeftRecht="'berichtenVerzendenAan'"
+        [hideWhenOffline]="true"
+        (click)="startNieuwBericht()"
+        iconName="nieuwBericht"
+        label="nieuw Bericht"
+        tabindex="0" />
+</sl-header>
+<div class="container" [class.in-edit]="inEdit()" [class.in-detail]="selectedConversatie()">
+    @if (isPhoneOrTabletPortrait()) {
+        <sl-scrollable-title class="scrollable-title" [title]="'Berichten'" [ellipsis]="false" />
+    }
+    <div class="tabs">
+        @for (tab of tabs(); track tab.label) {
+            <hmy-tab
+                [id]="tab.link"
+                [tab]="tab"
+                [active]="tab.link === activeTab()"
+                [attr.aria-selected]="tab.link === activeTab()"
+                [attr.id]="$index === 0 ? 'mainContent' : ''"
+                (click)="navigateToTab(tab.link)"
+                tabindex="0"
+                role="tab" />
+        }
+        @if (isOnline()) {
+            <div class="nieuw-bericht" *slHeeftRecht="'berichtenVerzendenAan'">
+                <i
+                    class="icon"
+                    (click)="startNieuwBericht()"
+                    hmyIcon="nieuwBericht"
+                    hmyTooltip="Nieuw bericht aanmaken"
+                    size="medium"
+                    role="button"
+                    tabindex="0"
+                    aria-label="nieuw bericht"></i>
+            </div>
+        }
+    </div>
+
+    <div class="berichten-lijst" [class.is-empty]="conversaties()?.length === 0" aria-label="berichtenlijst">
+        @if (conversaties() !== undefined) {
+            @for (conversatie of conversaties(); track conversatie.id) {
+                <sl-bericht-samenvatting
+                    [selected]="selectedConversatie()?.id === conversatie.id"
+                    [tab]="activeTab()"
+                    [conversatie]="conversatie"
+                    (markeerGelezen)="markeerGelezen(conversatie)"
+                    (markeerOngelezen)="markeerOngelezen(conversatie)"
+                    (verwijder)="verwijder(conversatie)"
+                    (click)="selectConversatie(conversatie)"
+                    tabindex="0"
+                    role="button" />
+            } @empty {
+                @if (alleConversatiesOpgehaald()) {
+                    <sl-geen-data class="inbox">
+                        @if (heeftBerichtenVerzendenRecht() && isOnline()) {
+                            <span class="action-primary-normal cursor-pointer" (click)="startNieuwBericht()">Maak nieuw bericht</span>
+                        }
+                    </sl-geen-data>
+                } @else {
+                    <div class="geen-bericht" tabindex="0">Geen bericht ontvangen afgelopen 60 dagen</div>
+                }
+            }
+            <div
+                class="laad-eerdere"
+                [class.ongeladen]="alleConversatiesOpgehaald() === undefined"
+                [tabIndex]="alleConversatiesOpgehaald() ? -1 : 0"
+                (click)="laadEerdereBerichten()"
+                tabindex="0"
+                role="button">
+                @if (alleBerichtenLaden()) {
+                    <hmy-spinner />
+                } @else if (geenNieuweBerichten() || alleConversatiesOpgehaald()) {
+                    <span class="geen-berichten text-weakest" tabindex="0">Geen eerdere berichten gevonden</span>
+                } @else {
+                    <span class="action-primary-normal" tabindex="0">Laad eerdere berichten</span>
+                }
+            </div>
+        } @else {
+            <hmy-spinner />
+        }
+    </div>
+
+    @if (selectedConversatie() && reactieOpBericht(); as reactieOpBericht) {
+        <div class="main">
+            <sl-bericht-beantwoorden
+                [reactieOpBericht]="reactieOpBericht"
+                [conversatie]="selectedConversatie()!"
+                [isOnline]="isOnline()"
+                (verstuurReactie)="verstuurReactie($event)" />
+        </div>
+    } @else if (showNieuwBerichtForm()) {
+        <div class="main">
+            <sl-bericht-nieuw class="edit" [isOnline]="isOnline()" (verstuurBericht)="verstuurBericht($event)" />
+        </div>
+    } @else {
+        <div class="main" [class.is-empty]="!selectedConversatie()">
+            @if (selectedConversatie(); as selectedConversatie) {
+                <sl-bericht-detail
+                    [conversatie]="selectedConversatie"
+                    [tab]="activeTab()"
+                    [ongelezenVanaf]="datumOudsteOngelezenBoodschap()"
+                    (markeerOngelezen)="markeerOngelezen(selectedConversatie)"
+                    (verwijder)="verwijder(selectedConversatie)" />
+            } @else {
+                <sl-geen-data>
+                    @if (heeftBerichtenVerzendenRecht() && isOnline()) {
+                        Selecteer of
+                        <span class="action-primary-normal cursor-pointer" (click)="startNieuwBericht()" tabindex="0" role="button">
+                            maak nieuw bericht
+                        </span>
+                    } @else {
+                        Selecteer een bericht
+                    }
+                </sl-geen-data>
+            }
+        </div>
+    }
+</div>
+
+<sl-tab-bar />

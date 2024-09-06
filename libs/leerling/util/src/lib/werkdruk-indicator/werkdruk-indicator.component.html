@@ -1,0 +1,20 @@
+@if (huiswerkTypen.heeftHuiswerk) {
+    <div class="bg-dot" [ngClass]="[size]">
+        <div class="dot huiswerk" [ngClass]="[size]"></div>
+    </div>
+}
+@if (huiswerkTypen.heeftInleveropdracht) {
+    <div class="bg-dot" [ngClass]="[size]">
+        <div class="dot inleveropdracht" [ngClass]="[size]"></div>
+    </div>
+}
+@if (huiswerkTypen.heeftToets) {
+    <div class="bg-dot" [ngClass]="[size]">
+        <div class="dot toets" [ngClass]="[size]"></div>
+    </div>
+}
+@if (huiswerkTypen.heeftGroteToets) {
+    <div class="bg-dot" [ngClass]="[size]">
+        <div class="dot toetsgroot" [ngClass]="[size]"></div>
+    </div>
+}

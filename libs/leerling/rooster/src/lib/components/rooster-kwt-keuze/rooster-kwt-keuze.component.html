@@ -1,0 +1,87 @@
+<div class="data-wrapper">
+    <div>
+        <div class="wrapper">
+            <span class="titel">{{ afspraakActie().titel }}</span>
+            @if (!disabled) {
+                @if (this.afspraakActie().beschikbarePlaatsen; as plekken) {
+                    <label class="plekken"
+                        >{{ geselecteerd() ? 'Geselecteerd' : (plekken | i18nPlural: pluralMapping['plekken']) }}
+                        <input [checked]="geselecteerd()" [disabled]="disabled || isOuderVerzorger" type="radio" tabindex="-1" />
+                        <i class="icon" [hmyIcon]="'yesRadio'" color="action-primary-normal" size="large"></i>
+                    </label>
+                }
+            } @else {
+                <span class="dislabel">{{ isVol() ? 'Vol' : 'Inschrijven niet mogelijk' }}</span>
+            }
+        </div>
+        <span class="ondertitel">{{ afspraakActie() | toInschrijfdatum }}</span>
+    </div>
+    <div class="pill-container">
+        <hmy-icon-pill
+            [text]="afspraakActie() | toLestijd: false"
+            [color]="disabled ? 'disabled' : 'neutral'"
+            [type]="'outline'"
+            icon="klok"
+            iconSize="smallest" />
+        @if (afspraakActie().locatie; as locatie) {
+            <hmy-icon-pill
+                class="locatie"
+                [text]="locatie"
+                [hmyTooltip]="locatie"
+                [color]="disabled ? 'disabled' : 'neutral'"
+                [type]="'outline'"
+                icon="locatie"
+                iconSize="smallest" />
+        }
+        @if (toonDetails()) {
+            @if (afspraakActie().vak; as vak) {
+                <hmy-icon-pill class="vak" [text]="vak.naam" [color]="'neutral'" [type]="'outline'" icon="boek" iconSize="smallest" />
+            }
+            @for (docentNaam of afspraakActie().docentNamen; track docentNaam) {
+                <hmy-icon-pill
+                    class="docent"
+                    [text]="docentNaam"
+                    [color]="'neutral'"
+                    [type]="'outline'"
+                    icon="persoon"
+                    iconSize="smallest" />
+            }
+        }
+    </div>
+
+    @if (toonDetails()) {
+        @if (afspraakActie().omschrijving; as omschrijving) {
+            <div class="omschrijving">
+                <p [@collapseOnLeave] [@expandOnEnter]>{{ omschrijving }}</p>
+            </div>
+        }
+        @if (afspraakActie().herhalendeAfspraak; as herhaling) {
+            <div class="herhalen-container" tabindex="0">
+                <i class="icon" [color]="'fg-on-primary-weak'" hmyIcon="verversen" size="medium"></i>
+                <div class="herhalen">
+                    <strong>Herhalende inschrijving</strong>
+                    <span [innerHTML]="herhaling | kwtHerhalingLabel"></span>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@if (afspraakActie().vak || afspraakActie().omschrijving || (afspraakActie().docentNamen && afspraakActie().docentNamen.length > 0)) {
+    <div class="keuze-footer">
+        <p
+            class="details"
+            [attr.aria-hidden]="true"
+            [tabindex]="isAccessedByKeyboard() ? -1 : 0"
+            (click)="toggleDetails($event)"
+            role="button">
+            {{ toonDetails() ? 'Toon minder details' : 'Toon meer details' }}
+        </p>
+        @if (!toonDetails() && afspraakActie().herhalendeAfspraak?.maxHerhalingen; as herhaling) {
+            <div class="herhaling-tag">
+                <i class="icon" [color]="disabled ? 'disabled-fg' : 'fg-on-primary-weak'" hmyIcon="verversen" size="smallest"></i>
+                <span>{{ herhaling | i18nPlural: pluralMapping['herhaling'] }}</span>
+            </div>
+        }
+    </div>
+}

@@ -1,0 +1,41 @@
+<div class="title" [class.margin-bottom]="!toonLeerlingNaam()" tabindex="0">Toestemmingen</div>
+<div class="leerling-toestemmingen">
+    @for (leerlingToestemmingen of toestemmingen(); track $index) {
+        @if (toonLeerlingNaam()) {
+            <div class="leerling" tabindex="0">{{ leerlingToestemmingen.leerling?.roepnaam }}</div>
+        }
+
+        @if (!leerlingToestemmingen?.toestemmingen?.length && !leerlingToestemmingen?.portaalToestemmingen?.length) {
+            <div class="niet-instelbaar" tabindex="0">Niet instelbaar</div>
+        }
+
+        @if (leerlingToestemmingen.toestemmingen?.length) {
+            <div class="settings-wrapper" [attr.data-testid]="leerlingToestemmingen.leerling?.roepnaam">
+                @for (toestemming of leerlingToestemmingen.toestemmingen; track toestemming.UUID) {
+                    <sl-toestemming
+                        [naam]="toestemming?.naam ?? '-'"
+                        [toelichting]="toestemming?.toelichting"
+                        [waarde]="!!toestemming.waarde"
+                        [disabled]="!toestemming.bewerkbaar"
+                        [isVerzorger]="isVerzorger()"
+                        (update)="updateToestemming(leerlingToestemmingen.leerling, toestemming.UUID, $event)" />
+                }
+            </div>
+        }
+
+        @if (leerlingToestemmingen.portaalToestemmingen?.length) {
+            <div class="title">
+                <div class="toegang" tabindex="0">Toegang</div>
+                <div class="ondertitel" tabindex="0">Je gegevens zichtbaar maken voor</div>
+            </div>
+            <div class="settings-wrapper">
+                @for (toestemming of leerlingToestemmingen.portaalToestemmingen; track toestemming.verzorger) {
+                    <sl-toestemming
+                        [naam]="toestemming | portaalToestemmingOmschrijving"
+                        [waarde]="!!toestemming.heeftToestemming"
+                        (update)="updatePortaalToestemming(toestemming.verzorger, $event)" />
+                }
+            </div>
+        }
+    }
+</div>
