@@ -90,6 +90,11 @@ export class ModalService {
         return contentComponent.instance;
     }
 
+    updateSettings = (settings: Partial<ModalSettings>) =>
+        this.modalRef?.setInput('settings', { ...this.modalRef.instance.settings(), ...settings });
+
+    updateCanScroll = () => this.modalRef?.instance.calculateCanScroll.notify();
+
     isOpen = () => !!this.modalRef;
     animateAndClose() {
         if (this.modalRef?.instance.closingBlocked) return;

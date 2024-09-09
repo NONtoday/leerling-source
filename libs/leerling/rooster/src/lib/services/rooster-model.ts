@@ -245,7 +245,7 @@ function mapKwtInfo(afspraakItem: SAfspraakItem): KWTInfo | undefined {
 
     return {
         status: getStatus(skwtInfo, isInschrijvenMogelijk),
-        keuzeTitel: isIngeschreven ? gekozenKWTItem?.titel ?? '' : getKeuzetitel(afspraakActies),
+        keuzeTitel: isIngeschreven ? (gekozenKWTItem?.titel ?? '') : getKeuzetitel(afspraakActies),
         ondertitel: isIngeschreven ? undefined : getOndertitel(afspraakActies),
         uitschrijfActie: gekozenKWTItem
     };

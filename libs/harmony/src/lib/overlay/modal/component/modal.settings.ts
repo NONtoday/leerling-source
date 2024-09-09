@@ -3,6 +3,7 @@ import { ColorToken } from '../../../tokens/color-token';
 
 export interface ModalSettings {
     showClose: boolean;
+    showBackButton: boolean;
     contentPadding: number;
     heightRollup: string;
     maxHeightRollup: string;
@@ -13,7 +14,12 @@ export interface ModalSettings {
     title: string | undefined;
     titleIcon: ModalIconName | undefined;
     titleIconColor: ColorToken | undefined;
+    closePosition: {
+        top: number | undefined;
+        right: number | undefined;
+    };
     onClose?: () => void;
+    onBackButton?: () => void;
 }
 
 export type MaskAnimationState = 'show' | 'hide';
@@ -22,6 +28,7 @@ export type ContentAnimationState = 'show-modal' | 'show-rollup' | 'hide-modal' 
 export function createModalSettings(updatedSettings?: Partial<ModalSettings>): ModalSettings {
     return {
         showClose: true,
+        showBackButton: false,
         contentPadding: 16,
         heightRollup: 'initial',
         maxHeightRollup: '75%',
@@ -32,6 +39,10 @@ export function createModalSettings(updatedSettings?: Partial<ModalSettings>): M
         title: undefined,
         titleIcon: undefined,
         titleIconColor: undefined,
+        closePosition: {
+            top: undefined,
+            right: undefined
+        },
         ...updatedSettings
     };
 }
