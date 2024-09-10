@@ -52,7 +52,7 @@ export class ModalService {
     ): T {
         if (this._modalRef) {
             this.close();
-            throw Error('Er is al een modal window open, er wordt er maar 1 ondersteund');
+            throw Error('Er is al een modal window open, er wordt er maar 1 ondersteund ');
         }
         const viewContainerRef = this._appRef.components[0].instance['_viewContainerRef'] as ViewContainerRef;
 
@@ -108,4 +108,6 @@ export class ModalService {
     animateAndClose() {
         this._modalRef?.instance.animateAndClose();
     }
+
+    isOpen = () => !!this._modalRef;
 }

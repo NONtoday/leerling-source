@@ -115,7 +115,7 @@ export class BerichtDetailComponent implements OnInit {
     openVerwijderConfirm() {
         const modal = this.berichtService.createVerwijderDialog();
 
-        modal.confirmResult.pipe(filter((confirmResult) => confirmResult === 'Positive')).subscribe(() => this.verwijder.emit());
+        modal?.confirmResult.pipe(filter((confirmResult) => confirmResult === 'Positive')).subscribe(() => this.verwijder.emit());
     }
 
     handleMeerOntvangersPillClick(boodschapId: number) {

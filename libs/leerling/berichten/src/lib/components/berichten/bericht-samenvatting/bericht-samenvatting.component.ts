@@ -181,7 +181,7 @@ export class BerichtSamenvattingComponent {
         const modal = this.berichtService.createVerwijderDialog();
 
         let alreadyPositive = false;
-        modal.confirmResult.subscribe((confirmResult) => {
+        modal?.confirmResult.subscribe((confirmResult) => {
             if (confirmResult === 'Positive') {
                 alreadyPositive = true;
                 this.confirmVerwijderSwipe();

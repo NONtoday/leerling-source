@@ -39,7 +39,8 @@ export class BerichtService {
         }
     }
 
-    createVerwijderDialog(): ConfirmModalComponent {
+    createVerwijderDialog(): ConfirmModalComponent | undefined {
+        if (this._modalService.isOpen()) return;
         return this._modalService.modal({
             component: ConfirmModalComponent,
             inputs: {

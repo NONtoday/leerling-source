@@ -113,6 +113,8 @@ export class RoosterItemComponent implements OnInit, OnChanges, OnDestroy {
 
     public titel = signal('');
     public isHovered = signal(false);
+    private isStudiemateriaalOpen = signal(false);
+    private isHuiswerkOpen = signal(false);
     public isVerlopen = computed(() => this.roosterItem().afspraakItem.kwtInfo?.inschrijfStatus === 'VERLOPEN');
     public pillText = computed(() => {
         const info = this.roosterItem().isToets ? 'Toets' : this.roosterItem().lestijd;
@@ -337,12 +339,17 @@ export class RoosterItemComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     private reopenModal() {
-        if (this._deviceService.isPhoneOrTabletPortrait()) {
+        this.isStudiemateriaalOpen.set(false);
+        this.isHuiswerkOpen.set(false);
+        if (!this._modalService.isOpen() && this._deviceService.isPhoneOrTabletPortrait()) {
             this.openRoosterItemDetail();
         }
     }
 
     private openHuiswerk(huiswerk: SStudiewijzerItem) {
+        if (this.isHuiswerkOpen()) return;
+        this.isHuiswerkOpen.set(true);
+        this._modalService.close();
         this._sidebarService.push(
             StudiewijzerItemDetailComponent,
             computed(() => ({
@@ -350,10 +357,12 @@ export class RoosterItemComponent implements OnInit, OnChanges, OnDestroy {
             })),
             StudiewijzerItemDetailComponent.getSidebarSettings(huiswerk, () => this.reopenModal())
         );
-        this._modalService.animateAndClose();
     }
 
     private openStudiemateriaal() {
+        if (this.isStudiemateriaalOpen()) return;
+        this.isStudiemateriaalOpen.set(true);
+        this._modalService.close();
         const vak = this.roosterItem().afspraakItem.vak;
         if (vak) {
             this._sidebarService.push(
@@ -372,7 +381,6 @@ export class RoosterItemComponent implements OnInit, OnChanges, OnDestroy {
                 StudiemateriaalVakselectieComponent.getSidebarSettings(() => this.reopenModal())
             );
         }
-        this._modalService.animateAndClose();
     }
 
     private openKWTInschrijven() {
