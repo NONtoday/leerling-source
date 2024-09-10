@@ -3,11 +3,13 @@ import {
     ChangeDetectionStrategy,
     ChangeDetectorRef,
     Component,
+    DestroyRef,
     HostBinding,
     HostListener,
     Input,
     OnChanges,
     OnDestroy,
+    OnInit,
     ViewContainerRef,
     inject,
     output
@@ -36,13 +38,14 @@ export const PLAATSING_COMPONENT_TABINDEX = 110;
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [provideIcons(IconChevronOnder)]
 })
-export class PlaatsingenComponent implements OnChanges, OnDestroy {
+export class PlaatsingenComponent implements OnChanges, OnDestroy, OnInit {
     private _router = inject(Router);
     private _activatedRoute = inject(ActivatedRoute);
     private _changeDetector = inject(ChangeDetectorRef);
     private _viewContainerRef = inject(ViewContainerRef);
     private _popupService = inject(PopupService);
     private _accessibilityService = inject(AccessibilityService);
+    private _destroyRef = inject(DestroyRef);
 
     @Input() plaatsingen: SPlaatsing[] = [];
     @Input() geselecteerdePlaatsing: SPlaatsing | undefined;
@@ -57,7 +60,7 @@ export class PlaatsingenComponent implements OnChanges, OnDestroy {
 
     private _plaatsingPopupUuid: string | undefined;
 
-    constructor() {
+    ngOnInit() {
         this._activatedRoute.queryParams.pipe(map((params) => params['plaatsing'])).subscribe((plaatsingParam) => {
             const huidigePlaatsingUuid = this.geselecteerdePlaatsing?.UUID;
             this.geselecteerdePlaatsing = plaatsingParam
@@ -70,9 +73,11 @@ export class PlaatsingenComponent implements OnChanges, OnDestroy {
             }
         });
 
-        this._popupService.openPopups$.pipe(takeUntilDestroyed()).subscribe((openPopups) => {
+        this._popupService.openPopups$.pipe(takeUntilDestroyed(this._destroyRef)).subscribe((openPopups) => {
             this._popupOpen = openPopups.some((popupRef) => popupRef.instance.connectedElement === this._viewContainerRef);
         });
+
+        this.meerderePlaatsingen = this.plaatsingen.length > 1;
     }
 
     ngOnChanges() {

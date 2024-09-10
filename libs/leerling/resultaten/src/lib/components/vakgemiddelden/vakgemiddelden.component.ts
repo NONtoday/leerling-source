@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { SpinnerComponent, isPresent } from 'harmony';
 import { RouterService } from 'leerling-base';
 import { AccessibilityService, GeenDataComponent, PLAATSING_COMPONENT_TABINDEX, PlaatsingenComponent, onRefresh } from 'leerling-util';
@@ -22,6 +22,7 @@ export class VakgemiddeldenComponent implements OnDestroy, OnInit {
     private _routerService = inject(RouterService);
     private _cijfersService = inject(CijfersService);
     private _accessibilityService = inject(AccessibilityService);
+    private _changeDetector = inject(ChangeDetectorRef);
     private destroy$ = new Subject<void>();
 
     private _geselecteerdePlaatsingSubject = new BehaviorSubject<SPlaatsing | undefined>(undefined);
@@ -53,6 +54,7 @@ export class VakgemiddeldenComponent implements OnDestroy, OnInit {
 
     public selecteerPlaatsing(plaatsing: SPlaatsing | undefined) {
         this._geselecteerdePlaatsingSubject.next(plaatsing);
+        this._changeDetector.detectChanges();
     }
 
     public onVakgemiddeldeClick(vakkeuzeGemiddelde: SVakkeuzeGemiddelde) {
