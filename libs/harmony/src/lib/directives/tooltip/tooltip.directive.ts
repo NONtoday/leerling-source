@@ -85,6 +85,9 @@ export class TooltipDirective implements OnChanges, OnDestroy {
     // i.e. show only the name of the student if the name is ellipsed.
     @Input() showIfEllipsed = false;
 
+    // Sanitize the content of the tooltip. Default is true.
+    @Input() sanitizeContentTooltip: Optional<boolean> = true;
+
     private _isOpenedOnTouch: boolean;
 
     @HostListener('mouseenter', ['$event'])
@@ -132,7 +135,11 @@ export class TooltipDirective implements OnChanges, OnDestroy {
 
     private get _sanitizedHtmlContent() {
         const value = isFunction(this.hmyTooltip) ? this.hmyTooltip() : this.hmyTooltip;
-        return value ? this._sanitizer.sanitize(SecurityContext.HTML, value) : undefined;
+        if (this.sanitizeContentTooltip && value) {
+            return this._sanitizer.sanitize(SecurityContext.HTML, value);
+        } else {
+            return value;
+        }
     }
 
     ngOnDestroy(): void {

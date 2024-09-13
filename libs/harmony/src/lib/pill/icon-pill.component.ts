@@ -19,4 +19,5 @@ export class IconPillComponent extends BasePillComponent {
     @Input() public iconSize: IconSize = 'small';
     @Input() public iconOpacity = 1;
     @Input() public iconVisible = true;
+    @Input() public iconOnly = false;
 }

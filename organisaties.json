@@ -1854,16 +1854,6 @@
                         "omschrijving": "Comenius OIDC WIS",
                         "url": "https://beheer.comenius.nl",
                         "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "OIDC CSG Calvijn",
-                        "url": "https://beheer.calvijn.nl",
-                        "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "Azure CSG Calvijn",
-                        "url": "https://login.microsoftonline.com/educalvijn.onmicrosoft.com/v2.0",
-                        "domain_hint": "educalvijn.onmicrosoft.com"
                     }
                 ]
             },
@@ -2219,7 +2209,7 @@
                 "plaats": "HELMOND",
                 "oidcurls": [
                     {
-                        "omschrijving": "St. Willibrord Gymnasium Ouders/verzorgers",
+                        "omschrijving": "Willibrord Gymnasium Ouders/verzorgers",
                         "url": "https://beheersportal.willibrordgymnasium.nl",
                         "domain_hint": ""
                     },

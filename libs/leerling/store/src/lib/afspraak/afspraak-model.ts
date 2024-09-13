@@ -137,9 +137,11 @@ function mapHerhalendeAfspraak(rHerhalendeAfspraak: RHerhalendeAfspraak | undefi
 }
 
 function mapKwtInfo(kwt: RkwtAfspraakItem): SKWTInfo {
+    const ingeschrevenVoorCancelledKwtAfspraak = kwt.inschrijfStatus === 'WEL' && !kwt.afspraakActies?.find((actie) => actie.ingeschreven);
+
     return {
         afspraakActies: kwt.afspraakActies?.map((afspraakActie) => mapAfspraakActie(afspraakActie)).filter(isPresent) ?? [],
-        inschrijfStatus: kwt.inschrijfStatus ?? 'ONBEPAALD',
+        inschrijfStatus: ingeschrevenVoorCancelledKwtAfspraak ? 'NIET' : (kwt.inschrijfStatus ?? 'ONBEPAALD'),
         minimumAantalKeuzes: kwt.minimumAantalKeuzes ?? 0,
         maximumAantalKeuzes: kwt.maximumAantalKeuzes ?? 0,
         kwtSysteem: kwt.kwtSysteem ?? 'SOMTODAY'

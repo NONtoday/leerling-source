@@ -9,6 +9,7 @@ export abstract class BasePillComponent implements OnChanges {
     private tooltipDirective = inject(TooltipDirective, { optional: true });
     @Input() @HostBinding('attr.type') public type: PillTagType = 'light';
     @Input() @HostBinding('attr.color') public color: PillTagColor = 'primary';
+    @Input() @HostBinding('style.width') public width = 'initial';
     @Input() @HostBinding('class.met-chevron') public metChevron = false;
     @Input() @HostBinding('class.hoverable') public hoverable: boolean;
     @Input() @HostBinding('class.pointer') public pointer = false;

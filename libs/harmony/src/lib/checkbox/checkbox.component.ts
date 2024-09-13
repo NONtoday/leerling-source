@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ElementRef, Input, OnChanges, inject, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, inject, input, output } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { IconCheck, provideIcons } from 'harmony-icons';
@@ -26,14 +25,18 @@ import { DeviceService } from '../services/device.service';
 })
 export class CheckboxComponent implements ControlValueAccessor, OnChanges {
     private _elementRef = inject(ElementRef);
+    private changeDetector = inject(ChangeDetectorRef);
     private _touched = false;
     private _onChange = (value: boolean) => this.valueChanged.emit(value);
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     private _onTouch = () => {};
 
     @Input() checked?: boolean;
     @Input() disabled = false;
     @Input() disabledTooltip?: string;
     @Input() color: 'primary' | 'positive' = 'primary';
+    @Input() label?: string;
+    @Input() maxWidthLabel = 'none';
 
     customTabIndex = input(0);
 
@@ -45,6 +48,9 @@ export class CheckboxComponent implements ControlValueAccessor, OnChanges {
     ngOnChanges(): void {
         this._elementRef.nativeElement.style.setProperty('--active-color', `var(--action-${this.color}-normal)`);
         this._elementRef.nativeElement.style.setProperty('--active-hover-color', `var(--action-${this.color}-strong)`);
+        if (this.label) {
+            this._elementRef.nativeElement.classList.add('with-label');
+        }
     }
 
     toggleCheckbox(event: Event) {
@@ -52,6 +58,14 @@ export class CheckboxComponent implements ControlValueAccessor, OnChanges {
         this.checked = (<HTMLInputElement>event.target).checked;
         this._onChange(this.checked);
         this.touch();
+    }
+
+    toggleCheckboxFromLabel(): void {
+        if (!this.disabled) {
+            this.checked = !this.checked;
+            this._onChange(this.checked);
+            this._onTouch();
+        }
     }
 
     touch() {
@@ -62,6 +76,7 @@ export class CheckboxComponent implements ControlValueAccessor, OnChanges {
 
     writeValue(obj: any): void {
         this.checked = obj;
+        this.changeDetector.markForCheck();
     }
 
     registerOnChange(fn: any): void {
