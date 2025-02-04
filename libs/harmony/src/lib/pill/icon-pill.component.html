@@ -1,9 +1,0 @@
-@if (iconVisible) {
-    <i [hmyIcon]="icon" [color]="getIconColor()" [size]="iconSize" [style.opacity]="iconOpacity"></i>
-}
-@if (!iconOnly) {
-    <span>{{ text }}</span>
-}
-@if (metChevron) {
-    <i [color]="getIconColor()" size="smallest" hmyIcon="chevronOnder"></i>
-}

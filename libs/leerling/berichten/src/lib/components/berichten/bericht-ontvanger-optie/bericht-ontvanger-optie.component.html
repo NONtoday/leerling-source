@@ -1,6 +1,0 @@
-<span class="naam text-strong text-content-semi">{{ correspondent().naam }}</span>
-<div class="vakken">
-    @for (vak of getoondeVakken(); track $index) {
-        <hmy-icon-pill [text]="vak.afkorting" [icon]="vak.naam | vakToIcon" color="neutral" type="outline" />
-    }
-</div>
