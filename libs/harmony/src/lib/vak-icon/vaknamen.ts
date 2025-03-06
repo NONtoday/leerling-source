@@ -2,183 +2,232 @@ import { IconName } from 'harmony-icons';
 
 export interface VakType {
     keywords: string[];
+    abreviation: string[];
     icon: IconName;
 }
 
 export const overig: VakType[] = [
     {
         keywords: ['a', 'b', 'c', 'd'],
+        abreviation: [],
         icon: 'overig1'
     },
     {
         keywords: ['e', 'f', 'g', 'h'],
+        abreviation: [],
         icon: 'overig2'
     },
     {
         keywords: ['i', 'j', 'k', 'l'],
+        abreviation: [],
         icon: 'overig3'
     },
     {
         keywords: ['m', 'n', 'o', 'p'],
+        abreviation: [],
         icon: 'overig4'
     },
     {
         keywords: ['q', 'r', 's', 't', 'u'],
+        abreviation: [],
         icon: 'overig5'
     },
     {
         keywords: ['v', 'w', 'x', 'y', 'z'],
+        abreviation: [],
         icon: 'overig6'
     }
 ];
 
 export const vaknamen: VakType[] = [
     {
-        keywords: ['aardrijkskunde', 'ak'],
+        keywords: ['algemene leermiddelen'],
+        abreviation: [],
+        icon: 'overig6'
+    },
+    {
+        keywords: ['aardrijkskunde'],
+        abreviation: ['ak'],
         icon: 'aardrijkskunde'
     },
     {
-        keywords: ['biologie', 'bi', 'bio'],
+        keywords: ['biologie'],
+        abreviation: ['bio', 'bi'],
         icon: 'biologie'
     },
     {
-        keywords: ['natuur, leven en technologie', 'nlt'],
+        keywords: ['natuur, leven en technologie'],
+        abreviation: ['nlt'],
         icon: 'biologie'
     },
     {
-        keywords: ['bedrijfseconomie', 'beco'],
+        keywords: ['bedrijfseconomie'],
+        abreviation: ['beco'],
         icon: 'bedrijfseconomie'
     },
     {
-        keywords: ['culturele en kunstzinnige vorming', 'cultureel kunstzinnige vorming', 'ckv'],
+        keywords: ['culturele en kunstzinnige vorming', 'cultureel kunstzinnige vorming'],
+        abreviation: ['ckv'],
         icon: 'schilderspalet'
     },
     {
-        keywords: ['klassieke culturele vorming', 'kcv'],
+        keywords: ['klassieke culturele vorming'],
+        abreviation: ['kcv'],
         icon: 'schilderspalet'
     },
     {
-        keywords: ['beeldende vorming', 'bv, bte, kubv'],
+        keywords: ['beeldende vorming'],
+        abreviation: ['bv', 'bte', 'kubv'],
         icon: 'schilderspalet'
     },
     {
         keywords: ['handvaardigheid'],
+        abreviation: [],
         icon: 'schilderspalet'
     },
     {
-        keywords: ['chinese taal en letterkunde', 'chinees', 'ch, chtl'],
+        keywords: ['chinese taal en letterkunde', 'chinees'],
+        abreviation: ['ch, chtl'],
         icon: 'chinees'
     },
     {
-        keywords: ['duitse taal en literatuur', 'duitse taal', 'du', 'dui', 'dutl'],
+        keywords: ['duitse taal en literatuur', 'duitse taal', 'duits'],
+        abreviation: ['du', 'dui', 'dutl'],
         icon: 'duits'
     },
     {
-        keywords: ['drama', 'theater', 'kudr', 'dr'],
+        keywords: ['drama', 'theater'],
+        abreviation: ['kudr', 'dr'],
         icon: 'drama'
     },
     {
-        keywords: ['economie', 'eco', 'eo', 'econ', 'ee'],
+        keywords: ['economie'],
+        abreviation: ['eco', 'eo', 'econ', 'ee', 'ec'],
         icon: 'economie'
     },
     {
-        keywords: ['engelse taal en literatuur', 'engelse taal', 'engels', 'en', 'entl', 'anglia'],
+        keywords: ['engelse taal en literatuur', 'engelse taal', 'engels', 'anglia'],
+        abreviation: ['en', 'entl'],
         icon: 'engels'
     },
     {
-        keywords: ['franse taal en literatuur', 'franse taal', 'frans', 'fa', 'fatl'],
+        keywords: ['franse taal en literatuur', 'franse taal', 'frans'],
+        abreviation: ['fa', 'fatl'],
         icon: 'frans'
     },
     {
-        keywords: ['geschiedenis', 'gs', 'ges'],
+        keywords: ['geschiedenis'],
+        abreviation: ['gs', 'ges'],
         icon: 'geschiedenis'
     },
     {
-        keywords: ['godsdienst', 'gd', 'gds'],
+        keywords: ['godsdienst'],
+        abreviation: ['gd', 'gds'],
         icon: 'godsdienst'
     },
     {
-        keywords: ['griekse taal', 'grieks', 'gr', 'gtc'],
+        keywords: ['griekse taal', 'grieks'],
+        abreviation: ['gr', 'gtc'],
         icon: 'grieks'
     },
     {
-        keywords: ['tekenen', 'te'],
+        keywords: ['tekenen'],
+        abreviation: ['te'],
         icon: 'tekenen'
     },
     {
-        keywords: ['informatica', 'in'],
+        keywords: ['informatica'],
+        abreviation: ['in'],
         icon: 'informatica'
     },
     {
-        keywords: ['lichamelijke opvoeding', 'lo', 'sport', 'bewegingsonderwijs', 'gym', 'beweging, sport en maatschappij', 'bsm'],
+        keywords: ['lichamelijke opvoeding', 'sport', 'bewegingsonderwijs', 'beweging, sport en maatschappij'],
+        abreviation: ['lo', 'gym', 'bsm'],
         icon: 'lichamelijkeopvoeding'
     },
     {
-        keywords: ['latijn', 'la', 'ltc'],
+        keywords: ['latijn'],
+        abreviation: ['la', 'ltc'],
         icon: 'latijn'
     },
     {
-        keywords: ['filosofie', 'fi', 'levensbeschouwing, ethiek en filosofie', 'levensbeschouwelijke vorming'],
+        keywords: ['filosofie', 'levensbeschouwing, ethiek en filosofie', 'levensbeschouwelijke vorming'],
+        abreviation: ['fi'],
         icon: 'filosofie'
     },
     {
-        keywords: ['management & organisatie', 'mo'],
+        keywords: ['management & organisatie'],
+        abreviation: ['mo'],
         icon: 'managementorganisatie'
     },
     {
-        keywords: ['muziek', 'mu', 'kmu', 'kumu'],
+        keywords: ['muziek'],
+        abreviation: ['mu', 'kmu', 'kumu'],
         icon: 'muziek'
     },
     {
-        keywords: ['maatschappijleer', 'ma', 'mask', 'maat', 'mm'],
+        keywords: ['maatschappijleer'],
+        abreviation: ['ma', 'mask', 'maat', 'mm'],
         icon: 'maatschappijleerburgerschap'
     },
     {
-        keywords: ['burgerschap', 'bur'],
+        keywords: ['burgerschap'],
+        abreviation: ['bur'],
         icon: 'maatschappijleerburgerschap'
     },
     {
-        keywords: ['nederlandse taal en literatuur', 'nederlandse taal', 'nederlands', 'ne', 'netl'],
+        keywords: ['nederlandse taal en literatuur', 'nederlandse taal', 'nederlands'],
+        abreviation: ['ne', 'netl'],
         icon: 'nederlands'
     },
     {
-        keywords: ['natuurkunde', 'nat'],
+        keywords: ['natuurkunde'],
+        abreviation: ['nat', 'na'],
         icon: 'natuurkunde'
     },
     {
         keywords: ['algemene natuurwetenschappen'],
+        abreviation: [],
         icon: 'natuurkunde'
     },
     {
-        keywords: ['natuur- en scheikunde', 'nask', 'nsk', 'nso'],
+        keywords: ['natuur- en scheikunde'],
+        abreviation: ['nask', 'nsk', 'nso'],
         icon: 'natuurkunde'
     },
     {
-        keywords: ['kunstgeschiedenis', 'ku', 'kua'],
+        keywords: ['kunstgeschiedenis'],
+        abreviation: ['ku', 'kua'],
         icon: 'schilderspalet'
     },
     {
-        keywords: ['scheikunde', 'schk', 'sk'],
+        keywords: ['scheikunde'],
+        abreviation: ['schk', 'sk'],
         icon: 'scheikunde'
     },
     {
-        keywords: ['spaanse taal en literatuur', 'spaanse taal', 'spaans', 'sp', 'sptl'],
+        keywords: ['spaanse taal en literatuur', 'spaanse taal', 'spaans'],
+        abreviation: ['sp', 'sptl'],
         icon: 'spaans'
     },
     {
-        keywords: ['techniek', 'tn'],
+        keywords: ['techniek'],
+        abreviation: ['tn'],
         icon: 'techniek'
     },
     {
-        keywords: ['verzorging', 'vz', 'zw'],
+        keywords: ['verzorging'],
+        abreviation: ['vz', 'zw'],
         icon: 'verzorging'
     },
     {
-        keywords: ['wiskunde a', 'wiskunde b', 'wiskunde c', 'wiskunde d', 'wiskunde', 'wi', 'ws'],
+        keywords: ['wiskunde'],
+        abreviation: ['wis', 'wi', 'wisa', 'wisb', 'wisc', 'wisd'],
         icon: 'wiskunderekenen'
     },
     {
-        keywords: ['rekenen', 're'],
+        keywords: ['rekenen'],
+        abreviation: ['rek'],
         icon: 'wiskunderekenen'
     }
 ];

@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, inject, OnDestroy, viewChild } from '@angular/core';
 import { IsActiveMatchOptions, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { SpinnerComponent, SwitchComponent, SwitchGroupComponent, TabComponent } from 'harmony';
-import { TabBarComponent } from 'leerling-base';
+import { SwitchComponent, SwitchGroupComponent, TabComponent } from 'harmony';
+import { CIJFERS, getRestriction, TabBarComponent } from 'leerling-base';
 import { REloRestricties } from 'leerling-codegen';
 import { HeaderComponent, ScrollableTitleComponent } from 'leerling-header';
 import { AccessibilityService, onRefreshOrRedirectHome } from 'leerling-util';
@@ -9,7 +9,6 @@ import { CijfersService } from '../../services/cijfers/cijfers.service';
 
 @Component({
     selector: 'sl-cijfers',
-    standalone: true,
     imports: [
         RouterOutlet,
         RouterLink,
@@ -18,7 +17,6 @@ import { CijfersService } from '../../services/cijfers/cijfers.service';
         SwitchGroupComponent,
         SwitchComponent,
         ScrollableTitleComponent,
-        SpinnerComponent,
         HeaderComponent,
         TabBarComponent
     ],
@@ -26,8 +24,10 @@ import { CijfersService } from '../../services/cijfers/cijfers.service';
     styleUrls: ['./cijfers.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CijfersComponent {
+export class CijfersComponent implements OnDestroy {
     public static CIJFERSFEATURE: keyof REloRestricties = 'cijfersBekijkenAan';
+
+    public switchOverzicht = viewChild('switchOverzicht', { read: RouterLinkActive });
 
     private _changeDetectorRef = inject(ChangeDetectorRef);
     private _cijfersService = inject(CijfersService);
@@ -43,7 +43,7 @@ export class CijfersComponent {
             this._changeDetectorRef.detectChanges();
         });
 
-        onRefreshOrRedirectHome([CijfersComponent.CIJFERSFEATURE]);
+        onRefreshOrRedirectHome([getRestriction(CIJFERS)]);
     }
 
     public routerLinkActiveOptions: IsActiveMatchOptions = {
@@ -59,5 +59,9 @@ export class CijfersComponent {
                 this.accessibilityService.focusElementWithTabIndex(index);
             }
         });
+    }
+
+    ngOnDestroy() {
+        this._cijfersService.setToonLegeResultaatKolommen(false);
     }
 }

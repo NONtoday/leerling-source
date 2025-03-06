@@ -15,7 +15,6 @@ const ANIMATIONS = [expandOnEnterAnimation(), collapseOnLeaveAnimation()];
 
 @Component({
     selector: 'sl-bijlagen-map',
-    standalone: true,
     imports: [CommonModule, IconDirective, BijlageComponent],
     templateUrl: './bijlagen-map.component.html',
     styleUrl: './bijlagen-map.component.scss',

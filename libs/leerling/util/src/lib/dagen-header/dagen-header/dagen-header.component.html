@@ -3,7 +3,8 @@
     [huiswerkItems]="huiswerkItems() ?? [] | drieluikData: 0"
     [customTabindex]="-1"
     (navigation)="updatePeildatum($event)"
-    data-position="left" />
+    data-position="left"
+    aria-hidden="true" />
 @if (showSwipeIndicator()) {
     <div class="swipe-indicator" data-position="left"></div>
 }
@@ -21,7 +22,8 @@
     [huiswerkItems]="huiswerkItems() ?? [] | drieluikData: 2"
     [customTabindex]="-1"
     (navigation)="updatePeildatum($event)"
-    data-position="right" />
+    data-position="right"
+    aria-hidden="true" />
 @if (showSwipeIndicator()) {
     <div class="swipe-indicator" data-position="right"></div>
 }

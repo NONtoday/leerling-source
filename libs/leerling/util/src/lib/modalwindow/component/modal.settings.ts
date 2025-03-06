@@ -8,6 +8,8 @@ export interface ModalSettings {
     heightModal: string;
     maxHeightModal: string;
     keepOnNavigation?: boolean;
+    hasBookmarkableUrl: boolean;
+    returnURL?: string;
     onClose?: () => void;
 }
 
@@ -20,6 +22,7 @@ export function createModalSettings(updatedSettings?: Partial<ModalSettings>): M
         heightModal: 'initial',
         maxHeightModal: '75%',
         keepOnNavigation: false,
+        hasBookmarkableUrl: false,
         ...updatedSettings
     };
 }

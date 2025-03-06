@@ -8,13 +8,12 @@ import { BehaviorSubject, combineLatest, map, of, startWith, timer } from 'rxjs'
 import { ROOSTER_TIJDLIJN_LABELS, berekenHuidigeTijdlijnTop } from '../../rooster-util';
 import { RoosterService } from '../../services/rooster.service';
 import { RoosterItemComponent } from '../rooster-item/rooster-item.component';
-import { RoosterTijdenComponent } from '../rooster-tijden/rooster-tijden.component';
+
 import { RoosterItemMetPositie, mapToRoosterItemsMetPositie } from './rooster-item-positie-util';
 
 @Component({
     selector: 'sl-rooster-dag',
-    standalone: true,
-    imports: [CommonModule, RoosterTijdenComponent, RoosterItemComponent, SpinnerComponent],
+    imports: [CommonModule, RoosterItemComponent, SpinnerComponent],
     templateUrl: './rooster-dag.component.html',
     styleUrls: ['./rooster-dag.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
@@ -28,12 +27,11 @@ export class RoosterDagComponent implements OnInit, ElementRefProvider, OnDestro
     private _resumeRefreshService = inject(RefreshService);
 
     public datum = input.required<Date>();
-
     public showLoadingSpinner = input(false);
     public customTabindex = input(0);
 
     public items = derivedAsync(() => {
-        const afspraken$ = this._roosterService.getRoosterVoorDag(this.datum()).pipe(map((rooster) => rooster?.dagen[0].afspraken));
+        const afspraken$ = this._roosterService.getRoosterVoorDag(this.datum(), false).pipe(map((rooster) => rooster?.dagen[0].afspraken));
         return combineLatest([afspraken$, this._onResizeSubject]).pipe(
             map(([items]) => mapToRoosterItemsMetPositie(items, this._elementRef.nativeElement.getBoundingClientRect().width))
         );

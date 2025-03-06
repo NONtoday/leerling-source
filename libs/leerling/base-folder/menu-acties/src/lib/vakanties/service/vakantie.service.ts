@@ -16,6 +16,6 @@ export class VakantieService {
         const eindDatum = endOfDay(getEindDatumSchooljaar(vandaag));
         this._store.dispatch(new RefreshVakantie());
 
-        return this._store.select(VakantieSelectors.getVakanties(beginDatum, eindDatum));
+        return this._store.select(VakantieSelectors.getVakanties(beginDatum, eindDatum, false));
     }
 }

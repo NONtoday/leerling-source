@@ -1,6 +1,6 @@
 <sl-header [hideBorderBottomMobile]="true" />
 
-<div class="container">
+<div class="container" [class.wide]="switchOverzicht()?.isActive">
     @if (scrollableTitle(); as title) {
         <sl-scrollable-title [title]="title" [vakNaam]="title === 'Cijfers' ? undefined : title" />
     }
@@ -27,6 +27,16 @@
                     role="tab"
                     label="Vakgemiddelden"
                     tabindex="101" />
+                <hmy-switch
+                    #switchOverzicht="routerLinkActive"
+                    #vakgemiddelden
+                    [routerLink]="['overzicht']"
+                    [routerLinkActiveOptions]="routerLinkActiveOptions"
+                    [attr.aria-selected]="switchGemiddelden.isActive"
+                    routerLinkActive="active"
+                    role="tab"
+                    label="Cijferoverzicht"
+                    tabindex="102" />
             </hmy-switch-group>
 
             <div class="tabs">
@@ -56,7 +66,6 @@
             </div>
         }
     }
-
     <router-outlet />
 </div>
 

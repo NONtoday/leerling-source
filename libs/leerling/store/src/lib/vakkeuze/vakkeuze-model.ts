@@ -28,11 +28,14 @@ export function createVakkeuzeModel(vakkeuzes: RVakkeuze[]): SVakkeuzeModel {
 
 export function mapVakkeuze(vakkeuze: RVakkeuze): SVakkeuze | undefined {
     if (!vakkeuze.leerling?.UUID || !vakkeuze.vak) return undefined;
+
     return {
         id: getEntiteitId(vakkeuze),
         vak: mapVak(vakkeuze.vak),
         vrijstelling: Boolean(vakkeuze.vrijstelling),
         leerlingUuid: vakkeuze.leerling.UUID,
+        // Hoewel we ook de lichting gemodeleerd hebben, houden we deze shortcut.
+        // Zo weten we zeker dat er altijd met de juiste lichting wordt gewerkt.
         lichtingUuid: vakkeuze.relevanteCijferLichting?.UUID ?? DEFAULT_STRING
     };
 }

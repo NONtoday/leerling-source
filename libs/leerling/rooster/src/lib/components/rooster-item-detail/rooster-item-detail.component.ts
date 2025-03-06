@@ -2,9 +2,9 @@ import { CommonModule } from '@angular/common';
 import {
     ChangeDetectionStrategy,
     Component,
+    DestroyRef,
     ElementRef,
     Injector,
-    OnDestroy,
     OnInit,
     Signal,
     TemplateRef,
@@ -13,89 +13,72 @@ import {
     computed,
     inject,
     input,
+    output,
     signal,
     viewChild
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Actions, ofActionSuccessful } from '@ngxs/store';
 import { format } from 'date-fns';
 import {
     ButtonComponent,
     DeviceService,
-    ErrorBarComponent,
     ModalService as HarmonyModalService,
     IconDirective,
+    IconPillComponent,
     PillComponent,
     PillTagColor,
-    SpinnerComponent,
-    StripHTMLPipe,
-    TabInput,
-    TabRowComponent,
     TagComponent,
     VakIconComponent,
-    createModalSettings as createHarmonyModalSettings,
     isPresent
 } from 'harmony';
-import { IconBijlage, IconPijlLinks, IconSluiten, IconWaarschuwing, provideIcons } from 'harmony-icons';
+import { IconBijlage, IconChevronOnder, IconPijlLinks, IconSluiten, IconWaarschuwing, provideIcons } from 'harmony-icons';
 import { AppStatusService } from 'leerling-app-status';
 import { AuthenticationService, SsoService } from 'leerling-authentication';
 import { HtmlContentComponent } from 'leerling-base';
-import { StudiemateriaalComponent, StudiemateriaalVakselectieComponent } from 'leerling-studiemateriaal';
+
 import { StudiewijzerItemComponent } from 'leerling-studiewijzer-api';
 import {
     FULL_SCREEN_MET_MARGIN,
     InfoMessageService,
+    InteractiveGuardComponent,
     ModalService,
     ModalSettings,
     SidebarService,
     SidebarSettings,
     SlDatePipe,
-    ToHuiswerkTypenPipe,
     createModalSettings,
     createSidebarSettings,
     formatDateNL
 } from 'leerling-util';
-import { KwtActieUitvoerenReady, SBijlage, SStudiewijzerItem } from 'leerling/store';
-import { StudiewijzerItemDetailComponent } from 'leerling/studiewijzer';
+import { KwtActieUitvoerenReady, SBijlage, SStudiewijzerItem, getJaarWeek } from 'leerling/store';
 import { isEqual } from 'lodash-es';
 import { derivedAsync } from 'ngxtension/derived-async';
-import { Subject, filter, takeUntil } from 'rxjs';
+import { filter } from 'rxjs';
 import { RoosterItem } from '../../services/rooster-model';
 import { RoosterService } from '../../services/rooster.service';
-import { KwtUitschrijvenConfirmModalComponent } from '../kwt-uitschrijven-confirm-modal/kwt-uitschrijven-confirm-modal.component';
 import { MedewerkerAanhefAriaLabelPipe } from './medewerker-aanhef-aria-label.pipe';
-
-const MODUS = ['Omschrijving', 'Studiemateriaal'] as const;
-const TABS: TabInput[] = MODUS.map((label) => ({ label }));
-type Modus = (typeof MODUS)[number];
 
 @Component({
     selector: 'sl-rooster-item-detail',
-    standalone: true,
     imports: [
         CommonModule,
         IconDirective,
         HtmlContentComponent,
         PillComponent,
         TagComponent,
-        StripHTMLPipe,
         StudiewijzerItemComponent,
-        ToHuiswerkTypenPipe,
-        MedewerkerAanhefAriaLabelPipe,
         VakIconComponent,
         ButtonComponent,
-        ErrorBarComponent,
-        SpinnerComponent,
-        KwtUitschrijvenConfirmModalComponent,
-        TabRowComponent,
-        StudiemateriaalComponent,
-        StudiemateriaalVakselectieComponent
+        InteractiveGuardComponent,
+        IconPillComponent
     ],
     templateUrl: './rooster-item-detail.component.html',
     styleUrl: './rooster-item-detail.component.scss',
-    providers: [provideIcons(IconSluiten, IconBijlage, IconPijlLinks, IconWaarschuwing)],
+    providers: [provideIcons(IconSluiten, IconBijlage, IconPijlLinks, IconWaarschuwing, IconChevronOnder)],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class RoosterItemDetailComponent implements OnInit, OnDestroy {
+export class RoosterItemDetailComponent implements OnInit {
     public confirmModalComponentTemplate = viewChild.required('guard', { read: TemplateRef });
 
     private _authenticationService = inject(AuthenticationService);
@@ -108,13 +91,14 @@ export class RoosterItemDetailComponent implements OnInit, OnDestroy {
     private _infoMessageService = inject(InfoMessageService);
     private _ssoService = inject(SsoService);
     private _elementRef = inject(ElementRef);
+    private _aanhefPipe = new MedewerkerAanhefAriaLabelPipe();
 
     private _datePipe = new SlDatePipe();
 
     public loading = signal(false);
     public kwtFoutmelding: WritableSignal<string | undefined> = signal(undefined);
 
-    private onDestroy$ = new Subject<void>();
+    private _destroyRef = inject(DestroyRef);
     private actions$ = inject(Actions);
     private injector = inject(Injector);
 
@@ -122,6 +106,20 @@ export class RoosterItemDetailComponent implements OnInit, OnDestroy {
     public isOnline = inject(AppStatusService).isOnlineSignal();
 
     public roosterItem = input.required<RoosterItem>();
+
+    public medewerkers = computed(() => this.roosterItem().afspraakItem.medewerkers.slice(0, 10));
+    public meerMedewerkers = computed(() =>
+        this.roosterItem().afspraakItem.medewerkers.slice(10, this.roosterItem().afspraakItem.medewerkers.length)
+    );
+    public toonMeerMedewerkers = signal(false);
+    public medewerkerAriaLabel = computed(() => {
+        const medewerkers = this.toonMeerMedewerkers() ? [...this.medewerkers(), ...this.meerMedewerkers()] : this.medewerkers();
+        return medewerkers.map((medewerker) => this._aanhefPipe.transform(medewerker)).join(', ');
+    });
+
+    public huiswerkItemSelected = output<SStudiewijzerItem>();
+    public openStudiemateriaal = output<void>();
+    public openEditKwtItem = output<boolean>();
     public vakMetUuid = computed(() => {
         const vak = this.roosterItem().afspraakItem.vak;
         return vak?.uuid ? vak : undefined;
@@ -131,7 +129,7 @@ export class RoosterItemDetailComponent implements OnInit, OnDestroy {
     public toonStudiemateriaalBtn = computed(
         () => this._heeftStudiemateriaal() && !this._elementRef.nativeElement.classList.contains('in-sidebar')
     );
-    public toonStudiemateriaalTabs = computed(
+    public toonStudiemateriaalHeaderBtn = computed(
         () => this._heeftStudiemateriaal() && this._elementRef.nativeElement.classList.contains('in-sidebar')
     );
 
@@ -151,6 +149,13 @@ export class RoosterItemDetailComponent implements OnInit, OnDestroy {
             this.roosterItem().afspraakItem.kwtInfo?.inschrijfStatus != 'DEFINITIEF' &&
             this.roosterItem().kwtInfo?.status === 'Ingeschreven'
     );
+    public magWijzigen = computed(() => {
+        const kwtInfo = this.roosterItem()?.afspraakItem?.kwtInfo;
+        if (!kwtInfo || kwtInfo.kwtSysteem === 'SOMTODAY') return false;
+        const acties = kwtInfo?.afspraakActies || [];
+        const heeftInschrijfActies = acties.filter((actie) => !actie.ingeschreven).length > 0;
+        return heeftInschrijfActies && this.magUitschrijven();
+    });
 
     public tijd = computed(
         () => `${format(this.roosterItem().beginDatumTijd, 'HH:mm')} - ${format(this.roosterItem().eindDatumTijd, 'HH:mm')}`
@@ -166,14 +171,17 @@ export class RoosterItemDetailComponent implements OnInit, OnDestroy {
         return `<span class="opacity-80">${info}</span> <span>${tijd}</span>`;
     });
 
-    public lesurenLabel = computed(() => RoosterService.formatBeginEindLesuurForAriaLabel(this.roosterItem().afspraakItem));
-
-    public modus = signal('Omschrijving' as Modus);
-    public tabs = TABS;
+    public lesurenLabel = computed(
+        () =>
+            (this.roosterItem().isToets ? 'Toets, ' : '') +
+            RoosterService.formatBeginEindLesuurForAriaLabel(this.roosterItem().afspraakItem) +
+            ', ' +
+            format(this.roosterItem().afspraakItem.beginDatumTijd, 'H:mm')
+    );
 
     ngOnInit() {
         this.actions$
-            .pipe(ofActionSuccessful(KwtActieUitvoerenReady), takeUntil(this.onDestroy$))
+            .pipe(ofActionSuccessful(KwtActieUitvoerenReady), takeUntilDestroyed(this._destroyRef))
             .subscribe((action) => this.onKwtUitvoerenReady(action.foutmelding));
     }
 
@@ -193,15 +201,12 @@ export class RoosterItemDetailComponent implements OnInit, OnDestroy {
         this._ssoService.openExternalLink(bijlage.fileUrl);
     }
 
-    public openHuiswerk(huiswerk: SStudiewijzerItem) {
-        this._sidebarService.push(
-            StudiewijzerItemDetailComponent,
-            computed(() => ({
-                item: this.roosterItem().studiewijzerItems.find((swi) => swi.id === huiswerk.id) ?? huiswerk
-            })),
-            StudiewijzerItemDetailComponent.getSidebarSettings(huiswerk, () => this.reopenModal())
-        );
-        this.modalSluiten();
+    public openWijzigen(event: Event) {
+        if (event) {
+            event.stopPropagation();
+            event.preventDefault();
+        }
+        this.openEditKwtItem.emit(true);
     }
 
     public openKWTGuard() {
@@ -209,37 +214,24 @@ export class RoosterItemDetailComponent implements OnInit, OnDestroy {
             this.getHerhalendeAfspraakInfo();
         }
         this.isGuardOpen.set(true);
-        this._harmonyModalService.modal(
-            this.confirmModalComponentTemplate(),
-            undefined,
-            createHarmonyModalSettings({
+        this._harmonyModalService.modal({
+            template: this.confirmModalComponentTemplate(),
+            settings: {
                 title: 'Weet je het zeker?',
                 widthModal: '460px',
                 titleIcon: this._deviceService.isPhoneOrTabletPortrait() ? undefined : 'waarschuwing',
                 titleIconColor: 'fg-negative-normal'
-            })
-        ) as KwtUitschrijvenConfirmModalComponent;
+            }
+        });
     }
 
     public schrijfUitVoorKWT() {
         const kwtInfo = this.roosterItem().afspraakItem.kwtInfo;
         const uitschrijfActie = this.roosterItem().kwtInfo?.uitschrijfActie;
+        const roosterItemJaarWeek = getJaarWeek(this.roosterItem().beginDatumTijd);
         if (kwtInfo && uitschrijfActie) {
             this.setLoading(true);
-            this._roosterService.voerKwtActieUit(kwtInfo, uitschrijfActie);
-        }
-    }
-
-    private reopenModal() {
-        if (this._deviceService.isPhoneOrTabletPortrait()) {
-            this._modalService.modal(
-                RoosterItemDetailComponent,
-                {
-                    roosterItem: this.roosterItem(),
-                    pillColor: this.pillColor()
-                },
-                RoosterItemDetailComponent.getModalSettings()
-            );
+            this._roosterService.voerKwtActieUit(kwtInfo, uitschrijfActie, roosterItemJaarWeek);
         }
     }
 
@@ -286,15 +278,10 @@ export class RoosterItemDetailComponent implements OnInit, OnDestroy {
 
     public setLoading(loading: boolean) {
         this.loading.set(loading);
-        if (loading) {
-            this._modalService.setClosingBlocked(true);
-            this._sidebarService.closingBlocked = true;
-            this._harmonyModalService.setClosingBlocked(true);
-        } else {
-            this._modalService.setClosingBlocked(false);
-            this._sidebarService.closingBlocked = false;
-            this._harmonyModalService.setClosingBlocked(false);
-        }
+
+        this._modalService.setClosingBlocked(loading);
+        this._sidebarService.closingBlocked = loading;
+        this._harmonyModalService.setClosingBlocked(loading);
     }
 
     public static getModalSettings(): ModalSettings {
@@ -307,38 +294,7 @@ export class RoosterItemDetailComponent implements OnInit, OnDestroy {
     public static getSidebarSettings(omschrijving: string): SidebarSettings {
         return createSidebarSettings({
             title: omschrijving,
-            headerType: 'none'
+            headerDevice: 'none'
         });
-    }
-
-    ngOnDestroy(): void {
-        this.onDestroy$.next();
-        this.onDestroy$.complete();
-    }
-
-    public openStudiemateriaal() {
-        const vak = this.roosterItem().afspraakItem.vak;
-        if (vak) {
-            this._sidebarService.push(
-                StudiemateriaalComponent,
-                {
-                    vak: vak,
-                    lesgroep: undefined,
-                    toonAlgemeneLeermiddelen: true
-                },
-                StudiemateriaalComponent.getSidebarSettings(vak, () => this.reopenModal())
-            );
-        } else {
-            this._sidebarService.push(
-                StudiemateriaalVakselectieComponent,
-                {},
-                StudiemateriaalVakselectieComponent.getSidebarSettings(() => this.reopenModal())
-            );
-        }
-        this.modalSluiten();
-    }
-
-    public onTabSwitch(tab: string) {
-        this.modus.set(tab as Modus);
     }
 }

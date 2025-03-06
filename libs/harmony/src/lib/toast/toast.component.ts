@@ -1,11 +1,11 @@
-import { ChangeDetectionStrategy, Component, Signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, Signal, computed, inject } from '@angular/core';
 import { IconInformatie, IconName, IconNoRadio, IconSluiten, IconWaarschuwing, IconYesRadio, provideIcons } from 'harmony-icons';
 import { Toast } from 'ngx-toastr';
 import { IconDirective } from '../icon/icon.directive';
 
+export const HARMONY_TOAST_SELECTOR = 'hmy-toast';
 @Component({
-    selector: 'hmy-toast',
-    standalone: true,
+    selector: HARMONY_TOAST_SELECTOR,
     imports: [IconDirective],
     templateUrl: './toast.component.html',
     styleUrls: ['./toast.component.scss'],
@@ -13,6 +13,8 @@ import { IconDirective } from '../icon/icon.directive';
     providers: [provideIcons(IconSluiten, IconInformatie, IconWaarschuwing, IconNoRadio, IconYesRadio)]
 })
 export class ToastComponent extends Toast {
+    public elementRef = inject(ElementRef);
+
     icon: Signal<IconName | undefined> = computed(() => {
         if (this.toastClasses.includes('toast-success')) {
             return 'yesRadio';

@@ -2,13 +2,14 @@ import { isPresent } from 'harmony';
 import {
     SGeldendResultaat,
     SGeldendVoortgangsdossierResultaat,
+    SToetskolom,
+    SToetskolommen,
     SVakExamenResultaat,
     SVakVoortgangsResultaat,
     Toetstype,
-    createDummyResultaat,
-    isGeimporteerdSeResultaat
+    createDummyResultaat
 } from 'leerling/store';
-import { upperFirst } from 'lodash-es';
+import { orderBy, upperFirst } from 'lodash-es';
 import { IsVoldoendeType, formatIsVoldoende } from '../../components/resultaat-item/resultaat-item-model';
 import { Poging, formatCijferDate } from '../laatsteresultaten/laatsteresultaten-model';
 
@@ -19,11 +20,11 @@ export interface PogingData {
     isOnvoldoende: boolean;
     opmerking?: string;
 }
-
 export interface ToetsResultaat<T extends SGeldendResultaat> {
     naam: string;
     datum: string;
     resultaat: string;
+    isLeegResultaat: boolean;
     wegingVoortgang?: string;
     wegingExamen?: string;
 
@@ -31,18 +32,20 @@ export interface ToetsResultaat<T extends SGeldendResultaat> {
     heeftHerkansing: boolean;
     heeftOpmerking: boolean;
     isVoldoende: IsVoldoendeType;
-    laatstePoging: Poging;
+    laatstePoging?: Poging;
     geldendResultaat: T;
     pogingen: PogingData[];
 }
 
 export interface VoortgangsPeriode {
     periode: number;
+    afkorting: string | undefined | null;
     periodeGemiddelde?: string;
     periodeGemiddeldeIsOnvoldoende?: boolean;
     rapportGemiddelde?: string;
     rapportGemiddeldeIsOnvoldoende?: boolean;
     rapportCijfer?: string;
+    isLeegRapportCijfer?: boolean;
     rapportCijferOpmerking?: string;
     rapportCijferIsOnvoldoende?: boolean;
     toetsResultaten: ToetsResultaat<SGeldendVoortgangsdossierResultaat>[];
@@ -50,7 +53,7 @@ export interface VoortgangsPeriode {
 
 export interface VoortgangsNiveau {
     naam: string;
-    perioden: { [periode: number]: VoortgangsPeriode };
+    perioden: VoortgangsPeriode[];
     heeftResultaten: boolean;
 }
 
@@ -84,62 +87,88 @@ export interface VakToetsdossier {
     vakNaam: string | undefined;
 }
 
-export function mapToVakVoortgangsdossier(vakVoortgangsResultaat: SVakVoortgangsResultaat): VakVoortgangsdossier | undefined {
+export function mapToVakVoortgangsdossier(
+    vakVoortgangsResultaat: SVakVoortgangsResultaat,
+    kolommen?: SToetskolommen
+): VakVoortgangsdossier | undefined {
     if (!vakVoortgangsResultaat) {
         return undefined;
     }
 
     const voortgangsResultaten = vakVoortgangsResultaat.geldendVoortgangsResultaten;
-    if (voortgangsResultaten.length === 0) {
+    if (voortgangsResultaten.length === 0 && (!kolommen || kolommen.resultaatKolommen?.length === 0)) {
         return {
             vaknaam: '',
             lichtingUuid: '',
-            standaardNiveau: { naam: '', perioden: {}, heeftResultaten: false }
+            standaardNiveau: { naam: '', perioden: [], heeftResultaten: false }
         };
     }
 
+    const alternatiefNiveau = getAlternatiefNiveau(voortgangsResultaten, kolommen);
+
     return {
-        vaknaam: upperFirst(voortgangsResultaten[0].vakNaam),
-        lichtingUuid: vakVoortgangsResultaat.lichtingUuid,
-        plaatsingUuid: vakVoortgangsResultaat.plaatsingUuid,
-        standaardNiveau: getStandaardNiveau(voortgangsResultaten),
-        alternatiefNiveau: getAlternatiefNiveau(voortgangsResultaten)
+        vaknaam: voortgangsResultaten && voortgangsResultaten.length > 0 ? upperFirst(voortgangsResultaten[0].vakNaam) : '',
+        lichtingUuid: vakVoortgangsResultaat.lichtingUuid ?? '',
+        plaatsingUuid: vakVoortgangsResultaat.plaatsingUuid ?? '',
+        standaardNiveau: getStandaardNiveau(voortgangsResultaten, kolommen),
+        alternatiefNiveau: alternatiefNiveau
     };
 }
 
 const TOETS_TOETSTYPEN: Toetstype[] = ['Toetskolom', 'SamengesteldeToetsKolom', 'Werkstukcijferkolom', 'Advieskolom', 'RapportToetskolom'];
 
-function getStandaardNiveau(voortgangsResultaten: SGeldendVoortgangsdossierResultaat[]): VoortgangsNiveau {
+function getStandaardNiveau(voortgangsResultaten: SGeldendVoortgangsdossierResultaat[], kolommen?: SToetskolommen): VoortgangsNiveau {
     const toetsResultaten = getResultaten(voortgangsResultaten, TOETS_TOETSTYPEN);
     const periodeGemiddelden = getResultaten(voortgangsResultaten, ['PeriodeGemiddeldeKolom']);
     const rapportGemiddelden = getResultaten(voortgangsResultaten, ['RapportGemiddeldeKolom']);
     const rapportCijfers = getResultaten(voortgangsResultaten, ['RapportCijferKolom']);
-    const perioden = getPerioden(toetsResultaten, periodeGemiddelden, rapportGemiddelden, rapportCijfers);
-
+    const perioden = getPerioden(toetsResultaten, periodeGemiddelden, rapportGemiddelden, rapportCijfers, kolommen);
+    const heeftResultaten =
+        toetsResultaten.length > 0 || periodeGemiddelden.length > 0 || rapportGemiddelden.length > 0 || rapportCijfers.length > 0;
+    const heeftResultatenOfKolommen = heeftResultaten || (kolommen && kolommen.resultaatKolommen?.length > 0);
+    const optionalStandaardNiveauNaam = perioden
+        .map((periode) => periode.toetsResultaten)
+        .flat()
+        .map((res) => res.geldendResultaat)
+        .flat()
+        .find((gResult) => gResult.naamStandaardNiveau)?.naamStandaardNiveau;
     return {
-        naam: upperFirst(toetsResultaten[0]?.geldendResultaat.naamStandaardNiveau) ?? 'Standaard',
+        naam: optionalStandaardNiveauNaam ? upperFirst(optionalStandaardNiveauNaam) : 'Standaard',
         perioden: perioden,
-        heeftResultaten:
-            toetsResultaten.length > 0 || periodeGemiddelden.length > 0 || rapportGemiddelden.length > 0 || rapportCijfers.length > 0
-    };
+        heeftResultaten: heeftResultatenOfKolommen
+    } as VoortgangsNiveau;
 }
 
-function getAlternatiefNiveau(voortgangsResultaten: SGeldendVoortgangsdossierResultaat[]): VoortgangsNiveau | undefined {
+function getAlternatiefNiveau(
+    voortgangsResultaten: SGeldendVoortgangsdossierResultaat[],
+    kolommen?: SToetskolommen
+): VoortgangsNiveau | undefined {
     const toetsResultaten = getAlternatieveResultaten(voortgangsResultaten, TOETS_TOETSTYPEN);
     const periodeGemiddelden = getAlternatieveResultaten(voortgangsResultaten, ['PeriodeGemiddeldeKolom']);
     const rapportGemiddelden = getAlternatieveResultaten(voortgangsResultaten, ['RapportGemiddeldeKolom']);
     const rapportCijfers = getAlternatieveResultaten(voortgangsResultaten, ['RapportCijferKolom']);
-    const perioden = getPerioden(toetsResultaten, periodeGemiddelden, rapportGemiddelden, rapportCijfers);
-    const periodeNummers = Object.keys(perioden) as object as number[];
-    if (periodeNummers.length === 0) {
+    const perioden = getPerioden(toetsResultaten, periodeGemiddelden, rapportGemiddelden, rapportCijfers, kolommen);
+
+    const heeftResultaten =
+        toetsResultaten.length > 0 || periodeGemiddelden.length > 0 || rapportGemiddelden.length > 0 || rapportCijfers.length > 0;
+
+    const geldendResultaten = perioden
+        .map((periode) => periode.toetsResultaten)
+        .flat()
+        .map((res) => res.geldendResultaat)
+        .flat();
+
+    const heeftAlternatiefNiveau = geldendResultaten.find((gResult) => gResult.heeftAlternatiefNiveau);
+    if (!heeftAlternatiefNiveau || !heeftResultaten) {
+        // Als het in Core gedefinieerd is dat er een alternatief niveau is en er zijn ook echt alternatieve resultaten, dan tonen we het alternatieve niveau.
         return undefined;
     }
 
+    const optionalAlternatiefNiveauNaam = geldendResultaten.find((gResult) => gResult.naamAlternatiefNiveau)?.naamAlternatiefNiveau;
     return {
-        naam: upperFirst(perioden[periodeNummers[0]].toetsResultaten[0]?.geldendResultaat.naamAlternatiefNiveau) ?? 'Alternatief',
+        naam: optionalAlternatiefNiveauNaam ? upperFirst(optionalAlternatiefNiveauNaam) : 'Alternatief',
         perioden: perioden,
-        heeftResultaten:
-            toetsResultaten.length > 0 || periodeGemiddelden.length > 0 || rapportGemiddelden.length > 0 || rapportCijfers.length > 0
+        heeftResultaten: heeftResultaten
     };
 }
 
@@ -147,8 +176,9 @@ function getPerioden(
     resultaten: ToetsResultaat<SGeldendVoortgangsdossierResultaat>[],
     periodeGemiddelden: ToetsResultaat<SGeldendVoortgangsdossierResultaat>[],
     rapportGemiddelden: ToetsResultaat<SGeldendVoortgangsdossierResultaat>[],
-    rapportCijfers: ToetsResultaat<SGeldendVoortgangsdossierResultaat>[]
-): { [periode: number]: VoortgangsPeriode } {
+    rapportCijfers: ToetsResultaat<SGeldendVoortgangsdossierResultaat>[],
+    kolommen?: SToetskolommen
+): VoortgangsPeriode[] {
     const perioden: { [periode: number]: VoortgangsPeriode } = {};
     vulPerioden(perioden, resultaten, (voortgangsPeriode, resultaat) => {
         voortgangsPeriode.toetsResultaten.push(resultaat);
@@ -163,27 +193,81 @@ function getPerioden(
     });
     vulPerioden(perioden, rapportCijfers, (voortgangsPeriode, resultaat) => {
         voortgangsPeriode.rapportCijfer = resultaat.resultaat;
+        voortgangsPeriode.isLeegRapportCijfer = resultaat.isLeegResultaat;
         voortgangsPeriode.rapportCijferIsOnvoldoende = resultaat.isVoldoende === 'onvoldoende';
         voortgangsPeriode.rapportCijferOpmerking = resultaat.geldendResultaat.opmerkingen;
     });
+    if (kolommen) {
+        vulKolomPerioden(perioden, kolommen, (voortgangsPeriode, kolom) => {
+            voortgangsPeriode.toetsResultaten.push(createEmptyKolomVoortgangsResultaat(kolom));
+        });
+    }
 
-    verwijderLegePerioden(perioden);
+    const periodeNummers = Object.keys(perioden) as object as number[];
+    periodeNummers.forEach((periode) => {
+        perioden[periode].toetsResultaten = orderByLeerjaarEnVolgnummer(perioden[periode].toetsResultaten);
+    });
 
-    return perioden;
+    return Object.values(perioden);
 }
 
-/**
- * Een periode zonder cijfers, of met alleen RapportToetskolommen, hebben geen concrete cijfers en verwijderen we.
- * @param perioden
- */
-function verwijderLegePerioden(perioden: { [periode: number]: VoortgangsPeriode }) {
-    const periodeNummers = Object.keys(perioden) as object as number[];
-    periodeNummers.forEach((periodeNummer) => {
-        const periode = perioden[periodeNummer];
-        if (!periode.toetsResultaten.find((toetsResultaat) => toetsResultaat.geldendResultaat.type !== 'RapportToetskolom')) {
-            delete perioden[periodeNummer];
-        }
-    });
+function emptyGeldendResultaat(kolom: SToetskolom): SGeldendResultaat {
+    return {
+        id: kolom.id,
+        dossierType: kolom.dossierType,
+        periode: kolom.periode,
+        periodeAfkorting: kolom.periodeAfkorting,
+        volgnummer: kolom.volgnummer,
+        type: kolom.type,
+        toetscode: kolom.toetscode,
+        omschrijving: kolom.omschrijving,
+        weging: kolom.weging,
+        vakNaam: '',
+        resultaatkolom: kolom.id,
+        herkansingssoort: kolom.herkansingssoort,
+        isLabel: kolom.isLabel,
+        isCijfer: !kolom.isLabel,
+        toetssoort: kolom.toetsSoort,
+        vakUuid: kolom.vakUuid,
+        lichtingUuid: kolom.lichtingUuid,
+        leerjaar: kolom.leerjaar
+        //anderVakKolom?: SResultaatAnderVakKolom;
+    } as SGeldendResultaat;
+}
+
+function emptyGeldendVoortgangsResultaat(kolom: SToetskolom) {
+    return emptyGeldendResultaat(kolom) as SGeldendVoortgangsdossierResultaat;
+}
+function createEmptyKolomVoortgangsResultaat(kolom: SToetskolom): ToetsResultaat<SGeldendVoortgangsdossierResultaat> {
+    return {
+        naam: kolom.omschrijving,
+        datum: '',
+        resultaat: '',
+        isLeegResultaat: true,
+        wegingVoortgang: kolom.weging !== undefined ? kolom.weging + 'x' : undefined,
+        isSamengesteld: kolom.type === 'SamengesteldeToetsKolom',
+        heeftHerkansing: kolom.herkansingssoort !== 'Geen',
+        heeftOpmerking: false,
+        isVoldoende: 'neutraal',
+        geldendResultaat: emptyGeldendVoortgangsResultaat(kolom),
+        pogingen: []
+    };
+}
+
+function createEmptyKolomExamenResultaat(kolom: SToetskolom): ToetsResultaat<SGeldendResultaat> {
+    return {
+        naam: kolom.omschrijving,
+        datum: '',
+        resultaat: '',
+        isLeegResultaat: true,
+        wegingExamen: kolom.weging !== undefined ? kolom.weging + 'x' : undefined,
+        isSamengesteld: kolom.type === 'SamengesteldeToetsKolom',
+        heeftHerkansing: kolom.herkansingssoort !== 'Geen',
+        heeftOpmerking: false,
+        isVoldoende: 'neutraal',
+        geldendResultaat: emptyGeldendResultaat(kolom),
+        pogingen: []
+    };
 }
 
 function vulPerioden(
@@ -196,7 +280,11 @@ function vulPerioden(
 
         let voortgangsPeriode = perioden[periodeNummer];
         if (voortgangsPeriode === undefined) {
-            voortgangsPeriode = { periode: periodeNummer, toetsResultaten: [] };
+            voortgangsPeriode = {
+                periode: periodeNummer,
+                afkorting: resultaat.geldendResultaat.periodeAfkorting,
+                toetsResultaten: []
+            };
             perioden[periodeNummer] = voortgangsPeriode;
         }
 
@@ -204,13 +292,63 @@ function vulPerioden(
     });
 }
 
-export function mapToVakExamendossier(vakExamenResultaat: SVakExamenResultaat): VakExamendossier | undefined {
-    if (!vakExamenResultaat) {
+function vulKolomPerioden(
+    perioden: { [periode: number]: VoortgangsPeriode },
+    kolommen: SToetskolommen,
+    vulPeriode: (voortgangsPeriode: VoortgangsPeriode, kolom: SToetskolom) => void
+) {
+    kolommen.resultaatKolommen?.forEach((kolom) => {
+        const periodeNummer = kolom.periode ?? 0;
+
+        let voortgangsPeriode = perioden[periodeNummer];
+        if (voortgangsPeriode === undefined) {
+            voortgangsPeriode = {
+                periode: periodeNummer,
+                afkorting: kolom.periodeAfkorting,
+                toetsResultaten: []
+            };
+            perioden[periodeNummer] = voortgangsPeriode;
+        }
+        const resultaatVoorKolom = voortgangsPeriode.toetsResultaten.find(
+            (resultaat) => resultaat.geldendResultaat?.resultaatkolom == kolom.id
+        );
+        if (!resultaatVoorKolom) {
+            vulPeriode(voortgangsPeriode, kolom);
+        }
+    });
+}
+
+function examenResultaatKolommen(
+    examenResultaten: SGeldendResultaat[],
+    kolommen: SToetskolommen | undefined
+): ToetsResultaat<SGeldendResultaat>[] {
+    const resultaten: ToetsResultaat<SGeldendResultaat>[] = [];
+    if (!kolommen || !kolommen.resultaatKolommen) {
+        return resultaten;
+    }
+    kolommen.resultaatKolommen.forEach((kolom) => {
+        // let op geen resultaatkolom beschikbaar, obv naam en volgnummer.
+        const resultaatVoorKolom = examenResultaten.find(
+            (resultaat) => resultaat.omschrijving == kolom.omschrijving && resultaat.volgnummer === kolom.volgnummer
+        );
+        if (!resultaatVoorKolom) {
+            resultaten.push(createEmptyKolomExamenResultaat(kolom));
+        }
+    });
+    return resultaten;
+}
+
+function orderByLeerjaarEnVolgnummer(resultaten: ToetsResultaat<SGeldendResultaat>[]) {
+    return orderBy(resultaten, ['geldendResultaat.leerjaar', 'geldendResultaat.volgnummer'], ['desc']);
+}
+
+export function mapToVakExamendossier(vakExamenResultaat: SVakExamenResultaat, kolommen?: SToetskolommen): VakExamendossier | undefined {
+    if (!vakExamenResultaat && !kolommen) {
         return undefined;
     }
-
-    const examenResultaten = vakExamenResultaat.geldendExamenResultaten;
-    if (examenResultaten.length === 0) {
+    const examenResultaten = vakExamenResultaat?.geldendExamenResultaten || [];
+    const examenKolommen = kolommen?.resultaatKolommen || [];
+    if (examenResultaten.length === 0 && examenKolommen.length === 0) {
         return { vaknaam: '', seCijfer: '', isOnvoldoende: false, toetssoortGemiddelden: [], resultaten: [], heeftResultaten: false };
     }
 
@@ -225,15 +363,21 @@ export function mapToVakExamendossier(vakExamenResultaat: SVakExamenResultaat): 
         seIsOnvoldoende = seCijfer.isVoldoende === false;
     }
 
-    const toetssoortGemiddelden = [...getToetsoortGemiddelden(examenResultaten), ...getGeimporteerdeSECijfers(examenResultaten)];
-    const resultaten = getResultaten(examenResultaten, ['Toetskolom', 'SamengesteldeToetsKolom', 'Werkstukcijferkolom']);
+    const toetssoortGemiddelden = [...getToetsoortGemiddelden(examenResultaten)];
+    let resultaten = getResultaten(examenResultaten, ['Toetskolom', 'SamengesteldeToetsKolom', 'Werkstukcijferkolom']);
+
+    const gefilterdeKolomResultaten = examenResultaatKolommen(examenResultaten, kolommen);
+    resultaten = orderByLeerjaarEnVolgnummer(resultaten.concat(gefilterdeKolomResultaten));
+
+    const heeftResultaten = toetssoortGemiddelden?.length > 0 || resultaten?.length > 0 || !!seResultaat;
+
     return {
-        vaknaam: upperFirst(examenResultaten[0].vakNaam),
+        vaknaam: examenResultaten && examenResultaten[0] ? upperFirst(examenResultaten[0].vakNaam) : '',
         seCijfer: seResultaat,
         isOnvoldoende: seIsOnvoldoende,
         toetssoortGemiddelden: toetssoortGemiddelden,
         resultaten: resultaten,
-        heeftResultaten: toetssoortGemiddelden?.length > 0 || resultaten?.length > 0 || !!seResultaat
+        heeftResultaten: heeftResultaten
     };
 }
 
@@ -254,28 +398,10 @@ function getToetsoortGemiddelden(resultaten: SGeldendResultaat[]): ToetssoortGem
         .filter(isPresent);
 }
 
-function getGeimporteerdeSECijfers(resultaten: SGeldendResultaat[]): ToetssoortGemiddelde[] {
-    return resultaten
-        .filter(isGeimporteerdSeResultaat)
-        .map((resultaat) => {
-            if (!resultaat.formattedResultaat) {
-                return undefined;
-            }
-            return {
-                naam: `Examencijfer ${resultaat.anderVakKolom?.vak.naam.toLowerCase()}`,
-                resultaat: resultaat.formattedResultaat,
-                isOnvoldoende: resultaat.isVoldoende === false,
-                geldendResultaat: resultaat
-            };
-        })
-        .filter(isPresent);
-}
-
 function getResultaten<T extends SGeldendResultaat>(resultaten: T[], toetstypen: Toetstype[]): ToetsResultaat<T>[] {
     return getResultatenVanType(resultaten, toetstypen)
-        .filter((resultaat) => !isGeimporteerdSeResultaat(resultaat))
         .map((resultaat) => {
-            if (!resultaat.formattedResultaat) {
+            if (!resultaat.formattedResultaat && !resultaat.opmerkingen) {
                 return undefined;
             }
 
@@ -308,11 +434,16 @@ function getResultaten<T extends SGeldendResultaat>(resultaten: T[], toetstypen:
                 datum: formatCijferDate(
                     resultaat.datumInvoerHerkansing2 ?? resultaat.datumInvoerHerkansing1 ?? resultaat.datumInvoerEerstePoging
                 ),
-                resultaat: resultaat.formattedResultaat,
+                resultaat: resultaat.formattedResultaat ?? '-',
+                isLeegResultaat: resultaat.formattedResultaat === undefined,
                 wegingVoortgang: resultaat.dossierType === 'Voortgang' ? resultaat.weging + 'x' : undefined,
                 wegingExamen: resultaat.dossierType === 'Examen' ? resultaat.weging + 'x' : undefined,
                 isSamengesteld: resultaat.type === 'SamengesteldeToetsKolom',
-                heeftHerkansing: !!resultaat.formattedHerkansing1 || !!resultaat.formattedHerkansing2,
+                heeftHerkansing:
+                    !!resultaat.formattedHerkansing1 ||
+                    !!resultaat.formattedHerkansing2 ||
+                    !!resultaat.opmerkingenHerkansing1 ||
+                    !!resultaat.opmerkingenHerkansing2,
                 heeftOpmerking: !!resultaat.opmerkingen,
                 isVoldoende: bepaalIsVoldoende(resultaat.type, resultaat.weging, resultaat.isVoldoende),
                 laatstePoging: getLaatstePoging(resultaat.formattedHerkansing1, resultaat.formattedHerkansing2),
@@ -329,7 +460,8 @@ function getAlternatieveResultaten(
 ): ToetsResultaat<SGeldendVoortgangsdossierResultaat>[] {
     return getResultatenVanType(resultaten, toetstypen)
         .map((resultaat) => {
-            if (!resultaat.formattedResultaatAlternatief) {
+            const heeftOpmerkingBijLeegResultaat = resultaat.opmerkingen !== undefined && !resultaat.formattedResultaat;
+            if (!resultaat.formattedResultaatAlternatief && !heeftOpmerkingBijLeegResultaat) {
                 return undefined;
             }
 
@@ -360,7 +492,8 @@ function getAlternatieveResultaten(
             return {
                 naam: upperFirst(resultaat.omschrijving),
                 datum: formatCijferDate(getGeldendeInvoerDatum(resultaat)),
-                resultaat: resultaat.formattedResultaatAlternatief,
+                resultaat: resultaat.formattedResultaatAlternatief ?? '-',
+                isLeegResultaat: resultaat.formattedResultaatAlternatief === undefined,
                 wegingVoortgang: resultaat.dossierType === 'Voortgang' ? resultaat.weging + 'x' : undefined,
                 wegingExamen: resultaat.dossierType === 'Examen' ? resultaat.weging + 'x' : undefined,
                 isSamengesteld: resultaat.type === 'SamengesteldeToetsKolom',
@@ -395,7 +528,7 @@ export function getPogingData(
     datum?: Date,
     opmerking?: string
 ): PogingData | undefined {
-    if (!resultaat || !datum) {
+    if (!(resultaat || opmerking) || !datum) {
         return undefined;
     }
 
@@ -406,7 +539,7 @@ export function getPogingData(
 
     return {
         omschrijving: omschrijving,
-        resultaat: resultaat,
+        resultaat: resultaat ?? '-',
         isOnvoldoende: isVoldoende === false,
         datum: formatCijferDate(datum),
         opmerking: opmerking
@@ -479,7 +612,7 @@ function getResultatenVanType<T extends SGeldendResultaat>(resultaten: T[], type
 //////             Functies ten bate van het testen                 //////
 //////////////////////////////////////////////////////////////////////////
 
-export function createDummyToetsResultaat(resultaatkolom: number): ToetsResultaat<SGeldendResultaat> {
+export function createDummyToetsResultaat(resultaatkolom: number, leerjaar = 2): ToetsResultaat<SGeldendResultaat> {
     return {
         datum: 'gisteren',
         heeftHerkansing: false,
@@ -488,9 +621,10 @@ export function createDummyToetsResultaat(resultaatkolom: number): ToetsResultaa
         isVoldoende: 'voldoende',
         naam: 'toets',
         resultaat: 'CIJF1',
+        isLeegResultaat: false,
         pogingen: [],
         laatstePoging: 0,
-        geldendResultaat: { ...createDummyResultaat(1), resultaatkolom: resultaatkolom }
+        geldendResultaat: { ...createDummyResultaat(1, leerjaar), resultaatkolom: resultaatkolom }
     };
 }
 
@@ -517,12 +651,13 @@ export function createDummyToetssoortGemiddelde(): ToetssoortGemiddelde {
 export function createDummyVoortgangsNiveau(resultaten: ToetsResultaat<SGeldendVoortgangsdossierResultaat>[]) {
     return {
         naam: 'Standaard',
-        perioden: {
-            1: {
+        perioden: [
+            {
                 periode: 1,
-                toetsResultaten: resultaten
+                toetsResultaten: resultaten,
+                afkorting: 'P1'
             }
-        },
+        ],
         heeftResultaten: resultaten?.length > 0
     };
 }
@@ -550,5 +685,13 @@ export function createDummySVakExamenResultaat(geldendResultaten: SGeldendResult
         vakUuid: 'vak-uuid-1',
         lichtingUuid: 'lichting-uuid-1',
         geldendExamenResultaten: geldendResultaten
+    };
+}
+
+export function createDummySToetsKolommen(kolommen: SToetskolom[]): SToetskolommen {
+    return {
+        vakUuid: 'vak-uuid-1',
+        lichtingUuid: 'lichting-uuid-1',
+        resultaatKolommen: kolommen
     };
 }

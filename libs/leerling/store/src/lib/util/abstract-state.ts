@@ -1,10 +1,11 @@
+import { HttpResponse } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import Bugsnag from '@bugsnag/js';
 import { StateContext, Store } from '@ngxs/store';
 import { produce } from 'immer';
 import { Linkable, Wrapper } from 'leerling-codegen';
 import { DEFAULT_REQUEST_INFORMATION, RequestInformation, RequestService } from 'leerling-request';
-import { EMPTY, expand, Observable, reduce, take, tap } from 'rxjs';
+import { EMPTY, expand, map, Observable, reduce, take, tap } from 'rxjs';
 import { CallService, SCallDefinition } from '../call/call.service';
 import { SwitchContext } from '../shared/shared-actions';
 import { SharedSelectors } from '../shared/shared-selectors';
@@ -64,13 +65,15 @@ export abstract class AbstractState {
     }
     protected cachedGet<T extends Linkable | object>(
         urlPostfix: string,
-        requestInfo: RequestInformation = DEFAULT_REQUEST_INFORMATION
+        requestInfo: RequestInformation = DEFAULT_REQUEST_INFORMATION,
+        callProperties: Callproperties = {}
     ): Observable<T> | undefined {
         if (this.isOffline()) {
             return;
         }
-        const callDefinition = this.createCallDefinition(urlPostfix, this.getTimeout(), requestInfo);
-        if (this.isFresh(callDefinition)) {
+        const timeout = callProperties.customTimeout ?? this.getTimeout();
+        const callDefinition = this.createCallDefinition(urlPostfix, timeout, requestInfo);
+        if (!callProperties.force && this.isFresh(callDefinition)) {
             return;
         }
         this._callService.storeCallStart(callDefinition);
@@ -98,6 +101,18 @@ export abstract class AbstractState {
         }
         this._callService.storeCallStart(callDefinition);
 
+        return this._unpaginatedGet(urlPostfix, requestInfo).pipe(
+            reduce((acc: T[], current: HttpResponse<Wrapper<T>>) => acc.concat(current.body?.items ?? []), []),
+            tap(() => {
+                this._callService.storeCallSuccess(callDefinition);
+            })
+        );
+    }
+
+    private _unpaginatedGet<T extends Linkable | object>(
+        urlPostfix: string,
+        requestInfo: RequestInformation = DEFAULT_REQUEST_INFORMATION
+    ): Observable<HttpResponse<Wrapper<T>>> {
         return this.requestService.getWithResponse<Wrapper<T>>(urlPostfix, requestInfo).pipe(
             expand((response) => {
                 const contentRange = response.headers.get('Content-Range') ?? '';
@@ -118,8 +133,36 @@ export abstract class AbstractState {
                     }
                 });
             }),
-            take(MAX_REQUESTS),
-            reduce((acc: T[], current) => acc.concat(current.body?.items ?? []), []),
+            take(MAX_REQUESTS)
+        );
+    }
+
+    protected cachedGetAllPagesWithWrapper<T extends Linkable | object>(
+        urlPostfix: string,
+        requestInfo: RequestInformation = DEFAULT_REQUEST_INFORMATION,
+        callproperties: Callproperties = {}
+    ): Observable<Wrapper<T>> | undefined {
+        if (this.isOffline()) {
+            return;
+        }
+
+        const timeout = callproperties.customTimeout ?? this.getTimeout();
+
+        const callDefinition = this.createCallDefinition(urlPostfix, timeout, requestInfo);
+        if (!callproperties.force && this.isFresh(callDefinition)) {
+            return;
+        }
+        this._callService.storeCallStart(callDefinition);
+
+        return this._unpaginatedGet(urlPostfix, requestInfo).pipe(
+            map((response) => response.body),
+            reduce(
+                (acc: Wrapper<T>, current) =>
+                    ({
+                        items: (acc?.items ?? []).concat(current.items),
+                        statusNotifications: (acc?.statusNotifications ?? []).concat(current?.statusNotifications ?? [])
+                    }) as Wrapper<T>
+            ),
             tap(() => {
                 this._callService.storeCallSuccess(callDefinition);
             })
@@ -127,6 +170,10 @@ export abstract class AbstractState {
     }
 
     protected isFresh(...callDefinitions: SCallDefinition[]): boolean {
+        return this.areFresh(callDefinitions);
+    }
+
+    protected areFresh(callDefinitions: SCallDefinition[]) {
         if (callDefinitions.length === 0) return false;
 
         const callsFresh = callDefinitions.map(

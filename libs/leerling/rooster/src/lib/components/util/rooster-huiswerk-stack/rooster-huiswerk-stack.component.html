@@ -9,19 +9,11 @@
 
         <div class="card front" [class.dagitems]="dagItems()">
             <div class="content">
-                @if (heeftDagItems() && heeftWeekItems()) {
-                    <p class="text">
-                        +{{ aantalWeekItems() | i18nPlural: pluralMapping['weekItems'] }} en
-                        {{ aantalDagItems() | i18nPlural: pluralMapping['dagItems'] }}
-                    </p>
+                <p class="text">+{{ aantalWeekEnDagItems() | i18nPlural: pluralMapping['totaalItems'] }}</p>
+                <div class="right-content">
                     <sl-werkdruk-indicator [huiswerkTypen]="weekEnDagItems() | huiswerkTypen" />
-                } @else if (heeftDagItems()) {
-                    <p class="text">+{{ aantalDagItems() | i18nPlural: pluralMapping['dagItems'] }}</p>
-                    <sl-werkdruk-indicator [huiswerkTypen]="sortedDagItems() | huiswerkTypen" />
-                } @else {
-                    <p class="text">+{{ aantalWeekItems() | i18nPlural: pluralMapping['weekItems'] }}</p>
-                    <sl-werkdruk-indicator [huiswerkTypen]="sortedWeekItems() | huiswerkTypen" />
-                }
+                    <i class="chevron" hmyIcon="chevronOnder" size="smallest"></i>
+                </div>
             </div>
         </div>
     }

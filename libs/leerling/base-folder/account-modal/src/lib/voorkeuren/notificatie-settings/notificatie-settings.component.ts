@@ -12,7 +12,6 @@ import { NotificatieSettings, NotificatieSettingsService } from './service/notif
 
 @Component({
     selector: 'sl-notificatie-settings',
-    standalone: true,
     imports: [CommonModule, ToggleComponent, FormsModule, StackedAvatarComponent, SpinnerComponent],
     templateUrl: './notificatie-settings.component.html',
     styleUrls: ['./notificatie-settings.component.scss'],

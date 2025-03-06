@@ -7,11 +7,11 @@ import { TabInput, isNotificationCounterTab, isNotificationIconTab, isNotificati
 
 @Component({
     selector: 'hmy-tab',
-    standalone: true,
     imports: [CommonModule, NotificationCounterComponent, NotificationIconComponent, NotificationSolidComponent],
     templateUrl: './tab.component.html',
     styleUrls: ['./tab.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    host: { '[class.disabled]': 'tab.disabled' }
 })
 export class TabComponent implements OnChanges {
     @Input({ required: true }) tab: TabInput;

@@ -1,4 +1,4 @@
-import { NieuwBerichtInput, ReactieBerichtInput, RefreshConversatieOptions, SConversatie } from './bericht-model';
+import { NieuwBerichtInput, ReactieBerichtInput, RefreshConversatieOptions, SBoodschap, SConversatie } from './bericht-model';
 
 export class RefreshConversaties {
     static readonly type = '[Conversaties] Refresh Conversaties';
@@ -7,6 +7,11 @@ export class RefreshConversaties {
 export class MarkeerGelezen {
     static readonly type = '[Conversaties] Markeer gelezen';
     constructor(public conversatie: SConversatie) {}
+}
+
+export class MarkeerInleverboodschapGelezen {
+    static readonly type = '[Conversaties] Markeer inleverboodschap gelezen';
+    constructor(public boodschap: SBoodschap) {}
 }
 
 export class MarkeerOngelezen {

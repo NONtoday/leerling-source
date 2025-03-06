@@ -2,29 +2,35 @@ import { HttpStatusCode } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Action, State, StateContext, StateToken } from '@ngxs/store';
 import { patch } from '@ngxs/store/operators';
+import { isSameDay } from 'date-fns';
 import { RswiAfspraakToekenning, RswiDagToekenning, RswiGemaakt, RswiWeekToekenning } from 'leerling-codegen';
 import { RequestInformation, RequestInformationBuilder } from 'leerling-request';
+import { isEqual } from 'lodash-es';
 import { forkJoin, tap } from 'rxjs';
 import { CallService } from '../call/call.service';
+import { ToggleInleverOpdrachtAfgevinkt } from '../inleveropdracht/inleveropdracht-list/inleveropdracht-list-actions';
 import { RechtenSelectors } from '../rechten/rechten-selectors';
 import { SwitchContext } from '../shared/shared-actions';
 import { AbstractState, insertOrUpdateItem } from '../util/abstract-state';
+import { getJaarWeek } from '../util/date-util';
 import { createLinks } from '../util/entiteit-model';
-import { RefreshHuiswerk, ToggleAfgevinkt } from './huiswerk-actions';
+import { RefreshHuiswerk, ToggleAfgevinkt, UpdateInleveropdrachtStatus } from './huiswerk-actions';
 import {
     ADDITIONAL_GEMAAKT,
     ADDITIONAL_LEERLINGEN,
-    ADDITIONAL_LEERLINGEN_MET_INLEVERINGEN,
+    ADDITIONAL_LEERLINGEN_MET_INLEVERING_STATUS,
     ADDITIONAL_LEERLING_PROJECTGROEP,
     ADDITIONAL_LESGROEP,
     ADDITIONAL_STUDIEWIJZER_ID,
     SSWIModel,
     SSWIWeek,
     SStudiewijzerItem,
-    createSWIWeek
+    createSWIWeek,
+    getInleveropdrachtCategorie
 } from './huiswerk-model';
 
-export const HUISWERK_STATE_TOKEN = new StateToken<SSWIModel>('huiswerk');
+const STATE_NAME = 'huiswerk';
+export const HUISWERK_STATE_TOKEN = new StateToken<SSWIModel>(STATE_NAME);
 const DEFAULT_STATE = { jaarWeken: undefined };
 
 @State<SSWIModel>({
@@ -85,6 +91,55 @@ export class HuiswerkState extends AbstractState {
         );
     }
 
+    @Action(UpdateInleveropdrachtStatus)
+    updateInleveropdrachtStatus(ctx: StateContext<SSWIModel>, action: UpdateInleveropdrachtStatus) {
+        const state = ctx.getState();
+        const jaarWeek = getJaarWeek(action.datum);
+        let shouldUpdate = false;
+        const updatedJaarWeken = state.jaarWeken?.map((week) => {
+            if (week.jaarWeek !== jaarWeek) return week;
+
+            const updatedDagen = week.dagen?.map((dag) => {
+                if (!isSameDay(dag.datum, action.datum)) return dag;
+
+                return {
+                    ...dag,
+                    items: dag.items?.map((item) => {
+                        if (item.toekenningId !== action.toekenningId) return item;
+
+                        const ongewijzigd =
+                            isEqual(item.laatsteInleveringDatum, action.inlevering?.verzendDatum) &&
+                            isEqual(item.laatsteInleveringStatus, action.inlevering?.status);
+                        if (ongewijzigd) return item;
+
+                        const updatedItem = {
+                            ...item,
+                            laatsteInleveringStatus: action.inlevering?.status,
+                            laatsteInleveringDatum: action.inlevering?.verzendDatum
+                        };
+                        const updatedInleveropdrachtCategorie = getInleveropdrachtCategorie(
+                            updatedItem,
+                            action.aantalInleveringenInVerwerking
+                        );
+                        shouldUpdate = item.inleveropdrachtCategorie !== updatedInleveropdrachtCategorie;
+                        return {
+                            ...updatedItem,
+                            inleveropdrachtCategorie: updatedInleveropdrachtCategorie
+                        };
+                    })
+                };
+            });
+
+            return { ...week, dagen: updatedDagen };
+        });
+
+        if (shouldUpdate) {
+            ctx.patchState({
+                jaarWeken: updatedJaarWeken
+            });
+        }
+    }
+
     private _buildHuiswerkRequest(leerlingId: number, weerkParamNaam: string, weekParamValue: any): RequestInformation {
         return new RequestInformationBuilder()
             .parameter('geenDifferentiatieOfGedifferentieerdVoorLeerling', leerlingId)
@@ -93,7 +148,7 @@ export class HuiswerkState extends AbstractState {
                 ADDITIONAL_LEERLINGEN,
                 ADDITIONAL_GEMAAKT,
                 ADDITIONAL_LESGROEP,
-                ADDITIONAL_LEERLINGEN_MET_INLEVERINGEN,
+                ADDITIONAL_LEERLINGEN_MET_INLEVERING_STATUS,
                 ADDITIONAL_LEERLING_PROJECTGROEP,
                 ADDITIONAL_STUDIEWIJZER_ID
             )
@@ -141,17 +196,24 @@ export class HuiswerkState extends AbstractState {
                         };
                     })
                 }));
+                this._store.dispatch(new ToggleInleverOpdrachtAfgevinkt(action.item, Boolean(result.gemaakt)));
                 ctx.setState(patch({ jaarWeken: weken }));
             })
         );
     }
 
     @Action(SwitchContext)
-    override switchContext(ctx: StateContext<SSWIModel>) {
-        ctx.setState(DEFAULT_STATE);
+    override switchContext(ctx: StateContext<SSWIModel>, action: SwitchContext) {
+        if (!action.initialContextSwitch) {
+            ctx.setState(DEFAULT_STATE);
+        }
     }
 
     override getTimeout(): number {
         return CallService.SWI_TIMEOUT;
+    }
+
+    public static getName() {
+        return STATE_NAME;
     }
 }

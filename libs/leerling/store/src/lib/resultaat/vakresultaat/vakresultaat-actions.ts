@@ -4,7 +4,8 @@ export class RefreshVakResultaat {
     constructor(
         public vakUuid: string,
         public lichtingUuid: string,
-        public plaatsingUuid?: string
+        public plaatsingUuid?: string,
+        public metKolommen = false
     ) {}
 }
 
@@ -13,7 +14,8 @@ export class GetVoortgangsdossierDeeltoetsen {
 
     constructor(
         public plaatsingUuid: string | undefined,
-        public samengesteldeToetsId: number
+        public samengesteldeToetsId: number,
+        public metKolommen = false
     ) {}
 }
 
@@ -22,6 +24,7 @@ export class GetExamendossierDeeltoetsen {
 
     constructor(
         public plaatsingUuid: string | undefined,
-        public samengesteldeToetsId: number
+        public samengesteldeToetsId: number,
+        public metKolommen = false
     ) {}
 }

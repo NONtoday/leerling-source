@@ -6,14 +6,13 @@ import { CreateTypes } from 'canvas-confetti';
 import { ButtonComponent, DeviceService, IconDirective, SpinnerComponent } from 'harmony';
 import { IconDupliceren, IconName, IconNietZichtbaar, IconOntkoppelen, IconZichtbaar, provideIcons } from 'harmony-icons';
 import { RLeerlingICalendarLink } from 'leerling-codegen';
-import { InfoMessageService } from 'leerling-util';
+import { InfoMessageService, windowOpen } from 'leerling-util';
 import { Observable } from 'rxjs';
 import { GeenAgendaGekoppeldComponent } from './geen-agenda-gekoppeld.component';
 import { AgendaService } from './service/agenda.service';
 
 @Component({
     selector: 'sl-agenda',
-    standalone: true,
     imports: [CommonModule, GeenAgendaGekoppeldComponent, IconDirective, ButtonComponent, SpinnerComponent],
     templateUrl: './agenda.component.html',
     styleUrls: ['./agenda.component.scss'],
@@ -62,7 +61,7 @@ export class AgendaComponent implements OnInit {
     }
 
     public openManual() {
-        window.open(this.manualURL, '_blank');
+        windowOpen(this.manualURL);
     }
 
     public shorten(leerlingICalendarLink: string | undefined) {

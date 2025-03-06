@@ -1,0 +1,78 @@
+<div class="wizard-container" #wizardContainer [class.with-border]="withBorderBottom()">
+    <div class="wizard">
+        @if (showStappen()) {
+            <div class="progress-bar" [style.--progress-bar-steps]="progressBarCompletedSteps().length">
+                @for (completed of progressBarCompletedSteps(); track $index) {
+                    <div class="step" [class.completed]="completed"></div>
+                }
+            </div>
+        }
+
+        <div class="huidige-stap" id="huidige-stap" [attr.data-testid]="huidigeStapNaam()">
+            @if (showStappen()) {
+                @switch (huidigeStapNaam()) {
+                    @case ('Inschrijven') {
+                        <sl-ouderavond-inschrijven [(data)]="data" [ouderavondInfo]="info()" [magAanvragen]="magAanvragen()" />
+                    }
+
+                    @case ('Informatie') {
+                        <sl-ouderavond-aanvullende-informatie [(data)]="data" [ouderavondInfo]="info()" />
+                    }
+
+                    @case ('Samenvatting') {
+                        <sl-ouderavond-samenvatting
+                            [data]="data()"
+                            [ouderavondInfo]="info()"
+                            [magAanvragen]="magAanvragen()"
+                            [isStatusAangevraagd]="isStatusAangevraagd()"
+                            [verzendStatus]="verzendStatus()"
+                            [showStappen]="showStappen()"
+                            (edit)="onEditNavigation($event)" />
+                    }
+                }
+            } @else {
+                <sl-ouderavond-samenvatting
+                    [data]="data()"
+                    [ouderavondInfo]="info()"
+                    [magAanvragen]="magAanvragen()"
+                    [isStatusAangevraagd]="isStatusAangevraagd()"
+                    [verzendStatus]="verzendStatus()"
+                    [showStappen]="showStappen()" />
+            }
+        </div>
+    </div>
+    @if (magAanvragen()) {
+        <div class="navigatie" [class.met-vorige-knop]="vorigeKnop()">
+            @if (showStappen()) {
+                @if (vorigeKnop(); as knop) {
+                    <hmy-button
+                        [label]="knop.label"
+                        [disabled]="knop.disabled"
+                        (click)="vorige()"
+                        data-testid="wizard-vorige"
+                        mode="quaternary"
+                        customTabindex="0" />
+                }
+                @if (volgendeKnop(); as knop) {
+                    <hmy-button
+                        [label]="knop.label"
+                        [disabled]="knop.disabled"
+                        [showSpinner]="this.verzendStatus() === 'In progress'"
+                        (click)="volgende()"
+                        data-testid="wizard-volgende"
+                        mode="primary"
+                        customTabindex="0" />
+                }
+            } @else {
+                <hmy-button
+                    [iconLeft]="isTabletOrDesktop() ? undefined : 'bewerken'"
+                    [justifyContent]="isTabletOrDesktop() ? 'center' : 'space-between'"
+                    (click)="wijzigen()"
+                    data-testid="wizard-reset"
+                    label="Wijzigen"
+                    mode="tertiary"
+                    customTabindex="0" />
+            }
+        </div>
+    }
+</div>

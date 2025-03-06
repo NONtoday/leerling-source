@@ -1,7 +1,12 @@
 <div class="settings" [cdkTrapFocusAutoCapture]="true" cdkTrapFocus>
     <div class="leerlinginfo-divider">
         <div class="leerling">
-            <hmy-avatar [lazyLoading]="false" [initialen]="leerling().initialen" [src]="leerling().avatarSrc" [naam]="leerling().naam" />
+            <hmy-avatar
+                [lazyLoading]="false"
+                [initialen]="leerling().initialen"
+                [src]="leerling().avatarSrc"
+                [profielfotoVerbergen]="profielfotoVerbergen()"
+                [naam]="leerling().naam" />
             <div class="leerling-info">
                 <span class="naam text-content-semi text-strong">{{ leerling().naam }}</span>
                 <span class="school text-content-smallest text-weak">{{ leerling().organisatienaam ?? 'Onbekende school' }}</span>
@@ -14,10 +19,10 @@
             <i hmyIcon="boek" size="small"></i>
             <span>Studiemateriaal</span>
         </div>
-        @if (!isVerzorger()) {
-            <div class="selector-option registraties" (click)="registraties()" tabindex="0" role="link">
-                <i hmyIcon="lijst" size="small"></i>
-                <span>Registraties</span>
+        @if (heeftRegistratieOverzichtRechten()) {
+            <div class="selector-option afwezigheid" (click)="afwezigheid()" tabindex="0" role="button">
+                <i hmyIcon="persoonKruisBlock" size="small"></i>
+                <span>{{ 'Afwezigheid' }}</span>
             </div>
         }
 
@@ -27,11 +32,12 @@
             <i hmyIcon="school" size="small"></i>
             <span>Schoolinformatie</span>
         </div>
+
+        <div class="selector-option instellingen" (click)="instellingen()" tabindex="0" role="button">
+            <i hmyIcon="settings" size="small"></i>
+            <span>Instellingen</span>
+        </div>
     }
-    <div class="selector-option instellingen" (click)="instellingen()" tabindex="0" role="button">
-        <i hmyIcon="settings" size="small"></i>
-        <span>Instellingen</span>
-    </div>
 
     <div class="selector-option support" (click)="support()" tabindex="0" role="button">
         <a #supportLink [href]="supportUrl()" target="_blank" tabindex="-1">

@@ -8,7 +8,6 @@ import { Leermiddel } from '../../../studiemateriaal-frontend-model';
 
 @Component({
     selector: 'sl-algemene-leermiddelen',
-    standalone: true,
     imports: [CommonModule, BijlageComponent, SpinnerComponent],
     templateUrl: './algemene-leermiddelen.component.html',
     styleUrl: './algemene-leermiddelen.component.scss',

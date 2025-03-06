@@ -12,9 +12,8 @@ export class AgendaService {
     private _infomessageService = inject(InfoMessageService);
 
     public sendCopyNotification(isCopySuccessful: boolean): void {
-        isCopySuccessful
-            ? this._infomessageService.dispatchSuccessMessage('Link gekopieerd')
-            : this._infomessageService.dispatchErrorMessage('Er ging iets mis.');
+        if (isCopySuccessful) this._infomessageService.dispatchSuccessMessage('Link gekopieerd');
+        else this._infomessageService.dispatchErrorMessage('Er ging iets mis.');
     }
 
     public getICalendarLink(): Observable<RLeerlingICalendarLink> {

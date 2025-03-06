@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { ButtonComponent, IconDirective } from 'harmony';
 import { IconBericht, IconTelefoon, provideIcons } from 'harmony-icons';
+import { windowOpen } from 'leerling-util';
 import { derivedAsync } from 'ngxtension/derived-async';
 import { GegevensService } from '../gegevens/service/gegevens.service';
 
 @Component({
     selector: 'sl-school-contactgegevens',
-    standalone: true,
     imports: [ButtonComponent, IconDirective],
     providers: [provideIcons(IconTelefoon, IconBericht)],
     templateUrl: './school-contactgegevens.component.html',
@@ -23,6 +23,6 @@ export class SchoolContactgegevensComponent {
     schoolgegevens = derivedAsync(() => this._gegevensService.getSchoolgegevens$());
 
     openUrl(url: string) {
-        window.open(url, '_blank');
+        windowOpen(url);
     }
 }

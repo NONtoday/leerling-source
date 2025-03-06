@@ -1,4 +1,4 @@
-import { addDays, addWeeks, getDate, getHours, getMinutes, getMonth, getYear, isBefore, isMonday, previousMonday } from 'date-fns';
+import { addDays, addWeeks, getDate, getMonth, getYear, isAfter, isBefore, isMonday, isSameDay, previousMonday, subDays } from 'date-fns';
 import { formatDateNL } from 'leerling-util';
 import { padStart, range, upperFirst } from 'lodash-es';
 
@@ -12,31 +12,42 @@ export interface WeekOptie {
 }
 
 export interface DagOptie {
+    ariaLabel: string;
     dagNaam: string;
     dagNummer: number;
     date: Date;
     disabled: boolean;
-    heleDag: boolean;
+    isRangeOptie: boolean;
+    selected: boolean;
 }
 
-export interface TijdOptie {
+export interface TijdOptieMinuten {
     disabled: boolean;
-    hours: number;
-    minutes: number;
+    minuten: number;
     text: string;
+}
 
-    /**
-     * Numerieke waarde van uren en minuten, bijv. `730` voor "07:30" of `1900` voor "19:00".
-     */
-    numericValue: number;
+export interface TijdOptieUren {
+    disabled: boolean;
+    uren: number;
+    text: string;
 }
 
 const NumBusinessDays = 5;
 
-export function createWeekOpties(fromDate: Date, showWeken: number, now: Date): WeekOptie[] {
+interface CreateWeekOptiesInput {
+    now: Date;
+    rangeStart?: Date;
+    selected?: Date;
+    showWeken: number;
+    startDate: Date;
+}
+
+export function createWeekOpties(input: CreateWeekOptiesInput): WeekOptie[] {
+    const { startDate, now, rangeStart, selected, showWeken } = input;
     const thisWeekMonday = isMonday(now) ? now : previousMonday(now);
-    const fromWeekMonday = isMonday(fromDate) ? fromDate : previousMonday(fromDate);
-    const fromWeekIsThisMonth = getMonth(fromWeekMonday) === getMonth(thisWeekMonday);
+    const startWeekMonday = isMonday(startDate) ? startDate : previousMonday(startDate);
+    const startWeekIsThisMonth = getMonth(startWeekMonday) === getMonth(thisWeekMonday);
     const weekOpties: WeekOptie[] = [];
 
     /**
@@ -50,8 +61,20 @@ export function createWeekOpties(fromDate: Date, showWeken: number, now: Date): 
         let friday: Date | undefined = undefined;
 
         for (let dayIndex = 0; dayIndex < NumBusinessDays; dayIndex++) {
-            const day = addDays(addWeeks(fromWeekMonday, weekIndex), dayIndex);
-            weekOptie.dagOpties.push(createDagOptie(day, fromDate));
+            const day = addDays(addWeeks(startWeekMonday, weekIndex), dayIndex);
+
+            // begin- of einddatum, afhankelijk van modus
+            const isSelected: boolean = !!selected && isSameDay(day, selected);
+
+            // indicatie voor een dagoptie tussen de begin- en einddatum, of de begindatum als er geen einddatum geselecteerd is
+            let isRangeOptie = false;
+            if (rangeStart) {
+                if (selected) {
+                    isRangeOptie = isAfter(day, subDays(rangeStart, 1)) && isBefore(day, selected);
+                }
+            }
+
+            weekOptie.dagOpties.push(createDagOptie(day, startDate, isRangeOptie, isSelected));
 
             // "It's Friday, Friday / Gotta get down on Friday" 🎶
             if (dayIndex === NumBusinessDays - 1) {
@@ -59,6 +82,7 @@ export function createWeekOpties(fromDate: Date, showWeken: number, now: Date): 
             }
         }
 
+        // laatste dag van de week: kijk of er een indicatie moet komen voor de naam van de maand
         if (friday) {
             const fridayMonth = getMonth(friday);
             const fridayYear = getYear(friday);
@@ -68,13 +92,13 @@ export function createWeekOpties(fromDate: Date, showWeken: number, now: Date): 
                 weekOptie.maandNaam = '';
 
                 // als de 'vanaf' datum in een andere maand ligt dan de huidige, toon de eerste week dan ook de naam van de 'vanaf' maand
-                if (weekIndex === 0 && !fromWeekIsThisMonth && getMonth(fromWeekMonday) !== fridayMonth) {
-                    weekOptie.maandNaam += upperFirst(formatDateNL(fromWeekMonday, 'maand_uitgeschreven'));
+                if (weekIndex === 0 && !startWeekIsThisMonth && getMonth(startWeekMonday) !== fridayMonth) {
+                    weekOptie.maandNaam += upperFirst(formatDateNL(startWeekMonday, 'maand_uitgeschreven'));
 
-                    const fromDateYear = getYear(fromWeekMonday);
-                    if (fromDateYear !== fridayYear) {
+                    const startDateYear = getYear(startWeekMonday);
+                    if (startDateYear !== fridayYear) {
                         // de nieuwe maand is in een nieuw jaar, dus toon ook het huidige jaar
-                        weekOptie.maandNaam += ` ${fromDateYear}`;
+                        weekOptie.maandNaam += ` ${startDateYear}`;
                     }
                     weekOptie.maandNaam += ' en ';
                 }
@@ -101,62 +125,61 @@ export function createWeekOpties(fromDate: Date, showWeken: number, now: Date): 
     return weekOpties;
 }
 
-export function createDagOptie(day: Date, fromDate: Date): DagOptie {
+export function createDagOptie(day: Date, startDate: Date, isRangeOptie = false, selected = false): DagOptie {
+    const disabled = isBefore(day, startDate);
+
+    let ariaLabel = formatDateNL(day, 'dag_uitgeschreven_dagnummer_maand');
+    if (selected) {
+        ariaLabel += ' is geselecteerd';
+    } else if (disabled) {
+        ariaLabel += ' niet selecteerbaar';
+    }
+
     return {
+        ariaLabel,
         dagNaam: formatDateNL(day, 'dag_kort'),
         dagNummer: getDate(day),
         date: day,
-        disabled: isBefore(day, fromDate),
-        heleDag: true
+        disabled,
+        isRangeOptie,
+        selected
     };
 }
 
-export function createTijdOptie(hours: number, minutes: number): TijdOptie {
-    const text = padStart(`${hours}`, 2, '0') + ':' + padStart(`${minutes}`, 2, '0');
-    const value = hours * 100 + minutes;
+function formatTijdText(value: number): string {
+    return padStart(`${value}`, 2, '0');
+}
+
+export function createTijdOptieMinuten(minuten: number, disabled = false): TijdOptieMinuten {
     return {
-        disabled: false,
-        hours,
-        minutes,
-        text,
-        numericValue: value
+        minuten,
+        text: formatTijdText(minuten),
+        disabled
     };
 }
 
-export function createTijdOpties(disabledBefore?: TijdOptie): TijdOptie[] {
-    // tijd opties van 07:00 tot 19:00 uur
-    return range(7, 19.5, 0.5).map((numeric) => {
-        const hours = Math.floor(numeric);
-        const minutes = numeric % 1 === 0 ? 0 : 30;
-        const tijdOptie = createTijdOptie(hours, minutes);
-        if (disabledBefore && tijdOptie.numericValue < disabledBefore.numericValue) {
-            tijdOptie.disabled = true;
-        }
-        return tijdOptie;
+export function createTijdOptiesMinuten(disabledBefore?: number): TijdOptieMinuten[] {
+    // minuten van 00:00 t/m 00:55 (excl. 60)
+    return range(0, 60, 5).map((minuten) => {
+        return {
+            minuten,
+            text: formatTijdText(minuten),
+            disabled: !!disabledBefore && minuten < disabledBefore
+        };
     });
 }
 
-export function createInitialSelectedTijdOptie(now: Date): TijdOptie {
-    // Eerst volgende keuze t.o.v. huidige tijd (ie: 11:52 = 12:00, 14:31 = 15:00 en 09:04 = 09:30)
-    const hours = getHours(now);
-    const minutes = getMinutes(now);
-    let selectedHours = hours;
-    let selectedMinutes = minutes;
-    if (selectedMinutes > 0) {
-        if (selectedMinutes < 30) {
-            selectedMinutes = 30;
-        } else if (selectedMinutes > 30) {
-            selectedMinutes = 0;
-            selectedHours++;
-        }
-    }
-    if (selectedHours < 7) {
-        selectedHours = 7;
-        selectedMinutes = 0;
-    }
-    if (selectedHours > 19 || (selectedHours === 19 && selectedMinutes > 0)) {
-        selectedHours = 19;
-        selectedMinutes = 0;
-    }
-    return createTijdOptie(selectedHours, selectedMinutes);
+export function createTijdOptieUren(uren: number, disabled = false): TijdOptieUren {
+    return {
+        uren,
+        text: formatTijdText(uren),
+        disabled
+    };
+}
+
+export function createTijdOptiesUren(disabledBeforeHours?: number): TijdOptieUren[] {
+    // uren van 07:00 t/m 19:00 (excl. 20)
+    return range(7, 20).map((uren) => {
+        return createTijdOptieUren(uren, !!disabledBeforeHours && uren < disabledBeforeHours);
+    });
 }

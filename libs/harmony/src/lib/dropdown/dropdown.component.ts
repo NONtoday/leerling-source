@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import {
     ChangeDetectionStrategy,
     Component,
-    EmbeddedViewRef,
     TemplateRef,
     ViewContainerRef,
     computed,
@@ -14,9 +13,9 @@ import {
     signal,
     viewChild
 } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { IconChevronBoven, IconChevronOnder, provideIcons } from 'harmony-icons';
 import { Pattern, match } from 'ts-pattern';
-import { ButtonComponent } from '../button/button.component';
 import { IconDirective, IconSize } from '../icon/icon.directive';
 import { ModalSettings, createModalSettings } from '../overlay/modal/component/modal.settings';
 import { OverlayService } from '../overlay/overlay.service';
@@ -36,14 +35,14 @@ const DEFAULT_TABINDEX = '0';
 
 @Component({
     selector: 'hmy-dropdown',
-    standalone: true,
-    imports: [CommonModule, IconDirective, ButtonComponent, DropdownItemComponent, CdkTrapFocus],
+    imports: [CommonModule, IconDirective, DropdownItemComponent, CdkTrapFocus],
     providers: [provideIcons(IconChevronOnder, IconChevronBoven)],
     templateUrl: './dropdown.component.html',
     styleUrl: './dropdown.component.scss',
     host: {
         '[class.small]': "size() === 'small'",
-        '[class.medium]': "size() === 'medium'"
+        '[class.medium]': "size() === 'medium'",
+        '[class.with-border]': 'withBorder()'
     },
     changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -54,19 +53,27 @@ export class DropdownComponent<T> {
     private overlayService = inject(OverlayService);
     private popupService = inject(PopupService);
 
+    protected isMobile = toSignal(this.deviceService.isPhoneOrTabletPortrait$);
+    protected isModal = computed(() => this.modalOnMobile() && this.isMobile());
+    protected shouldWrap = computed(() => this.isModal() || this.wrapItems());
+
     public label = input<string | undefined>();
     public placeholder = input(DEFAULT_PLACEHOLDER);
     public items = input.required<DropdownItem<T>[]>();
     public selected = model<DropdownItem<T> | undefined>();
     public noItemsPlaceholder = input(DEFAULT_NO_ITEMS_PLACEHOLDER);
     public customTabindex = input(DEFAULT_TABINDEX);
+    public customId = input<string | undefined>();
     public size = input<'small' | 'medium'>(DEFAULT_SIZE);
     public listWidth = input<'fit-dropdown' | 'fit-options' | number>(DEFAULT_LIST_WIDTH);
     public listHeight = input<'fit-options' | number>(DEFAULT_LIST_HEIGHT);
+    public listPopupMaxHeight = input<string | undefined>(undefined);
     public modalOnMobile = input(false);
     public listAlignment = input<PopupSettings['alignment']>(DEFAULT_LIST_ALIGNMENT);
     public mobileModalTitle = input<string | undefined>();
     public buttonHeight = input<number>(48);
+    public withBorder = input<boolean>(true);
+    public wrapItems = input<boolean>(true);
 
     public onSelectionChanged = output<T>();
 
@@ -78,15 +85,6 @@ export class DropdownComponent<T> {
             .exhaustive();
     });
     isOpen = signal(false);
-
-    constructor() {
-        this.selected.subscribe((selected) => {
-            this.closeOptionsList();
-            if (selected) {
-                this.onSelectionChanged.emit(selected.data);
-            }
-        });
-    }
 
     private getListWidthValue(boxWidth: number): string {
         return match(this.listWidth())
@@ -102,11 +100,11 @@ export class DropdownComponent<T> {
         dropdownBoxRef: ViewContainerRef,
         popupSettings: PopupSettings,
         modalSettings: ModalSettings
-    ): EmbeddedViewRef<any> {
+    ) {
         if (modalOnMobile) {
-            return this.overlayService.popupOrModal(template, dropdownBoxRef, { context: {} }, popupSettings, modalSettings);
+            return this.overlayService.popupOrModal({ template, element: dropdownBoxRef, popupSettings, modalSettings });
         }
-        return this.popupService.popup(template, dropdownBoxRef, { context: {} }, popupSettings);
+        return this.popupService.popup({ template, element: dropdownBoxRef, settings: popupSettings });
     }
 
     private scrollToSelected(hostElement: HTMLElement) {
@@ -159,12 +157,13 @@ export class DropdownComponent<T> {
             }),
             createModalSettings({
                 title: this.mobileModalTitle(),
+                showClose: !!this.mobileModalTitle(),
                 onClose: () => this.isOpen.set(false)
             })
         );
         const listHost = listElement.rootNodes[0] as HTMLElement;
 
-        const listClass = this.modalOnMobile() && this.deviceService.isPhoneOrTabletPortrait() ? 'in-modal' : 'in-popup';
+        const listClass = this.isModal() ? 'in-modal' : 'in-popup';
         listHost.classList.add(listClass);
 
         // Delay needed because the list is not yet in place.
@@ -178,6 +177,8 @@ export class DropdownComponent<T> {
     select(item: DropdownItem<T>) {
         if (this.items().includes(item) && !item.disabled) {
             this.selected.set(item);
+            this.closeOptionsList();
+            this.onSelectionChanged.emit(item.data);
         }
     }
 }

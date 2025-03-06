@@ -1,0 +1,26 @@
+<form class="group" [formGroup]="form" (ngSubmit)="reageer()">
+    <textarea
+        [placeholder]="placeholder()"
+        [attr.aria-label]="inhoudAriaLabel()"
+        formControlName="inhoud"
+        hmyAutoFocus
+        tabindex="0"
+        role="textbox"
+        name="inhoud"
+        spellcheck="true"></textarea>
+    <hmy-button
+        class="verzenden"
+        [disabled]="!form.valid || !isOnline()"
+        [attr.aria-disabled]="!form.valid || !isOnline()"
+        (click)="reageer()"
+        mode="primary"
+        type="button"
+        label="Verzenden"
+        customTabindex="0"
+        role="button" />
+</form>
+<div class="group">
+    @for (bericht of details().conversatie; track bericht.id) {
+        <sl-bericht [boodschap]="bericht" [hideBeantwoorden]="true" [collapsable]="false" [hideOntvangers]="true" />
+    }
+</div>

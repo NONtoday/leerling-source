@@ -7,8 +7,15 @@ import { ResultaatItem } from '../resultaat-item-model';
 })
 export class ResultaatItemAriaLabelPipe implements PipeTransform {
     transform(resultaatItem: ResultaatItem): string {
-        const labelVelden = [resultaatItem.titel, resultaatItem.titelPostfix, resultaatItem.resultaat, resultaatItem.subtitel];
+        const labelVelden = [resultaatItem.titel, resultaatItem.titelPostfix];
 
+        if (resultaatItem.isLeegResultaat) {
+            labelVelden.push('Geen resultaat');
+        } else {
+            labelVelden.push(resultaatItem.resultaat);
+        }
+
+        labelVelden.push(resultaatItem.subtitel);
         if (resultaatItem.weging) labelVelden.push('Weging: ' + resultaatItem.weging.replace('x', ' keer'));
         if (resultaatItem.toetstype === 'SamengesteldeToetsKolom') labelVelden.push('Toets bevat deeltoetsen');
         if (resultaatItem.isHerkansing) labelVelden.push('Cijfer is een herkansing');

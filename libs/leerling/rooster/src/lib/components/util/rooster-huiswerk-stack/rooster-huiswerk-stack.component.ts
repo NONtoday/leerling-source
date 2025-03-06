@@ -1,7 +1,8 @@
 import { CommonModule, I18nPluralPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, HostListener, ViewContainerRef, computed, inject, input } from '@angular/core';
-import { DeviceService } from 'harmony';
-import { StudiewijzerItemComponent, sorteerStudiewijzerItems } from 'leerling-studiewijzer-api';
+import { DeviceService, IconDirective } from 'harmony';
+import { IconChevronOnder, IconFilter, provideIcons } from 'harmony-icons';
+import { sorteerStudiewijzerItems } from 'leerling-studiewijzer-api';
 import {
     AccessibilityService,
     OverlayService,
@@ -19,16 +20,8 @@ export type periode = 'dag' | 'week';
 
 @Component({
     selector: 'sl-rooster-huiswerk-stack',
-    standalone: true,
-    imports: [
-        CommonModule,
-        WerkdrukIndicatorComponent,
-        StudiewijzerItemComponent,
-        ToHuiswerkTypenPipe,
-        RoosterHuiswerkStackDetailComponent,
-        I18nPluralPipe,
-        PopupOpenDirective
-    ],
+    imports: [CommonModule, WerkdrukIndicatorComponent, ToHuiswerkTypenPipe, I18nPluralPipe, PopupOpenDirective, IconDirective],
+    providers: [provideIcons(IconChevronOnder, IconFilter)],
     templateUrl: './rooster-huiswerk-stack.component.html',
     styleUrl: './rooster-huiswerk-stack.component.scss',
     changeDetection: ChangeDetectionStrategy.OnPush
@@ -54,6 +47,7 @@ export class RoosterHuiswerkStackComponent {
     public sortedWeekItems = computed(() => sorteerStudiewijzerItems(this.weekItems()));
     public sortedDagItems = computed(() => sorteerStudiewijzerItems(this.dagItems()));
     public weekEnDagItems = computed(() => [...this.sortedDagItems(), ...this.sortedWeekItems()]);
+    public aantalWeekEnDagItems = computed(() => this.weekEnDagItems().length);
 
     public isMobileOrTabletPortrait = this._deviceService.isPhoneOrTabletPortrait();
 
@@ -79,13 +73,13 @@ export class RoosterHuiswerkStackComponent {
             this._sidebarService.push(
                 StudiewijzerItemDetailComponent,
                 computed(() => ({
-                    item: this.dagItems().find((swi) => swi.id === item.id) ?? this.weekItems().find((swi) => swi.id === item.id) ?? item
+                    item: this.dagItems().find((swi) => swi.id === item.id) ?? this.weekItems().find((swi) => swi.id === item.id) ?? item,
+                    showBackButton: false
                 })),
-                StudiewijzerItemDetailComponent.getSidebarSettings(item, () => this._onHuiswerkDetailsClose())
+                StudiewijzerItemDetailComponent.getSidebarSettings(item, this._sidebarService, false, () => this._onHuiswerkDetailsClose())
             );
         });
     }
-
     private _onHuiswerkDetailsClose(): void {
         if (this._accessibilityService.isAccessedByKeyboard()) {
             this.viewContainerRef.element.nativeElement.focus();

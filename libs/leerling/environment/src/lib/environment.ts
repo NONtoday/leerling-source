@@ -218,6 +218,10 @@ class Environment {
         setLoggingEnabled(debug);
         localStorage.setItem('sll-debugmode', JSON.stringify(debug));
     }
+
+    get debug(): boolean {
+        return this.debugModeThisSession;
+    }
 }
 
 export const environment = new Environment();

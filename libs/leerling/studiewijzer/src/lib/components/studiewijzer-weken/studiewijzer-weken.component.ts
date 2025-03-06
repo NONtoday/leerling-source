@@ -11,12 +11,12 @@ import {
     output
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { getISOWeek, getMonth, isSameDay } from 'date-fns';
+import { getISOWeek, getISOWeekYear, getMonth, isSameDay } from 'date-fns';
 import { isPresent } from 'harmony';
 import { AccessibilityService, onRefresh } from 'leerling-util';
 import { filter, fromEvent } from 'rxjs';
 import { StudiewijzerWeek } from '../../services/studiewijzer-model';
-import { StudiewijzerService } from '../../services/studiewijzer.service';
+import { StudiewijzerService, vulWeken } from '../../services/studiewijzer.service';
 import { SelectedFilters } from '../filter/filter';
 import { StudiewijzerWeekComponent } from '../studiewijzer-week/studiewijzer-week.component';
 
@@ -24,7 +24,6 @@ const SCROLL_OFFSET = 168;
 
 @Component({
     selector: 'sl-studiewijzer-weken',
-    standalone: true,
     imports: [CommonModule, StudiewijzerWeekComponent],
     templateUrl: './studiewijzer-weken.component.html',
     styleUrl: './studiewijzer-weken.component.scss',
@@ -55,7 +54,7 @@ export class StudiewijzerWekenComponent implements OnChanges, AfterViewInit {
             )
             .subscribe(() => {
                 const bovensteVolledigeWeekInBeeld = this.getBovensteVolledigeWeekInBeeld();
-                bovensteVolledigeWeekInBeeld && this.maandnummer.emit(this.getMaand(bovensteVolledigeWeekInBeeld.week()));
+                if (bovensteVolledigeWeekInBeeld) this.maandnummer.emit(this.getMaand(bovensteVolledigeWeekInBeeld.week()));
                 this.refreshStudiewijzer.emit(bovensteVolledigeWeekInBeeld?.week().dagen[0].datum ?? new Date());
             });
 
@@ -73,7 +72,7 @@ export class StudiewijzerWekenComponent implements OnChanges, AfterViewInit {
 
     ngOnChanges(): void {
         this.refreshStudiewijzer.emit(this.datum());
-        this.weken = this._studiewijzerService.vulWeken(this.datum());
+        this.weken = vulWeken(this.datum());
     }
 
     ngAfterViewInit(): void {
@@ -103,6 +102,7 @@ export class StudiewijzerWekenComponent implements OnChanges, AfterViewInit {
 
     public getWeekVoorDatum(datum: Date): StudiewijzerWeekComponent | undefined {
         const weeknummer = getISOWeek(datum ?? new Date());
-        return this.weekComponents.find((week) => week.week().weeknummer === weeknummer);
+        const inputJaar = getISOWeekYear(datum) ?? new Date();
+        return this.weekComponents.find((week) => week.week().weeknummer === weeknummer && week.week().jaar === inputJaar);
     }
 }

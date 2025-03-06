@@ -9,7 +9,6 @@ import { ResultaatItemDetails } from '../resultaat-item-model';
 
 @Component({
     selector: 'sl-resultaat-item-detail-samengstelde-toets',
-    standalone: true,
     imports: [CommonModule, IconDirective, SpinnerComponent],
     templateUrl: './resultaat-item-detail-samengestelde-toets.component.html',
     styleUrls: ['./resultaat-item-detail-samengestelde-toets.component.scss'],

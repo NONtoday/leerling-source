@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnDestroy, WritableSignal, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, OnDestroy, signal, WritableSignal } from '@angular/core';
 import { DeviceService, SpinnerComponent } from 'harmony';
-import { RouterService } from 'leerling-base';
+import { CIJFERS, CIJFERS_RESULTAATITEM, RouterService } from 'leerling-base';
 import { AccessibilityService, GeenDataComponent, ModalService, onRefresh } from 'leerling-util';
-import { Observable } from 'rxjs';
+import { derivedAsync } from 'ngxtension/derived-async';
+import { injectQueryParams } from 'ngxtension/inject-query-params';
 import { CijfersService } from '../../../services/cijfers/cijfers.service';
 import { LaatsteResultaat } from '../../../services/laatsteresultaten/laatsteresultaten-model';
 import { LaatsteResultatenService } from '../../../services/laatsteresultaten/laatsteresultaten.service';
@@ -15,11 +16,9 @@ import {
     LaatsteResultaatItemComponent
 } from '../laatste-resultaat-item/laatste-resultaat-item.component';
 import { ToResultaatItemPipe } from './to-resultaat-item.pipe';
-
 @Component({
     selector: 'sl-laatsteresultaten',
-    standalone: true,
-    imports: [CommonModule, LaatsteResultaatItemComponent, GeenDataComponent, SpinnerComponent, ToResultaatItemPipe],
+    imports: [CommonModule, LaatsteResultaatItemComponent, GeenDataComponent, SpinnerComponent],
     templateUrl: './laatsteresultaten.component.html',
     styleUrls: ['./laatsteresultaten.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
@@ -32,11 +31,33 @@ export class LaatsteresultatenComponent implements OnDestroy {
     private _routerService = inject(RouterService);
     private _accessibilityService = inject(AccessibilityService);
 
-    public laatsteResultaten$: Observable<LaatsteResultaat[] | undefined> = this._laatsteResultatenService.getLaatsteResultaten();
+    private paramResultaatItemString = injectQueryParams(CIJFERS_RESULTAATITEM);
+
+    public laatsteResultaten = derivedAsync<LaatsteResultaat[] | undefined>(() => this._laatsteResultatenService.getLaatsteResultaten());
     public selectedResultaat: WritableSignal<LaatsteResultaat | undefined> = signal(undefined);
+
+    public paramResultaatItem = derivedAsync(() => {
+        const itemStringId = this.paramResultaatItemString();
+
+        if (!itemStringId || this._deviceService.isDesktop()) return undefined;
+
+        const itemId = Number(itemStringId);
+        return this._laatsteResultatenService.getLaatsteResultaatItem(itemId);
+    });
+
+    private isResultaatItemOpen = signal(false);
 
     constructor() {
         this._cijfersService.setCijfersMetTabs();
+
+        effect(() => {
+            const laatsteResultaat = this.paramResultaatItem();
+
+            if (this.isResultaatItemOpen() || !this.paramResultaatItemString() || !laatsteResultaat) return;
+
+            const resultaatItem = new ToResultaatItemPipe().transform(laatsteResultaat);
+            this.toonDetails(resultaatItem, laatsteResultaat, true);
+        });
 
         onRefresh(() => this._laatsteResultatenService.refreshLaatsteResultaten());
     }
@@ -45,7 +66,7 @@ export class LaatsteresultatenComponent implements OnDestroy {
         this._cijfersService.reset();
     }
 
-    public toonDetails(resultaatItem: ResultaatItem | undefined, laatsteResultaat: LaatsteResultaat) {
+    public toonDetails(resultaatItem: ResultaatItem | undefined, laatsteResultaat: LaatsteResultaat, hasBookmarkableUrl: boolean) {
         if (resultaatItem === undefined) {
             this.selectedResultaat.set(undefined);
             return;
@@ -59,22 +80,38 @@ export class LaatsteresultatenComponent implements OnDestroy {
         } else if (this._deviceService.isPhoneOrTabletPortrait()) {
             this.selectedResultaat.set(undefined);
 
-            const detailComponent = this._modalService.modal(
-                ResultaatItemDetailComponent,
-                {
-                    resultaatItem: resultaatItem,
-                    toonVakCijferlijstKnop: true,
-                    toonTitel: true,
-                    toonVakIcon: true
-                },
-                ResultaatItemDetailComponent.getModalSettings()
-            );
-            detailComponent.openVakCijferlijst.subscribe(() => {
-                this.openVakCijferlijst(laatsteResultaat);
-            });
+            this.openResultaatItemDetail(resultaatItem, laatsteResultaat, hasBookmarkableUrl);
         } else {
             this.selectedResultaat.set(laatsteResultaat);
         }
+    }
+
+    openResultaatItemDetail(resultaatItem: ResultaatItem, laatsteResultaat: LaatsteResultaat, hasBookmarkableUrl: boolean) {
+        const detailComponent = this._modalService.modal(
+            ResultaatItemDetailComponent,
+            {
+                resultaatItem: resultaatItem,
+                toonVakCijferlijstKnop: true,
+                toonTitel: true,
+                toonVakIcon: true,
+                toonKolommen: false
+            },
+            {
+                ...ResultaatItemDetailComponent.getModalSettings(),
+                hasBookmarkableUrl: hasBookmarkableUrl,
+                onClose: () => {
+                    setTimeout(() => {
+                        // timeout is nodig om te voorkomen dat de modal weer opent.
+                        this.isResultaatItemOpen.set(false);
+                    }, 300);
+                },
+                returnURL: CIJFERS
+            }
+        );
+        this.isResultaatItemOpen.set(true);
+        detailComponent.openVakCijferlijst.subscribe(() => {
+            this.openVakCijferlijst(laatsteResultaat);
+        });
     }
 
     openVakCijferlijst(laatsteResultaat: LaatsteResultaat) {

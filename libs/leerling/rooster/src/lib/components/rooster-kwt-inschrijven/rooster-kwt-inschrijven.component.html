@@ -6,7 +6,7 @@
     </div>
 
     <div class="keuze">
-        @for (actie of roosterItem().afspraakItem.kwtInfo?.afspraakActies; track $index) {
+        @for (actie of acties(); track $index) {
             <sl-rooster-kwt-keuze
                 [afspraakActie]="actie"
                 [attr.aria-label]="actie | kwtKeuzeAriaLabel: actie.titel === actieGeselecteerd()?.titel"
@@ -21,7 +21,7 @@
     <div class="footer">
         @if (kwtFoutmelding(); as foutmelding) {
             <div class="foutmelding">
-                <hmy-error-bar [message]="foutmelding" role="alert"></hmy-error-bar>
+                <hmy-message-bar [message]="foutmelding" messageType="error" role="alert" />
             </div>
         }
         <div class="buttons">

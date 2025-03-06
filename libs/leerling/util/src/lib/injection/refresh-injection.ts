@@ -1,6 +1,7 @@
 import { assertInInjectionContext, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { REloRestricties } from 'leerling-codegen';
+import { AccountContextMetRechten } from 'leerling/store';
 import { RefreshReason, RefreshService } from '../services/refresh.service';
 
 /**
@@ -17,9 +18,22 @@ export const onRefresh = (callback: (reason: RefreshReason) => void) => {
 /**
  * Luistert naar wanneer er 'verder' wordt gegaan. Bijvoorbeeld bij het heropenen van de app, of wanneer er van account geswitcht wordt. Voert daarbij  een rechtencheck uit. Als er wordt geswitcht, maar
  * de vereiste rechten zijn niet aanwezig, dan wordt er een redirect uitgevoerd naar home. Gebruik deze functie
- * bij het top level component van een feature.
+ * bij het top level component van een feature als je alle opgegeven rechten vereist.
  */
-export const onRefreshOrRedirectHome = (rechten: Array<keyof REloRestricties>, callback?: (reason: RefreshReason) => void) => {
+export const onRefreshOrRedirectHome = (requiredRechten: Array<keyof REloRestricties>, callback?: (reason: RefreshReason) => void) => {
     assertInInjectionContext(onRefreshOrRedirectHome);
-    return inject(RefreshService).onRefreshOrRedirectHome(rechten).pipe(takeUntilDestroyed()).subscribe(callback);
+    return inject(RefreshService).onRefreshOrRedirectHome(requiredRechten).pipe(takeUntilDestroyed()).subscribe(callback);
+};
+
+/**
+ * Luistert naar wanneer er 'verder' wordt gegaan. Bijvoorbeeld bij het heropenen van de app, of wanneer er van account geswitcht wordt. Voert daarbij  een rechtencheck uit. Als er wordt geswitcht, maar
+ * de vereiste rechten zijn niet aanwezig, dan wordt er een redirect uitgevoerd naar home. Gebruik deze functie
+ * bij het top level component van een feature als je een complexere rechtencontrole wil uitvoeren.
+ */
+export const onRefreshOrRedirectHomeVerify = (
+    verifyRechtenFn: (currentAccount: Required<AccountContextMetRechten>) => boolean,
+    callback?: (reason: RefreshReason) => void
+) => {
+    assertInInjectionContext(onRefreshOrRedirectHomeVerify);
+    return inject(RefreshService).onRefreshOrRedirectHomeVerify(verifyRechtenFn).pipe(takeUntilDestroyed()).subscribe(callback);
 };

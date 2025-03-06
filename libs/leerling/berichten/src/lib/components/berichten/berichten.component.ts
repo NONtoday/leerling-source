@@ -1,6 +1,6 @@
-import { AsyncPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, input, signal, viewChild } from '@angular/core';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { DOCUMENT } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal, viewChild } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import {
     DeviceService,
@@ -22,12 +22,13 @@ import {
     BERICHTEN_NIEUW,
     BERICHTEN_POSTVAK_IN,
     BERICHTEN_VERZONDEN_ITEMS,
+    BERICHT_PARAMETERS,
     TabBarComponent,
+    getRestriction,
     registerContextSwitchInterceptor
 } from 'leerling-base';
-import { REloRestricties } from 'leerling-codegen';
 import { HeaderActionButtonComponent, HeaderComponent, ScrollableTitleComponent } from 'leerling-header';
-import { AccessibilityService, GeenDataComponent, KeyPressedService, onRefreshOrRedirectHome } from 'leerling-util';
+import { AccessibilityService, GeenDataComponent, GuardableComponent, onRefreshOrRedirectHome } from 'leerling-util';
 import {
     HeeftRechtDirective,
     NieuwBerichtInput,
@@ -36,21 +37,20 @@ import {
     SConversatie,
     kanReagerenOpBoodschap
 } from 'leerling/store';
+import { computedPrevious } from 'ngxtension/computed-previous';
 import { derivedAsync } from 'ngxtension/derived-async';
 import { injectQueryParams } from 'ngxtension/inject-query-params';
-import { Observable, map, tap } from 'rxjs';
+import { Observable, map, of, tap } from 'rxjs';
 import { match } from 'ts-pattern';
 import { BerichtService } from '../../services/bericht.service';
 import { BerichtBeantwoordenComponent } from './bericht-beantwoorden/bericht-beantwoorden.component';
-import { BerichtDetailComponent, TABINDEX_BERICHT_DETAIL_CONTENT, TAGNAME_BERICHT_DETAIL } from './bericht-detail/bericht-detail.component';
-import { BerichtNieuwComponent, TABINDEX_NIEUW_BERICHT } from './bericht-nieuw/bericht-nieuw.component';
+import { BerichtDetailComponent } from './bericht-detail/bericht-detail.component';
+import { BerichtNieuwComponent } from './bericht-nieuw/bericht-nieuw.component';
 import { BerichtSamenvattingComponent } from './bericht-samenvatting/bericht-samenvatting.component';
 
 @Component({
     selector: 'sl-berichten',
-    standalone: true,
     imports: [
-        AsyncPipe,
         HeaderComponent,
         HeaderActionButtonComponent,
         HeeftRechtDirective,
@@ -71,21 +71,23 @@ import { BerichtSamenvattingComponent } from './bericht-samenvatting/bericht-sam
     styleUrl: './berichten.component.scss',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class BerichtenComponent {
-    public static BERICHTENFEATURE: keyof REloRestricties = 'berichtenBekijkenAan';
+export class BerichtenComponent implements GuardableComponent {
     tabindexBerichtSamenvatting = TABINDEX_BERICHT_SAMENVATTING;
 
     private deviceService = inject(DeviceService);
     private router = inject(Router);
-    private accessibilityService = inject(AccessibilityService);
-    private keyPressedService = inject(KeyPressedService);
     private berichtService = inject(BerichtService);
     private modalService = inject(ModalService);
     private rechtenService = inject(RechtenService);
+    private accessibilityService = inject(AccessibilityService);
+    private document = inject(DOCUMENT);
+
+    public alleBerichtenLaden = signal(false);
+    public geenNieuweBerichten = signal(false);
 
     // named route path param, see routes in leerling app
     activeTab = input.required<BerichtenTabLink>();
-    selectedConversatieId = injectQueryParams('conversatie');
+    selectedConversatieId = injectQueryParams(BERICHT_PARAMETERS.CONVERSATIE);
 
     berichtEditComponent = viewChild(BerichtNieuwComponent, { read: BerichtNieuwComponent });
     beantwoordBerichtComponent = viewChild(BerichtBeantwoordenComponent, { read: BerichtBeantwoordenComponent });
@@ -99,6 +101,11 @@ export class BerichtenComponent {
     datumOudsteOngelezenBoodschap = signal<Date | undefined>(undefined);
     alleConversatiesOpgehaald = derivedAsync<boolean | undefined>(() => this.berichtService.alleConversatiesOpgehaald());
 
+    heeftBerichtenBekijkenRecht = toSignal(
+        this.rechtenService.getCurrentAccountRechten().pipe(map((rechten) => Boolean(rechten.berichtenBekijkenAan))),
+        { initialValue: false }
+    );
+
     heeftBerichtenVerzendenRecht = toSignal(
         this.rechtenService.getCurrentAccountRechten().pipe(map((rechten) => Boolean(rechten.berichtenVerzendenAan))),
         { initialValue: false }
@@ -107,12 +114,12 @@ export class BerichtenComponent {
     showNieuwBerichtForm = computed(() => this.editQueryParam() === BERICHTEN_NIEUW && this.heeftBerichtenVerzendenRecht());
 
     reactieOpBericht = computed(() => {
-        // rechten check hier en niet met heeftRecht directive, omdat je dan een leeg detail krijgt bij een invalide url
-        const gevondenBericht = this.heeftBerichtenVerzendenRecht()
-            ? this.conversaties()
-                  ?.flatMap((c) => c.boodschappen)
-                  .find((b) => b.id.toString() === this.editQueryParam())
-            : undefined;
+        const gevondenBericht =
+            this.editQueryParam() !== BERICHTEN_NIEUW
+                ? this.conversaties()
+                      ?.flatMap((c) => c.boodschappen)
+                      .find((b) => b.id.toString() === this.editQueryParam())
+                : undefined;
 
         return gevondenBericht && kanReagerenOpBoodschap(gevondenBericht) ? gevondenBericht : undefined;
     });
@@ -136,58 +143,69 @@ export class BerichtenComponent {
     );
 
     constructor() {
-        onRefreshOrRedirectHome([BerichtenComponent.BERICHTENFEATURE], () => this.berichtService.refreshConversaties());
+        onRefreshOrRedirectHome([getRestriction(BERICHTEN)], () => this.berichtService.refreshConversaties());
         registerContextSwitchInterceptor(() => this.canDeactivate());
         this.berichtService.refreshConversaties();
-        this.keyPressedService.mainKeyboardEvent$.pipe(takeUntilDestroyed()).subscribe((event) => {
-            const target = event.target as HTMLElement;
-            if (
-                KeyPressedService.isShiftTabEvent(event) &&
-                this.accessibilityService.isAccessedByKeyboard() &&
-                target.tagName.toLocaleLowerCase() === TAGNAME_BERICHT_DETAIL
-            ) {
-                event.preventDefault();
-                event.stopPropagation();
-                setTimeout(() => {
-                    this.accessibilityService.focusElementWithTabIndex(TABINDEX_BERICHT_SAMENVATTING);
-                });
+
+        const previousConversatie = computedPrevious(this.selectedConversatie);
+        effect(() => {
+            const selectedConversatie = this.selectedConversatie();
+            const previousConversatieId = previousConversatie()?.id;
+            // In het geval van een conversatie en anders dan de vorige conversatie markeer als gelezen en focus detail.
+            // Voorkomt dat ongelezen markeren gelijk weer gemarkeerd wordt als gelezen.
+            if (selectedConversatie && selectedConversatie.id !== previousConversatieId) {
+                this.markeerGelezenEnFocusDetail(selectedConversatie);
             }
         });
     }
 
     navigateToTab(link: BerichtenTabLink) {
         this.router.navigateByUrl(`${BERICHTEN}/${link}`);
+        // De settimeout is nodig omdat de items nog niet zijn geupdate en hij dus de oude selecteert
         setTimeout(() => {
-            if (this.accessibilityService.isAccessedByKeyboard()) {
-                this.accessibilityService.focusElementWithTabIndex(TABINDEX_BERICHT_SAMENVATTING);
-            }
+            // als de guard open staat, focus niet verplaatsen.
+            if (!this.modalService.isOpen()) this.focusEersteInboxBericht();
         });
     }
 
     startNieuwBericht() {
         this.router.navigate([], { queryParams: { edit: 'nieuw' } });
-        setTimeout(() => {
-            if (this.accessibilityService.isAccessedByKeyboard()) {
-                this.accessibilityService.focusElementWithTabIndex(TABINDEX_NIEUW_BERICHT);
-            }
-        });
     }
 
+    focusEersteInboxBericht = () => (<HTMLElement>this.document.querySelector('sl-bericht-samenvatting:first-of-type'))?.focus();
+    focusLaatsteInboxBericht = () => (<HTMLElement>this.document.querySelector('sl-bericht-samenvatting:last-of-type'))?.focus();
+
     laadEerdereBerichten() {
-        this.berichtService.refreshConversaties({ alleConversaties: true });
+        if (this.geenNieuweBerichten()) return;
+        const aantalBerichten = this.conversaties()?.length;
+        this.alleBerichtenLaden.set(true);
+        this.berichtService.refreshConversaties({ alleConversaties: true }).subscribe(() => {
+            this.alleBerichtenLaden.set(false);
+            if (this.conversaties()?.length === aantalBerichten) {
+                this.geenNieuweBerichten.set(true);
+            }
+        });
+
+        (<HTMLElement>this.document.querySelector('.laad-eerdere'))?.blur();
+        this.focusLaatsteInboxBericht();
     }
 
     selectConversatie(conversatie: SConversatie) {
         if (this.selectedConversatie()?.id === conversatie.id) return;
+        this.markeerGelezen(conversatie);
         this.router.navigate([], { queryParams: { conversatie: conversatie.id } });
+    }
 
+    private markeerGelezenEnFocusDetail(conversatie: SConversatie) {
         this.datumOudsteOngelezenBoodschap.set(conversatie.datumOudsteOngelezenBoodschap);
         this.berichtService.markeerGelezen(conversatie);
-        setTimeout(() => {
-            if (this.accessibilityService.isAccessedByKeyboard()) {
-                this.accessibilityService.focusElementWithTabIndex(TABINDEX_BERICHT_DETAIL_CONTENT);
-            }
-        });
+
+        // de setTimeout is omdat wanneer detail nog niet bestaat de focus te snel is.
+        if (this.accessibilityService.isAccessedByKeyboard()) {
+            setTimeout(() => {
+                this.document.getElementById('bericht-thread-titel')?.focus();
+            });
+        }
     }
 
     verstuurReactie(bericht: ReactieBerichtInput) {
@@ -204,11 +222,12 @@ export class BerichtenComponent {
     }
 
     // implementatie van ConfirmDeactivatableGuard bij nieuw bericht
-    canDeactivate(): boolean | Observable<boolean> {
+    canDeactivate(): Observable<boolean> {
+        if (!this.heeftBerichtenBekijkenRecht()) return of(true);
         const editComponent = this.berichtEditComponent();
         const beantwoordComponent = this.beantwoordBerichtComponent();
-        if (!editComponent?.formIsDirty() && !beantwoordComponent?.formIsDirty()) return true;
-        if (this.modalService.isOpen()) return false;
+        if (!editComponent?.formIsDirty() && !beantwoordComponent?.formIsDirty()) return of(true);
+        if (this.modalService.isOpen()) return of(false);
 
         return this.modalService
             .confirmModal(
@@ -222,7 +241,8 @@ export class BerichtenComponent {
                     title: 'Weet je het zeker?',
                     widthModal: '460px',
                     titleIcon: this.deviceService.isPhoneOrTabletPortrait() ? undefined : 'waarschuwing',
-                    titleIconColor: 'fg-negative-normal'
+                    titleIconColor: 'fg-negative-normal',
+                    cdkTrapFocusAutoCapture: this.accessibilityService.isAccessedByKeyboard()
                 })
             )
             .confirmResult.pipe(

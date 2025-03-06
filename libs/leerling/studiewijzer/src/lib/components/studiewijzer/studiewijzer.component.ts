@@ -1,92 +1,97 @@
 import { CommonModule } from '@angular/common';
 import {
+    AfterViewInit,
     ChangeDetectionStrategy,
     ChangeDetectorRef,
     Component,
+    OnDestroy,
     OnInit,
     Signal,
     ViewChild,
     ViewContainerRef,
-    WritableSignal,
     computed,
+    effect,
     inject,
     signal
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import {
     addDays,
     addWeeks,
+    endOfWeek,
     format,
     getMonth,
     isFriday,
     isMonday,
+    isSameDay,
     isSaturday,
-    isValid,
     isWeekend,
     parse,
     startOfToday,
-    subDays
+    startOfWeek
 } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import { DeviceService, SpinnerComponent, isPresent } from 'harmony';
-import { TabBarComponent } from 'leerling-base';
-import { REloRestricties } from 'leerling-codegen';
-import { HeaderActionButtonComponent, HeaderComponent, ScrollableTitleComponent } from 'leerling-header';
-import { StudiemateriaalVakselectieComponent } from 'leerling-studiemateriaal';
+import { DeviceService, SpinnerComponent } from 'harmony';
+import { IconChevronLinks, IconChevronRechts, IconInleveropdracht, provideIcons } from 'harmony-icons';
+import { WeergaveService } from 'leerling-account-modal';
+import { STUDIEWIJZER, STUDIEWIJZER_PARAMETERS, STUDIEWIJZER_PEILDATUM_DATUMFORMAT, TabBarComponent, getRestriction } from 'leerling-base';
+import { HeaderActionButtonComponent, HeaderComponent, HeaderService, ScrollableTitleComponent } from 'leerling-header';
 import {
     DagenHeaderComponent,
+    GuardableComponent,
     HorizontalSwipeDirective,
     KeyPressedService,
     OverlayService,
     SidebarService,
     onRefreshOrRedirectHome
 } from 'leerling-util';
-import { SStudiewijzerItem, VakkeuzeService, valtBinnenHuidigeSchooljaar } from 'leerling/store';
+import { SStudiewijzerItem, VakkeuzeService, isDayInCurrentSchoolyear, valtBinnenHuidigeSchooljaar } from 'leerling/store';
 import { derivedAsync } from 'ngxtension/derived-async';
-import { Observable, combineLatest, distinctUntilChanged, filter, map, of, tap } from 'rxjs';
-import { StudiewijzerDag } from '../../services/studiewijzer-model';
+import { injectQueryParams } from 'ngxtension/inject-query-params';
+import { Observable, combineLatest, map, of, tap } from 'rxjs';
 import { StudiewijzerService } from '../../services/studiewijzer.service';
 import { SelectedFilters, filterStudiewijzerItems } from '../filter/filter';
+import { InleveringenListComponent } from '../inleveropdrachten/inleveringen-list/inleveringen-list.component';
 import { StudiewijzerDagComponent } from '../studiewijzer-dag/studiewijzer-dag.component';
 import { StudiewijzerFilterDropdownComponent } from '../studiewijzer-filter-dropdown/studiewijzer-filter-dropdown.component';
+import { Modus, StudiewijzerItemDetailComponent } from '../studiewijzer-item-detail/studiewijzer-item-detail.component';
+import { StudiewijzerLijstComponent } from '../studiewijzer-lijst/studiewijzer-lijst.component';
 import { StudiewijzerWekenHeaderComponent } from '../studiewijzer-weken-header/studiewijzer-weken-header.component';
 import { StudiewijzerWekenComponent } from '../studiewijzer-weken/studiewijzer-weken.component';
 
-export const PEILDATUM_PARAM = 'peildatum';
 export const vandaag = startOfToday();
-const DATUM_FORMAT = 'yyyy-MM-dd';
+
+export type PeildatumTrigger = 'DagenHeader' | 'StudiewijzerDag' | 'StudiewijzerLijst';
 
 @Component({
     selector: 'sl-studiewijzer',
-    standalone: true,
     imports: [
         CommonModule,
-        SpinnerComponent,
         StudiewijzerWekenHeaderComponent,
         StudiewijzerWekenComponent,
         StudiewijzerDagComponent,
         ScrollableTitleComponent,
         HorizontalSwipeDirective,
         DagenHeaderComponent,
-        SpinnerComponent,
         HeaderComponent,
         HeaderActionButtonComponent,
-        TabBarComponent
+        TabBarComponent,
+        StudiewijzerLijstComponent,
+        SpinnerComponent
     ],
     templateUrl: './studiewijzer.component.html',
     styleUrl: './studiewijzer.component.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    providers: [provideIcons(IconChevronLinks, IconChevronRechts, IconInleveropdracht)]
 })
-export class StudiewijzerComponent implements OnInit {
-    public static HUISWERKFEATURE: keyof REloRestricties = 'huiswerkBekijkenAan';
-
+export class StudiewijzerComponent implements OnInit, OnDestroy, GuardableComponent, AfterViewInit {
     @ViewChild(StudiewijzerWekenHeaderComponent, { static: false }) wekenHeader: StudiewijzerWekenHeaderComponent;
     @ViewChild(StudiewijzerWekenComponent, { static: false }) weken: StudiewijzerWekenComponent;
+    @ViewChild(DagenHeaderComponent, { static: false }) dagenHeader: DagenHeaderComponent | undefined;
 
     private _deviceService = inject(DeviceService);
     private _studiewijzerService = inject(StudiewijzerService);
-    private _activatedRoute = inject(ActivatedRoute);
     private _vakkeuzeService = inject(VakkeuzeService);
     private _changeDetectorRef = inject(ChangeDetectorRef);
     private _keyPressedService = inject(KeyPressedService);
@@ -94,69 +99,141 @@ export class StudiewijzerComponent implements OnInit {
     private _router = inject(Router);
     private _sidebarService = inject(SidebarService);
     public viewContainerRef = inject(ViewContainerRef);
+    private _weergaveService = inject(WeergaveService);
+    private _headerService = inject(HeaderService);
 
-    public peildatum: WritableSignal<Date>;
+    private _lastRefreshed = new Date();
+
+    public studiewijzerModus = this._weergaveService.studiewijzerModus;
+    public isLijstView = computed(() => !this.isTabletOfDesktop() && this.studiewijzerModus() === 'lijstview');
     public toonWeekend = signal(false);
-    public maandnummer: WritableSignal<number>;
     public isTabletOfDesktop = toSignal(this._deviceService.isTabletOrDesktop$, { initialValue: this._deviceService.isTabletOrDesktop() });
     public scrollableTitle$: Observable<string | undefined> = this._studiewijzerService.scrollableTitle$;
-    public vakkeuzes = toSignal(this._vakkeuzeService.getVakkeuzes());
+    public vakkeuzes = derivedAsync(() => (this.isTabletOfDesktop() ? this._vakkeuzeService.getVakkeuzes() : of([])));
     public activeFilters = signal<SelectedFilters>({ swiType: [], vak: [] });
     public weekEnDagItems = derivedAsync(() => this.getStudiewijzerItemsVoorDrieWeken(this.peildatum(), this.activeFilters()));
-    public studiewijzerDag: Signal<StudiewijzerDag>;
+
     public headerActionFilterCounter = computed(() => this.activeFilters().swiType.length + this.activeFilters().vak.length);
 
+    public paramDatumString = injectQueryParams(STUDIEWIJZER_PARAMETERS.PEILDATUM);
+    public paramPeildatumTrigger = injectQueryParams(STUDIEWIJZER_PARAMETERS.PEILDATUM_TRIGGER);
+
+    public peildatumTrigger: Signal<PeildatumTrigger | undefined> = computed(() => {
+        switch (this.paramPeildatumTrigger()) {
+            case 'DagenHeader':
+                return 'DagenHeader';
+            case 'StudiewijzerDag':
+                return 'StudiewijzerDag';
+            case 'StudiewijzerLijst':
+                return 'StudiewijzerLijst';
+        }
+        return undefined;
+    });
+
+    public paramTab = injectQueryParams(STUDIEWIJZER_PARAMETERS.STUDIEWIJZER_TAB);
+    public paramStudiewijzerItemId = injectQueryParams(STUDIEWIJZER_PARAMETERS.STUDIEWIJZER_ITEM);
+    public paramStudiewijzerItemJaarWeek = injectQueryParams(STUDIEWIJZER_PARAMETERS.STUDIEWIJZER_ITEM_JAARWEEK);
+
+    public paramStudiewijzerItem = derivedAsync(() => {
+        const itemStringId = this.paramStudiewijzerItemId();
+        const jaarweek = this.paramStudiewijzerItemJaarWeek();
+        if (!itemStringId || !jaarweek) return undefined;
+
+        const itemId = Number(itemStringId);
+        return this._studiewijzerService.getStudiewijzerItem(jaarweek, itemId);
+    });
+
+    public queryPeildatum = computed(() => {
+        const param = this.paramDatumString();
+        let datum = param ? parse(param, STUDIEWIJZER_PEILDATUM_DATUMFORMAT, new Date()) : new Date();
+
+        if (!isDayInCurrentSchoolyear(datum)) datum = new Date();
+        return this.getWeekdagOfMaandag(datum);
+    });
+
+    public peildatum = signal(new Date());
+    public studiewijzerDag = computed(() => this._studiewijzerService.getDag(this.peildatum()));
+    public maandnummer = signal(getMonth(this.peildatum()));
+
+    public vorigeWeekNavigatieMogelijk = computed(() => {
+        return isDayInCurrentSchoolyear(endOfWeek(addWeeks(this.peildatum(), -1)));
+    });
+    public volgendeWeekNavigatieMogelijk = computed(() => {
+        return isDayInCurrentSchoolyear(startOfWeek(addWeeks(this.peildatum(), 1)));
+    });
+
+    // De lijstview opbouwen duurt best lang, waardoor de navigatie een beetje blijft hangen.
+    // Door eerst een spinner te tonen, en daarna pas de lijstview te renderen.
+    public renderLijstview = signal(false);
+
     constructor() {
-        const param = this._activatedRoute.snapshot.queryParamMap.get(PEILDATUM_PARAM);
-        const peildatum = param ? parse(param, DATUM_FORMAT, vandaag) : undefined;
-        this.peildatum = signal(peildatum && isValid(peildatum) ? peildatum : vandaag);
-        this.maandnummer = signal(getMonth(this.peildatum()));
-        this.studiewijzerDag = computed(() => this._studiewijzerService.getDag(this.peildatum()));
-        this.updateScrollableTitle(vandaag);
-        this.refreshStudiewijzer(this.peildatum());
+        effect(() => {
+            this.peildatum.set(this.queryPeildatum());
+            this.updateScrollableTitle();
+            this._studiewijzerService.refreshStudiewijzerEnOmliggendeWeken(this.peildatum());
+        });
+
+        let studiewijzerItemOpened = false;
+        effect(() => {
+            const studiewijzerItem = this.paramStudiewijzerItem();
+
+            if (!this.paramStudiewijzerItemId() || !studiewijzerItem) return;
+
+            if (studiewijzerItemOpened) {
+                this._sidebarService.updateInputs(StudiewijzerItemDetailComponent, {
+                    item: studiewijzerItem,
+                    showBackButton: false
+                });
+                return;
+            }
+
+            const detailComponent = this._sidebarService.push(
+                StudiewijzerItemDetailComponent,
+                { item: studiewijzerItem, showBackButton: false },
+                StudiewijzerItemDetailComponent.getSidebarSettings(studiewijzerItem, this._sidebarService, true),
+                () => {
+                    studiewijzerItemOpened = false;
+                }
+            );
+            this._sidebarService.registerCloseGuard(StudiewijzerItemDetailComponent, () => this.canDeactivate(), [
+                'backdrop-click',
+                'escape-key',
+                'page-back'
+            ]);
+            studiewijzerItemOpened = true;
+
+            const tab = this.paramTab();
+            if (tab) {
+                detailComponent.setInitialModus(tab as Modus);
+            }
+        });
+
+        effect(() => {
+            this._headerService.toonAltijdScollableTitle = this.isLijstView();
+            this.updateScrollableTitle();
+        });
 
         this._keyPressedService.mainKeyboardEvent$.pipe(takeUntilDestroyed()).subscribe((event) => this.onKeyDown(event));
 
-        this._activatedRoute.queryParamMap
-            .pipe(
-                map((params) => {
-                    if (!params.get(PEILDATUM_PARAM)) {
-                        this.updatePeildatum(vandaag);
-                        this.scrollNaarVandaag();
-                    }
-                    return params.get(PEILDATUM_PARAM);
-                }),
-                filter(isPresent),
-                map((param) => parse(param, DATUM_FORMAT, vandaag)),
-                distinctUntilChanged(),
-                takeUntilDestroyed()
-            )
-            .subscribe((date) => {
-                if (isValid(date) && valtBinnenHuidigeSchooljaar(date)) {
-                    if (isWeekend(date)) {
-                        const newDate = addDays(date, isSaturday(date) ? 2 : 1);
-                        this.peildatum.set(newDate);
-                        this.updateScrollableTitle(newDate);
-                        this.refreshStudiewijzer(newDate);
-                    } else {
-                        this.peildatum.set(date);
-                        this.updateScrollableTitle(date);
-                        this.refreshStudiewijzer(date);
-                    }
-                } else {
-                    this.updatePeildatum(vandaag);
-                    this.refreshStudiewijzer(vandaag);
-                }
-            });
+        onRefreshOrRedirectHome([getRestriction(STUDIEWIJZER)], () => {
+            if (this.isTabletOfDesktop()) {
+                this._vakkeuzeService.refreshVakkeuzes();
+            }
 
-        onRefreshOrRedirectHome([StudiewijzerComponent.HUISWERKFEATURE], () => this.refreshStudiewijzer(this.peildatum()));
+            if (isSameDay(new Date(), this._lastRefreshed)) {
+                this._studiewijzerService.refreshStudiewijzerEnOmliggendeWeken(this.peildatum());
+            } else {
+                this.updatePeildatumVandaag();
+            }
+            this._lastRefreshed = new Date();
+        });
+    }
+    ngAfterViewInit(): void {
+        this.renderLijstview.set(true);
     }
 
-    public refreshStudiewijzer(date: Date) {
-        this._studiewijzerService.refreshStudiewijzer(subDays(date, 7));
-        this._studiewijzerService.refreshStudiewijzer(date);
-        this._studiewijzerService.refreshStudiewijzer(addDays(date, 7));
-        this._studiewijzerService.refreshStudiewijzer(addDays(date, 14));
+    ngOnDestroy(): void {
+        this._headerService.toonAltijdScollableTitle = false;
     }
 
     public getStudiewijzerItemsVoorDrieWeken(date: Date, filters: SelectedFilters): Observable<SStudiewijzerItem[][]> {
@@ -181,16 +258,34 @@ export class StudiewijzerComponent implements OnInit {
         this.toonWeekend.set(await this._studiewijzerService.getToonWeekendPreference());
     }
 
-    public updateScrollableTitle(date: Date) {
-        const formatDate = format(date, 'MMMM', { locale: nl });
-        this._studiewijzerService.scrollableTitle = formatDate.charAt(0).toUpperCase() + formatDate.slice(1);
+    private updateScrollableTitle() {
+        const formatDate = format(this.peildatum(), 'MMMM', { locale: nl });
+        const titel = formatDate.charAt(0).toUpperCase() + formatDate.slice(1);
+        if (this.isLijstView()) {
+            this._headerService.title = titel;
+        } else {
+            this._studiewijzerService.scrollableTitle = titel;
+        }
     }
 
-    public updatePeildatum(date: Date): void {
+    /**
+     * Als de peildatum in het weekend valt, wordt de eerstvolgende maandag gekozen.
+     */
+    private getWeekdagOfMaandag(date: Date) {
+        return isWeekend(date) ? (isSaturday(date) ? addDays(date, 2) : addDays(date, 1)) : date;
+    }
+
+    public updatePeildatum(date: Date, trigger?: PeildatumTrigger): void {
         if (!valtBinnenHuidigeSchooljaar(date)) return;
         this._router.navigate([], {
-            queryParams: { [PEILDATUM_PARAM]: format(date, DATUM_FORMAT) },
-            queryParamsHandling: 'merge'
+            queryParams: {
+                [STUDIEWIJZER_PARAMETERS.PEILDATUM]: format(date, STUDIEWIJZER_PEILDATUM_DATUMFORMAT),
+                [STUDIEWIJZER_PARAMETERS.PEILDATUM_TRIGGER]: trigger
+            },
+            queryParamsHandling: 'merge',
+            // in lijstview willen we history-state niet aanpassen
+            // // Bij een backswipe gaan we dan echt naar de vorige pagina ipv dat we terugscollen naar de vorige peildatum.
+            replaceUrl: !this.isTabletOfDesktop() && this.studiewijzerModus() === 'lijstview'
         });
     }
 
@@ -198,12 +293,12 @@ export class StudiewijzerComponent implements OnInit {
         this.updatePeildatum(new Date());
     }
 
-    public openStudiemateriaalVakselectie() {
-        this._sidebarService.push(StudiemateriaalVakselectieComponent, {}, StudiemateriaalVakselectieComponent.getSidebarSettings());
+    public openInleveropdrachten() {
+        this._sidebarService.push(InleveringenListComponent, {}, InleveringenListComponent.getSidebarSettings());
     }
 
     public focusOnHeader() {
-        this.wekenHeader?.vandaagButton.nativeElement.focus();
+        this.wekenHeader?.previousButton.nativeElement.focus();
     }
 
     public focusHuidigeWeek() {
@@ -214,12 +309,14 @@ export class StudiewijzerComponent implements OnInit {
     public onSwipe(next: boolean) {
         const fridayIndex = isFriday(this.peildatum()) ? 3 : 1;
         const mondayIndex = isMonday(this.peildatum()) ? -3 : -1;
-
-        this.updatePeildatum(addDays(this.peildatum(), next ? fridayIndex : mondayIndex));
-        window.scrollTo({
-            top: 0,
-            behavior: 'auto'
-        });
+        const potentialNewPeildatum = addDays(this.peildatum(), next ? fridayIndex : mondayIndex);
+        if (isDayInCurrentSchoolyear(potentialNewPeildatum)) {
+            this.updatePeildatum(potentialNewPeildatum);
+            window.scrollTo({
+                top: 0,
+                behavior: 'auto'
+            });
+        }
     }
 
     public onKeyDown(event: KeyboardEvent) {
@@ -270,7 +367,18 @@ export class StudiewijzerComponent implements OnInit {
         this._studiewijzerService.updateToonWeekendPreference(value);
     }
 
-    public scrollNaarVandaag(focusOnKeyboardAccess = false) {
-        this.weken?.scrollToDatum(new Date(), 'smooth', focusOnKeyboardAccess);
+    public scrollNaarBepaaldeWeek(date: Date, focusOnKeyboardAccess = false) {
+        this.weken?.scrollToDatum(date, 'smooth', focusOnKeyboardAccess);
+    }
+
+    public refreshStudiewijzer(date: Date) {
+        this._studiewijzerService.refreshStudiewijzerEnOmliggendeWeken(date);
+        this.peildatum.set(date);
+        this.maandnummer.set(getMonth(date));
+    }
+
+    public canDeactivate(): Observable<boolean> {
+        const component = this._sidebarService.getSidebarComponent(StudiewijzerItemDetailComponent);
+        return component?.canDeactivate() ?? of(true);
     }
 }

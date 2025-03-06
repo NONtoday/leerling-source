@@ -1,3 +1,4 @@
+import { SInlevering } from '../inleveropdracht/inleveropdracht-model';
 import { SStudiewijzerItem } from './huiswerk-model';
 
 export class RefreshHuiswerk {
@@ -13,4 +14,15 @@ export class ToggleAfgevinkt {
     static readonly type = '[Huiswerk] Toggle Afgevinkt';
 
     constructor(public item: SStudiewijzerItem) {}
+}
+
+export class UpdateInleveropdrachtStatus {
+    static readonly type = '[Huiswerk] Update Inleveropdracht Status';
+
+    constructor(
+        public toekenningId: number,
+        public datum: Date,
+        public inlevering: SInlevering,
+        public aantalInleveringenInVerwerking: number
+    ) {}
 }

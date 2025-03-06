@@ -18,7 +18,6 @@ import { StudiemateriaalComponent } from '../studiemateriaal/studiemateriaal.com
 
 @Component({
     selector: 'sl-studiemateriaal-vakselectie',
-    standalone: true,
     imports: [CommonModule, SpinnerComponent, GeenDataComponent, VakIconComponent],
     templateUrl: './studiemateriaal-vakselectie.component.html',
     styleUrl: './studiemateriaal-vakselectie.component.scss',

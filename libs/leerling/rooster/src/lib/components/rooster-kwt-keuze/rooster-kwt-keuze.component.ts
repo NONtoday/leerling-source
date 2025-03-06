@@ -1,5 +1,6 @@
 import { CommonModule, I18nPluralPipe } from '@angular/common';
 import {
+    AfterViewInit,
     ChangeDetectionStrategy,
     Component,
     ElementRef,
@@ -12,13 +13,13 @@ import {
     signal
 } from '@angular/core';
 import { collapseOnLeaveAnimation, expandOnEnterAnimation } from 'angular-animations';
-import { IconDirective, IconPillComponent, TooltipDirective } from 'harmony';
+import { IconDirective, IconPillComponent } from 'harmony';
 import { IconBoek, IconKlok, IconLocatie, IconPersoon, IconYesRadio, provideIcons } from 'harmony-icons';
 import { AppStatusService } from 'leerling-app-status';
 import { AuthenticationService } from 'leerling-authentication';
 import { AccessibilityService } from 'leerling-util';
 import { SAfspraakActie } from 'leerling/store';
-import { MedewerkerAanhefAriaLabelPipe } from '../rooster-item-detail/medewerker-aanhef-aria-label.pipe';
+
 import { kwtHerhalingLabelPipe } from '../rooster-kwt-inschrijven/kwt-herhaling-label.pipe';
 import { pluralMapping } from './plural-mapping';
 import { toInschrijfdatumPipe } from './to-inschrijfdatum-pipe';
@@ -28,25 +29,14 @@ const ANIMATIONS = [expandOnEnterAnimation(), collapseOnLeaveAnimation()];
 
 @Component({
     selector: 'sl-rooster-kwt-keuze',
-    standalone: true,
-    imports: [
-        CommonModule,
-        IconDirective,
-        IconPillComponent,
-        MedewerkerAanhefAriaLabelPipe,
-        I18nPluralPipe,
-        toLestijdPipe,
-        toInschrijfdatumPipe,
-        kwtHerhalingLabelPipe,
-        TooltipDirective
-    ],
+    imports: [CommonModule, IconDirective, IconPillComponent, I18nPluralPipe, toLestijdPipe, toInschrijfdatumPipe, kwtHerhalingLabelPipe],
     templateUrl: './rooster-kwt-keuze.component.html',
     styleUrl: './rooster-kwt-keuze.component.scss',
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [provideIcons(IconKlok, IconLocatie, IconBoek, IconPersoon, IconYesRadio)],
     animations: ANIMATIONS
 })
-export class RoosterKwtKeuzeComponent {
+export class RoosterKwtKeuzeComponent implements AfterViewInit {
     private _accessibilityService = inject(AccessibilityService);
     private _authenticationService = inject(AuthenticationService);
     public elementRef = inject(ElementRef);
@@ -65,6 +55,12 @@ export class RoosterKwtKeuzeComponent {
     private isDisabled = computed(() => this.isVol() || !this.isToegestaan() || !this.isOnline());
 
     public pluralMapping = pluralMapping;
+
+    ngAfterViewInit() {
+        if (this.afspraakActie()?.ingeschreven) {
+            this.geselecteerd.set(true);
+        }
+    }
 
     @HostBinding('class.selected') get details() {
         return this.geselecteerd();

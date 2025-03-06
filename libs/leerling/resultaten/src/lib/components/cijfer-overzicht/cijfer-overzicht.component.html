@@ -1,0 +1,20 @@
+@if (plaatsingenEnExamens(); as plaatsingenEnExamens) {
+    @if (plaatsingenEnExamens.length > 0) {
+        <div class="dropdown">
+            <sl-dropdown
+                [items]="plaatsingenEnExamens"
+                [tabIndex]="0"
+                [config]="dropdownconfig"
+                (itemGewisseld)="geselecteerdePlaatsingEnExamen.set($event)" />
+        </div>
+    }
+    @if (geselecteerdePlaatsingEnExamen(); as plaatsingEnExamen) {
+        @if (plaatsingEnExamen.data.type === 'Voortgang') {
+            <sl-cijfer-overzicht-voortgang [plaatsing]="plaatsingEnExamen.data.plaatsing!" />
+        } @else {
+            <sl-cijfer-overzicht-examen [examendossierContext]="plaatsingEnExamen.data.examendossierContext!" />
+        }
+    }
+} @else {
+    <hmy-spinner />
+}

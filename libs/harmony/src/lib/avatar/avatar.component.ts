@@ -5,11 +5,13 @@ import { AltAvatarText } from './altAvatarText.pipe';
 
 @Component({
     selector: 'hmy-avatar',
-    standalone: true,
     templateUrl: './avatar.component.html',
     styleUrls: ['./avatar.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [CommonModule, LazyLoadImageModule, AltAvatarText]
+    imports: [CommonModule, LazyLoadImageModule, AltAvatarText],
+    host: {
+        '[class.round-border]': 'roundBorder'
+    }
 })
 export class AvatarComponent {
     private _changeDetectorRef = inject(ChangeDetectorRef);
@@ -18,6 +20,8 @@ export class AvatarComponent {
     @Input() public naam: string | undefined;
     @Input() public initialen: string | undefined;
     @Input() public lazyLoading = false;
+    @Input() public profielfotoVerbergen: boolean | undefined = false;
+    @Input() public roundBorder = false;
 
     public loading = true;
 

@@ -1,40 +1,53 @@
 import { importProvidersFrom, inject } from '@angular/core';
-import { Router, Routes, UrlTree } from '@angular/router';
+import { CanActivateFn, Router, Routes, UrlTree } from '@angular/router';
 import { Network } from '@capacitor/network';
 import { NgxsModule } from '@ngxs/store';
-import type { AfwezigMeldenPageComponent } from 'leerling-afwezig-melden';
 import { AuthenticationService, LoginComponent, OauthCallbackComponent } from 'leerling-authentication';
 import {
     AFWEZIG_MELDEN,
+    AFWEZIGHEID,
     BERICHTEN,
     BERICHTEN_POSTVAK_IN,
     CIJFERS,
+    CIJFERS_OVERZICHT,
     CIJFERS_VAKGEMIDDELDEN,
     CIJFERS_VAKRESULTATEN,
+    GEEN_PLAATSING,
+    getRestriction,
     HomeComponent,
     LOGIN,
     OAUTH_CALLBACK,
+    OUDERAVOND,
+    PathWithRestrictionName,
     REDIRECT,
-    REGISTRATIES,
     ROOSTER,
     STUDIEWIJZER,
     VANDAAG
 } from 'leerling-base';
-import type { BerichtenComponent } from 'leerling-berichten';
 import { ERROR, SupportedErrorTypes } from 'leerling-error-models';
 import { ErrorComponent } from 'leerling-error-ui';
+import { GeenPlaatsingComponent } from 'leerling-geen-plaatsing';
 import { RedirectComponent } from 'leerling-redirect';
 import { RegistratiesState } from 'leerling-registraties-data-access';
+import { GuardableComponent } from 'leerling-util';
 import { VandaagComponent } from 'leerling-vandaag';
-import { CijfersComponent, LaatsteresultatenComponent, VakgemiddeldenComponent, VakresultatenComponent } from 'leerling/resultaten';
+import {
+    CijferOverzichtComponent,
+    CijfersComponent,
+    LaatsteresultatenComponent,
+    VakgemiddeldenComponent,
+    VakresultatenComponent
+} from 'leerling/resultaten';
 import { RoosterComponent } from 'leerling/rooster';
+import { RechtenService } from 'leerling/store';
 import { StudiewijzerComponent } from 'leerling/studiewijzer';
-import { Observable, catchError, from, map, of, switchMap, timeout } from 'rxjs';
+import { catchError, from, map, Observable, of, switchMap, timeout } from 'rxjs';
 import { RootRedirectComponent } from '../root-redirect/root-redirect.component';
 
-const authGuardFn = (): Observable<boolean | UrlTree> => {
+const authGuardFn: CanActivateFn = (): Observable<boolean | UrlTree> => {
     const router = inject(Router);
     const authService = inject(AuthenticationService);
+
     /* hier loader activeren */
     return from(authService.isLoggedIn).pipe(
         map((isLoggedIn) => /* hier loader deactiveren */ isLoggedIn || router.parseUrl('login')),
@@ -48,6 +61,18 @@ const authGuardFn = (): Observable<boolean | UrlTree> => {
         })
     );
 };
+
+function getHeeftRechtOrRedirectFn(path: PathWithRestrictionName): CanActivateFn {
+    const permission = getRestriction(path);
+
+    return (): Observable<boolean | UrlTree> => {
+        const router = inject(Router);
+        const rechtenService = inject(RechtenService);
+        return rechtenService.shouldSkipRoutePermissionCheckAndReset()
+            ? of(true)
+            : rechtenService.heeftRecht(permission).pipe(map((heeftRecht) => heeftRecht || router.parseUrl('/')));
+    };
+}
 
 export const routes: Routes = [
     {
@@ -67,15 +92,22 @@ export const routes: Routes = [
             },
             {
                 path: ROOSTER,
-                component: RoosterComponent
+                component: RoosterComponent,
+                canActivate: [getHeeftRechtOrRedirectFn(ROOSTER)],
+                canDeactivate: [(component: GuardableComponent) => component.canDeactivate()],
+                runGuardsAndResolvers: 'paramsOrQueryParamsChange'
             },
             {
                 path: STUDIEWIJZER,
-                component: StudiewijzerComponent
+                component: StudiewijzerComponent,
+                canActivate: [getHeeftRechtOrRedirectFn(STUDIEWIJZER)],
+                canDeactivate: [(component: GuardableComponent) => component.canDeactivate()],
+                runGuardsAndResolvers: 'paramsOrQueryParamsChange'
             },
             {
                 path: CIJFERS,
                 component: CijfersComponent,
+                canActivate: [getHeeftRechtOrRedirectFn(CIJFERS)],
                 children: [
                     {
                         path: '',
@@ -88,6 +120,10 @@ export const routes: Routes = [
                     {
                         path: CIJFERS_VAKRESULTATEN,
                         component: VakresultatenComponent
+                    },
+                    {
+                        path: CIJFERS_OVERZICHT,
+                        component: CijferOverzichtComponent
                     }
                 ]
             },
@@ -97,22 +133,30 @@ export const routes: Routes = [
             },
             {
                 path: `${BERICHTEN}/:activeTab`,
+                canActivate: [getHeeftRechtOrRedirectFn(BERICHTEN)],
                 loadComponent: () => import('leerling-berichten').then((mod) => mod.BerichtenComponent),
-                canDeactivate: [(component: BerichtenComponent) => component.canDeactivate()],
+                canDeactivate: [(component: GuardableComponent) => component.canDeactivate()],
                 runGuardsAndResolvers: 'paramsOrQueryParamsChange'
             },
             {
-                path: REGISTRATIES,
+                path: AFWEZIGHEID,
                 loadComponent: () => import('leerling-feature-registraties').then((mod) => mod.RegistratieOverzichtComponent),
-                providers: [importProvidersFrom(NgxsModule.forFeature([RegistratiesState]))],
-                canActivate: [() => inject(AuthenticationService).isCurrentContextLeerling]
+                providers: [importProvidersFrom(NgxsModule.forFeature([RegistratiesState]))]
             },
-
             {
                 path: AFWEZIG_MELDEN,
                 loadComponent: () => import('leerling-afwezig-melden').then((mod) => mod.AfwezigMeldenPageComponent),
-                canActivate: [() => inject(AuthenticationService).isCurrentContextOuderVerzorger],
-                canDeactivate: [(component: AfwezigMeldenPageComponent) => component.canDeactivate()]
+                canActivate: [
+                    getHeeftRechtOrRedirectFn(AFWEZIG_MELDEN),
+                    () => (inject(AuthenticationService).isCurrentContextOuderVerzorger ? true : new UrlTree())
+                ],
+                canDeactivate: [(component: GuardableComponent) => component.canDeactivate()]
+            },
+            {
+                path: OUDERAVOND,
+                loadComponent: () => import('leerling-ouderavond').then((mod) => mod.OuderavondPageComponent),
+                canActivate: [() => (inject(AuthenticationService).isCurrentContextOuderVerzorger ? true : new UrlTree())],
+                canDeactivate: [(component: GuardableComponent) => component.canDeactivate()]
             }
         ]
     },
@@ -131,6 +175,10 @@ export const routes: Routes = [
     {
         path: OAUTH_CALLBACK,
         component: OauthCallbackComponent
+    },
+    {
+        path: GEEN_PLAATSING,
+        component: GeenPlaatsingComponent
     },
     {
         path: ERROR,

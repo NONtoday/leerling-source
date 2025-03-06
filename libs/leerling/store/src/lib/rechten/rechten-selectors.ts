@@ -7,7 +7,8 @@ import { RechtenState } from './rechten-state';
 export interface AccountContextMetRechten {
     localAuthenticationContext: string;
     leerlingId?: number;
-    rechten?: SRechten;
+    rechten: SRechten;
+    currentAccountIsVerzorger: boolean;
 }
 
 export class RechtenSelectors {
@@ -37,14 +38,21 @@ export class RechtenSelectors {
         );
     }
 
+    public static isCurrentAccountImpersonated() {
+        return createSelector([this._getCurrentAccountMetLeerlingenRechten()], (account: SAccountRechtenModel): boolean => {
+            return account?.isImpersonated ?? false;
+        });
+    }
+
     public static getAccountContextMetRechten() {
         return createSelector(
-            [this.getCurrentAccountRechten(), SharedSelectors.getAccountContext()],
-            (rechten: SRechten, accountState: SSharedStateModel): AccountContextMetRechten => {
+            [this.getCurrentAccountRechten(), SharedSelectors.getAccountContext(), this.currentAccountIsVerzorger()],
+            (rechten: SRechten, accountState: SSharedStateModel, currentAccountIsVerzorger: boolean): AccountContextMetRechten => {
                 return {
                     localAuthenticationContext: accountState.localAuthenticationContext,
                     leerlingId: accountState.leerlingId,
-                    rechten: rechten
+                    rechten: rechten,
+                    currentAccountIsVerzorger: currentAccountIsVerzorger
                 };
             }
         );

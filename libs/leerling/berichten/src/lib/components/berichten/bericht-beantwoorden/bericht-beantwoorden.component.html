@@ -1,5 +1,5 @@
 <ng-template #headerActions>
-    <sl-header-action-button [hideWhenOffline]="true" (click)="beantwoord()" iconName="verzenden" label="verzenden" tabindex="10" />
+    <sl-header-action-button [hideWhenOffline]="true" (click)="beantwoord()" iconName="verzenden" label="verzenden" tabindex="0" />
 </ng-template>
 <span class="titel text-heading-2 text-moderate">Beantwoorden</span>
 <div class="ontvanger" tabindex="0">
@@ -37,6 +37,7 @@
     @if (eerdereBerichten().length > 0) {
         <sl-bericht-seperator
             [clickable]="true"
+            [expanded]="showEerdereBerichten()"
             [label]="showEerdereBerichten() ? 'Verberg eerdere berichten' : 'Toon eerdere berichten'"
             (click)="showEerdereBerichten.set(!showEerdereBerichten())"
             tabindex="0" />
@@ -46,7 +47,6 @@
             <sl-bericht
                 [boodschap]="bericht"
                 [hideBeantwoorden]="true"
-                [headerTabIndex]="0"
                 (onMeerOntvangersPillClick)="handleMeerOntvangersPillClick($event)" />
         }
     </div>

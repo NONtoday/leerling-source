@@ -6,5 +6,9 @@ export const pluralMapping = {
     weekItems: {
         '=1': '1 weektaak',
         other: '# weektaken'
+    },
+    totaalItems: {
+        '=1': '1 taak',
+        other: '# taken'
     }
 };

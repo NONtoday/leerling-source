@@ -2,7 +2,6 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { IsActiveMatchOptions, Router } from '@angular/router';
-import Bugsnag from '@bugsnag/js';
 import { AppUpdate, AppUpdateAvailability } from '@capawesome/capacitor-app-update';
 import { Store } from '@ngxs/store';
 import { isToday } from 'date-fns';
@@ -14,7 +13,6 @@ import { InfoMessageService, isAndroid, isWeb } from 'leerling-util';
 import { SharedSelectors } from 'leerling/store';
 import { BehaviorSubject, EMPTY, Observable, catchError, distinctUntilChanged, filter, map, take } from 'rxjs';
 
-``;
 export interface Versioning {
     version: string;
 }
@@ -53,13 +51,17 @@ export class AppStatusService {
     private _versionSubject = new BehaviorSubject<string | undefined>(undefined);
 
     constructor() {
-        this._httpClient
-            .get<Versioning>('/assets/version.json')
-            .pipe(
-                map((version: Versioning) => version.version),
-                take(1)
-            )
-            .subscribe((value) => this._versionSubject.next(value));
+        if (isWeb()) {
+            this._httpClient
+                .get<Versioning>('/assets/version.json')
+                .pipe(
+                    map((version: Versioning) => version.version),
+                    take(1)
+                )
+                .subscribe((value) => this._versionSubject.next(value));
+        } else {
+            AppVersion.getAppVersion().then((version) => this._versionSubject.next(version.version));
+        }
     }
 
     public getVersion$(): Observable<string> {
@@ -88,9 +90,9 @@ export class AppStatusService {
         const currentAppVersion = (await AppVersion.getAppVersion()).version;
 
         // Check of de versie al gecheckt is vandaag
-        if (lastChecked && isToday(lastChecked.checkedTime) && lastChecked.checkedVersion === currentAppVersion) {
+        if (lastChecked && isToday(lastChecked.checkedTime) && currentAppVersion === lastChecked.checkedVersion) {
             // Als de versie niet supported is, redirect naar unsupported pagina
-            this.checkForUpdateOrRedirect(lastChecked.isSupported);
+            if (!lastChecked.isSupported) this.redirectUnsupported();
         } else {
             this.refreshLastChecked();
         }
@@ -108,14 +110,18 @@ export class AppStatusService {
         AppUpdate.getAppUpdateInfo()
             .then((updateInfo) => {
                 if (updateInfo.updateAvailability === AppUpdateAvailability.UPDATE_AVAILABLE) {
-                    this._infoMessageService.dispatchInfoMessage(
-                        `Er is een nieuwe versie van de app beschikbaar. Klik <a href="${this.getStoreUrl()}">hier</a> om te updaten.`
-                    );
+                    this.updateNotify();
                 }
             })
-            .catch((err) => {
-                Bugsnag.notify(err);
+            .catch(() => {
+                // Bij een error doe niets - en slik hem daarmee in.
             });
+    }
+
+    public updateNotify(): void {
+        this._infoMessageService.dispatchInfoMessage(
+            `Er is een nieuwe versie van de app beschikbaar. Klik <a href="${this.getStoreUrl()}">hier</a> om te updaten.`
+        );
     }
 
     private async refreshLastChecked() {

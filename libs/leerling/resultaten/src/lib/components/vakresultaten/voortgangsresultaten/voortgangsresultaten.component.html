@@ -1,71 +1,72 @@
-@for (periodeNummer of periodeNummers; track $index) {
-    @if (voortgangsdossier.perioden[periodeNummer]; as periode) {
-        <div class="periodeheader">
-            <div class="periodenummer" tabindex="200">Periode {{ periodeNummer }}</div>
-            <div class="gemiddeldes-container">
-                @if (periode.periodeGemiddelde) {
-                    <div
-                        class="gemiddelde-wrapper"
-                        [attr.aria-label]="'Periodegemiddelde: ' + periode.periodeGemiddelde"
-                        tabindex="200"
-                        role="text">
-                        <div class="gemiddelde">
-                            <div class="periode-gemiddelde gemiddelde-titel">Periode gem.</div>
-                            <div class="cijfer" [ngClass]="{ onvoldoende: periode.periodeGemiddeldeIsOnvoldoende }">
-                                {{ periode.periodeGemiddelde }}
-                            </div>
+@for (periode of periodes(); track $index) {
+    <div class="periodeheader">
+        <div class="periodenummer" tabindex="200">Periode {{ periode | periodeNaam }}</div>
+        <div class="gemiddeldes-container">
+            @if (periode.periodeGemiddelde) {
+                <div
+                    class="gemiddelde-wrapper"
+                    [attr.aria-label]="'Periodegemiddelde: ' + periode.periodeGemiddelde"
+                    tabindex="200"
+                    role="text">
+                    <div class="gemiddelde">
+                        <div class="periode-gemiddelde gemiddelde-titel">Periode gem.</div>
+                        <div class="cijfer" [ngClass]="{ onvoldoende: periode.periodeGemiddeldeIsOnvoldoende }">
+                            {{ periode.periodeGemiddelde }}
                         </div>
                     </div>
-                }
-                @if (periode.rapportGemiddelde) {
-                    <div
-                        class="gemiddelde-wrapper"
-                        [attr.aria-label]="'Rapportgemiddelde: ' + periode.rapportGemiddelde"
-                        tabindex="200"
-                        role="text">
-                        <div class="gemiddelde">
-                            <div class="rapport-gemiddelde gemiddelde-titel">Rapport gem.</div>
-                            <div class="cijfer" [ngClass]="{ onvoldoende: periode.rapportGemiddeldeIsOnvoldoende }">
-                                {{ periode.rapportGemiddelde }}
-                            </div>
+                </div>
+            }
+            @if (periode.rapportGemiddelde) {
+                <div
+                    class="gemiddelde-wrapper"
+                    [attr.aria-label]="'Rapportgemiddelde: ' + periode.rapportGemiddelde"
+                    tabindex="200"
+                    role="text">
+                    <div class="gemiddelde">
+                        <div class="rapport-gemiddelde gemiddelde-titel">Rapport gem.</div>
+                        <div class="cijfer" [ngClass]="{ onvoldoende: periode.rapportGemiddeldeIsOnvoldoende }">
+                            {{ periode.rapportGemiddelde }}
                         </div>
                     </div>
-                }
-                @if (periode.rapportCijfer) {
-                    <div
-                        class="gemiddelde-wrapper"
-                        [hmyTooltip]="periode.rapportCijferOpmerking"
-                        [onTouchAllowed]="true"
-                        [alignCenter]="false"
-                        [attr.aria-label]="periode | rapportCijferAriaLabelPipe"
-                        [position]="'bottom'"
-                        tabindex="200"
-                        role="text">
-                        <div class="gemiddelde">
-                            <div class="rapport-cijfer gemiddelde-titel">Rapportcijfer</div>
-                            <div class="cijfer-wrapper">
-                                <div class="cijfer" [ngClass]="{ onvoldoende: periode.rapportCijferIsOnvoldoende }">
-                                    {{ periode.rapportCijfer }}
-                                </div>
-                                @if (periode.rapportCijferOpmerking) {
-                                    <i class="icon opmerking" size="small" hmyIcon="reacties"></i>
-                                }
+                </div>
+            }
+            @if (periode.rapportCijfer) {
+                <div
+                    class="gemiddelde-wrapper"
+                    [hmyTooltip]="periode.rapportCijferOpmerking"
+                    [onTouchAllowed]="true"
+                    [alignCenter]="false"
+                    [attr.aria-label]="periode | rapportCijferAriaLabelPipe"
+                    [position]="'bottom'"
+                    tabindex="200"
+                    role="text">
+                    <div class="gemiddelde">
+                        <div class="rapport-cijfer gemiddelde-titel">Rapportcijfer</div>
+                        <div class="cijfer-wrapper">
+                            <div class="cijfer" [ngClass]="{ onvoldoende: periode.rapportCijferIsOnvoldoende }">
+                                {{ periode.rapportCijfer }}
                             </div>
+                            @if (periode.rapportCijferOpmerking) {
+                                <i class="icon opmerking" size="small" hmyIcon="reacties"></i>
+                            }
                         </div>
                     </div>
-                }
-            </div>
+                </div>
+            }
         </div>
-        @for (toetsResultaat of periode.toetsResultaten; track $index) {
-            <sl-vakresultaat-item
-                [resultaat]="toetsResultaat"
-                [toonDetails]="toetsResultaat === selectedResultaat()"
-                [isAlternatiefNiveau]="isAlternatiefNiveau"
-                [attr.aria-label]="toetsResultaat | toResultaatItem: isAlternatiefNiveau | resultaatItemAriaLabel"
-                [attr.aria-expanded]="toetsResultaat === selectedResultaat()"
-                (toonDetailsEvent)="toonDetails($event, toetsResultaat)"
-                role="button"
-                tabindex="200" />
-        }
+    </div>
+    @for (toetsResultaat of periode.toetsResultaten; track $index) {
+        <sl-vakresultaat-item
+            [resultaat]="toetsResultaat"
+            [toonDetails]="toetsResultaat === selectedResultaat()"
+            [toonKolommen]="toonKolommen()"
+            [isAlternatiefNiveau]="isAlternatiefNiveau()"
+            [attr.aria-label]="toetsResultaat | toResultaatItem: isAlternatiefNiveau() | resultaatItemAriaLabel"
+            [attr.aria-expanded]="toetsResultaat === selectedResultaat()"
+            (toonDetailsEvent)="toonDetails($event, toetsResultaat)"
+            role="button"
+            tabindex="200" />
+    } @empty {
+        <span class="empty" tabindex="200">{{ emptyPeriodeMessage() }}</span>
     }
 }

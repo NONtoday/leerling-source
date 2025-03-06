@@ -17,7 +17,9 @@ export class AantalAfgevinktPipe implements PipeTransform {
     standalone: true
 })
 export class AantalAfgevinktAriaPipe implements PipeTransform {
-    transform(items: SStudiewijzerItem[]): string {
+    transform(items: SStudiewijzerItem[] | undefined): string {
+        if (!items) return '';
+
         const aantalAfgevinkt = items.filter((item) => item.gemaakt).length;
         return items.length === 0 ? '' : ` ${aantalAfgevinkt} van ${items.length} items afgevinkt`;
     }

@@ -2,55 +2,70 @@
     <sl-header-action-button
         [hideWhenOffline]="true"
         (click)="markeerOngelezen.emit()"
-        tabindex="201"
         iconName="markerenOngelezen"
         label="Markeer Ongelezen"
-        tabindex="10" />
+        tabindex="0" />
     <sl-header-action-button
         [hideWhenOffline]="true"
         (click)="openVerwijderConfirm()"
-        tabindex="201"
         iconName="verwijderen"
         label="Verwijderen"
-        tabindex="10" />
+        tabindex="0" />
 </ng-template>
 
 <div class="header">
-    <span class="detail-titel" [tabindex]="tabindexDetailContent">{{ meestRecentRelevanteBericht().onderwerp }}</span>
+    <span class="detail-titel" id="bericht-thread-titel" tabindex="0">{{ meestRecentRelevanteBericht().onderwerp }}</span>
     <sl-bericht-acties (markeerOngelezen)="markeerOngelezen.emit()" (verwijder)="verwijder.emit()" />
 </div>
+@if (conversatie().studiewijzerItemVanInleverperiode; as studiewijzeritem) {
+    <div class="inleveropdracht">
+        <div class="inleveropdracht-label" tabindex="0">Bekijk en beantwoord bericht bij inleveropdracht</div>
+        <sl-studiewijzer-item
+            [item]="studiewijzeritem"
+            [toonChevron]="true"
+            [toonAfvinkKnop]="false"
+            [toonCompacteOmschrijving]="true"
+            (click)="onInleverperiodeStudiewijzeritemClick()"
+            tabindex="0"
+            role="button"></sl-studiewijzer-item>
+    </div>
+}
+
 @if (showNieuwereBerichten) {
     <div class="nieuwere-berichten" [@collapseOnLeave] [@expandOnEnter]>
         @for (bericht of nieuwereBerichten(); track bericht.id) {
             <sl-bericht
                 [boodschap]="bericht"
-                [headerTabIndex]="tabindexDetailContent"
-                (onMeerOntvangersPillClick)="handleMeerOntvangersPillClick($event)" />
+                [hideBeantwoorden]="!!conversatie().studiewijzerItemVanInleverperiode"
+                (onMeerOntvangersPillClick)="handleMeerOntvangersPillClick($event)"
+                tabindex="0" />
         }
     </div>
 }
 @if (nieuwereBerichten().length > 0) {
     <sl-bericht-seperator
-        [tabindex]="tabindexDetailContent"
+        [attr.role]="!showNieuwereBerichten ? 'button' : null"
         [clickable]="!showNieuwereBerichten"
         [label]="seperatorLabel()"
+        [attr.tabindex]="!showNieuwereBerichten ? 0 : -1"
+        [expanded]="!showNieuwereBerichten"
         (click)="showNieuwereBerichten = true" />
 }
 
 @for (bericht of mainThread(); track bericht.id) {
     <sl-bericht
-        [headerTabIndex]="tabindexDetailContent"
         [boodschap]="bericht"
         [collapsable]="false"
+        [hideBeantwoorden]="!!conversatie().studiewijzerItemVanInleverperiode"
         (onMeerOntvangersPillClick)="handleMeerOntvangersPillClick($event)" />
 }
 
 @if (eerdereBerichten().length > 0) {
-    <sl-bericht-seperator [clickable]="false" label="Eerdere berichten" />
+    <sl-bericht-seperator [clickable]="false" [expanded]="false" label="Eerdere berichten" />
     @for (bericht of eerdereBerichten(); track bericht.id) {
         <sl-bericht
-            [headerTabIndex]="tabindexDetailContent"
             [boodschap]="bericht"
+            [hideBeantwoorden]="!!conversatie().studiewijzerItemVanInleverperiode"
             (onMeerOntvangersPillClick)="handleMeerOntvangersPillClick($event)" />
     }
 }

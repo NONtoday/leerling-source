@@ -4,7 +4,7 @@
             {
                 "uuid": "1b57e975-44fa-4cb4-8966-46266dcadb2d",
                 "naam": "Accent Praktijkonderwijs",
-                "plaats": "ROTTERDAM",
+                "plaats": "CAPELLE AAN DEN IJSSEL",
                 "oidcurls": [
                     {
                         "omschrijving": "Accent Azure",
@@ -19,14 +19,14 @@
                 "plaats": "SPIJKENISSE",
                 "oidcurls": [
                     {
-                        "omschrijving": "Scholengroep Penta",
-                        "url": "https://login.microsoftonline.com/pentacsg.onmicrosoft.com/v2.0",
-                        "domain_hint": "pentacsg.onmicrosoft.com"
-                    },
-                    {
                         "omschrijving": "Penta OIDC WIS",
                         "url": "https://beheer.penta.nl",
                         "domain_hint": ""
+                    },
+                    {
+                        "omschrijving": "Scholengroep Penta",
+                        "url": "https://login.microsoftonline.com/pentacsg.onmicrosoft.com/v2.0",
+                        "domain_hint": "pentacsg.onmicrosoft.com"
                     }
                 ]
             },
@@ -66,14 +66,14 @@
                 "plaats": "ROTTERDAM",
                 "oidcurls": [
                     {
-                        "omschrijving": "Marnix Gymnasium OIDC WIS",
-                        "url": "https://beheer.marnixgymnasium.nl",
-                        "domain_hint": ""
-                    },
-                    {
                         "omschrijving": "marnix gymnasium",
                         "url": "https://login.microsoftonline.com/marnixgymnasium.onmicrosoft.com/v2.0",
                         "domain_hint": "marnixgymnasium.onmicrosoft.com"
+                    },
+                    {
+                        "omschrijving": "Marnix Gymnasium OIDC WIS",
+                        "url": "https://beheer.marnixgymnasium.nl",
+                        "domain_hint": ""
                     }
                 ]
             },
@@ -92,7 +92,7 @@
             {
                 "uuid": "cbbfa434-4d07-4925-82fd-25c6d273181e",
                 "naam": "Maupertuus",
-                "plaats": "DOORN",
+                "plaats": "DRIEBERGEN-RIJSENBURG",
                 "oidcurls": []
             },
             {
@@ -112,18 +112,6 @@
                 "naam": "Werkenrode School",
                 "plaats": "GROESBEEK",
                 "oidcurls": []
-            },
-            {
-                "uuid": "a9a56d45-5547-4a3f-8078-b1fc3392eb47",
-                "naam": "Metameer",
-                "plaats": "TILBURG",
-                "oidcurls": [
-                    {
-                        "omschrijving": "Metameer",
-                        "url": "https://login.microsoftonline.com/omo365.onmicrosoft.com/v2.0",
-                        "domain_hint": "omo365.onmicrosoft.com"
-                    }
-                ]
             },
             {
                 "uuid": "19d3b216-cbc7-42ed-a8fa-d3d4d1862129",
@@ -153,7 +141,13 @@
                 "uuid": "1e1e5bbb-d899-4d4f-9017-29f2199dc832",
                 "naam": "csvvg - Vincent van Gogh",
                 "plaats": "ASSEN",
-                "oidcurls": []
+                "oidcurls": [
+                    {
+                        "omschrijving": "inloggen medewerkers en leerlingen NassauVincent",
+                        "url": "https://login.microsoftonline.com/nassauvincent.nl/v2.0",
+                        "domain_hint": "nassauvincent.nl"
+                    }
+                ]
             },
             {
                 "uuid": "432530ad-0895-4555-9a1b-10acd35f375d",
@@ -164,12 +158,17 @@
             {
                 "uuid": "84e151d3-46f5-4894-9364-8ae12773e5d5",
                 "naam": "Maartenscollege",
-                "plaats": "GRONINGEN",
+                "plaats": "HAREN GN",
                 "oidcurls": [
                     {
                         "omschrijving": "Carmel",
                         "url": "https://idpcluster.stichtingcarmelcollege.nl/nidp/oauth/nam",
                         "domain_hint": ""
+                    },
+                    {
+                        "omschrijving": "Stichting Carmel SSO",
+                        "url": "https://login.microsoftonline.com/carmel.nl/v2.0",
+                        "domain_hint": "carmel.nl"
                     }
                 ]
             },
@@ -182,6 +181,11 @@
                         "omschrijving": "Carmel",
                         "url": "https://idpcluster.stichtingcarmelcollege.nl/nidp/oauth/nam",
                         "domain_hint": ""
+                    },
+                    {
+                        "omschrijving": "Stichting Carmel SSO",
+                        "url": "https://login.microsoftonline.com/carmel.nl/v2.0",
+                        "domain_hint": "carmel.nl"
                     }
                 ]
             },
@@ -194,6 +198,11 @@
                         "omschrijving": "Carmel",
                         "url": "https://idpcluster.stichtingcarmelcollege.nl/nidp/oauth/nam",
                         "domain_hint": ""
+                    },
+                    {
+                        "omschrijving": "Stichting Carmel SSO",
+                        "url": "https://login.microsoftonline.com/carmel.nl/v2.0",
+                        "domain_hint": "carmel.nl"
                     }
                 ]
             },
@@ -206,6 +215,11 @@
                         "omschrijving": "Carmel",
                         "url": "https://idpcluster.stichtingcarmelcollege.nl/nidp/oauth/nam",
                         "domain_hint": ""
+                    },
+                    {
+                        "omschrijving": "Stichting Carmel SSO",
+                        "url": "https://login.microsoftonline.com/carmel.nl/v2.0",
+                        "domain_hint": "carmel.nl"
                     }
                 ]
             },
@@ -218,6 +232,11 @@
                         "omschrijving": "Carmel",
                         "url": "https://idpcluster.stichtingcarmelcollege.nl/nidp/oauth/nam",
                         "domain_hint": ""
+                    },
+                    {
+                        "omschrijving": "Stichting Carmel SSO",
+                        "url": "https://login.microsoftonline.com/carmel.nl/v2.0",
+                        "domain_hint": "carmel.nl"
                     }
                 ]
             },
@@ -230,6 +249,11 @@
                         "omschrijving": "Carmel",
                         "url": "https://idpcluster.stichtingcarmelcollege.nl/nidp/oauth/nam",
                         "domain_hint": ""
+                    },
+                    {
+                        "omschrijving": "Stichting Carmel SSO",
+                        "url": "https://login.microsoftonline.com/carmel.nl/v2.0",
+                        "domain_hint": "carmel.nl"
                     }
                 ]
             },
@@ -242,6 +266,11 @@
                         "omschrijving": "Carmel",
                         "url": "https://idpcluster.stichtingcarmelcollege.nl/nidp/oauth/nam",
                         "domain_hint": ""
+                    },
+                    {
+                        "omschrijving": "Stichting Carmel SSO",
+                        "url": "https://login.microsoftonline.com/carmel.nl/v2.0",
+                        "domain_hint": "carmel.nl"
                     }
                 ]
             },
@@ -254,6 +283,11 @@
                         "omschrijving": "Carmel",
                         "url": "https://idpcluster.stichtingcarmelcollege.nl/nidp/oauth/nam",
                         "domain_hint": ""
+                    },
+                    {
+                        "omschrijving": "Stichting Carmel SSO",
+                        "url": "https://login.microsoftonline.com/carmel.nl/v2.0",
+                        "domain_hint": "carmel.nl"
                     }
                 ]
             },
@@ -266,6 +300,11 @@
                         "omschrijving": "Carmel",
                         "url": "https://idpcluster.stichtingcarmelcollege.nl/nidp/oauth/nam",
                         "domain_hint": ""
+                    },
+                    {
+                        "omschrijving": "Stichting Carmel SSO",
+                        "url": "https://login.microsoftonline.com/carmel.nl/v2.0",
+                        "domain_hint": "carmel.nl"
                     }
                 ]
             },
@@ -278,6 +317,11 @@
                         "omschrijving": "Carmel",
                         "url": "https://idpcluster.stichtingcarmelcollege.nl/nidp/oauth/nam",
                         "domain_hint": ""
+                    },
+                    {
+                        "omschrijving": "Stichting Carmel SSO",
+                        "url": "https://login.microsoftonline.com/carmel.nl/v2.0",
+                        "domain_hint": "carmel.nl"
                     }
                 ]
             },
@@ -290,6 +334,11 @@
                         "omschrijving": "Carmel",
                         "url": "https://idpcluster.stichtingcarmelcollege.nl/nidp/oauth/nam",
                         "domain_hint": ""
+                    },
+                    {
+                        "omschrijving": "Stichting Carmel SSO",
+                        "url": "https://login.microsoftonline.com/carmel.nl/v2.0",
+                        "domain_hint": "carmel.nl"
                     }
                 ]
             },
@@ -302,6 +351,11 @@
                         "omschrijving": "Carmel",
                         "url": "https://idpcluster.stichtingcarmelcollege.nl/nidp/oauth/nam",
                         "domain_hint": ""
+                    },
+                    {
+                        "omschrijving": "Stichting Carmel SSO",
+                        "url": "https://login.microsoftonline.com/carmel.nl/v2.0",
+                        "domain_hint": "carmel.nl"
                     }
                 ]
             },
@@ -316,12 +370,6 @@
                         "domain_hint": "2cdb52a9-ceab-431b-af2e-3b440d23d092"
                     }
                 ]
-            },
-            {
-                "uuid": "99ec084a-6412-40c3-af8d-4e18815e1c63",
-                "naam": "CVO-AV",
-                "plaats": "GORINCHEM",
-                "oidcurls": []
             },
             {
                 "uuid": "7b6d1799-09e9-4338-bd49-66ce7788ad1d",
@@ -349,11 +397,11 @@
             },
             {
                 "uuid": "14b26d24-7459-4925-a129-355cc732fc3b",
-                "naam": "Futuris (SG Panta Rhei)",
+                "naam": "Futuris",
                 "plaats": "AMSTELVEEN",
                 "oidcurls": [
                     {
-                        "omschrijving": "Panta Rhei Azure Cedergroep",
+                        "omschrijving": "Futuris Azure Cedergroep",
                         "url": "https://login.microsoftonline.com/e8219483-0d7a-4fa8-ad03-0d587562e586/v2.0",
                         "domain_hint": "e8219483-0d7a-4fa8-ad03-0d587562e586"
                     }
@@ -377,7 +425,7 @@
                 "plaats": "HAAKSBERGEN",
                 "oidcurls": [
                     {
-                        "omschrijving": "323f3c04-5a53-4fe5-a8ae-cc056a753ca6",
+                        "omschrijving": "Azure Het Assink",
                         "url": "https://login.microsoftonline.com/323f3c04-5a53-4fe5-a8ae-cc056a753ca6/v2.0",
                         "domain_hint": "323f3c04-5a53-4fe5-a8ae-cc056a753ca6"
                     }
@@ -571,25 +619,9 @@
                 "uuid": "131206b6-2edc-4213-9aa1-52e8b7e1b1f3",
                 "naam": "Isendoorn College",
                 "plaats": "WARNSVELD",
-                "oidcurls": []
-            },
-            {
-                "uuid": "6b3506de-e089-41d5-b657-e03bb25cc63c",
-                "naam": "Jan van Brabant College OUD",
-                "plaats": "HELMOND",
                 "oidcurls": [
                     {
-                        "omschrijving": "Jan van brabant Topleveldomain",
-                        "url": "https://accounts.google.com",
-                        "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "Jan van Brabant Molenstraat OIDC WIS",
-                        "url": "https://bm.janvanbrabant.nl",
-                        "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "Jan van Brabant Secundair domain",
+                        "omschrijving": "Isendoorn Google",
                         "url": "https://accounts.google.com",
                         "domain_hint": ""
                     }
@@ -623,12 +655,18 @@
                 "uuid": "3dbe5e2f-edf1-4f58-b13b-12b25076617f",
                 "naam": "Dr. Nassau College",
                 "plaats": "ASSEN",
-                "oidcurls": []
+                "oidcurls": [
+                    {
+                        "omschrijving": "inloggen medewerkers en leerlingen NassauVincent",
+                        "url": "https://login.microsoftonline.com/nassauvincent.nl/v2.0",
+                        "domain_hint": "nassauvincent.nl"
+                    }
+                ]
             },
             {
                 "uuid": "6894ffb4-c30b-44a6-9d43-f06acc5497ae",
                 "naam": "SOTOG",
-                "plaats": "BORCULO",
+                "plaats": "-",
                 "oidcurls": []
             },
             {
@@ -637,17 +675,11 @@
                 "plaats": "ALPHEN AAN DEN RIJN",
                 "oidcurls": [
                     {
-                        "omschrijving": "Azure Scala College",
-                        "url": "https://login.microsoftonline.com/sccocollege.onmicrosoft.com/v2.0",
-                        "domain_hint": "sccocollege.onmicrosoft.com"
+                        "omschrijving": "Scala en Coenecoop",
+                        "url": "https://login.microsoftonline.com/44556182-de12-4bb0-96be-8239df742ef5/v2.0",
+                        "domain_hint": "44556182-de12-4bb0-96be-8239df742ef5"
                     }
                 ]
-            },
-            {
-                "uuid": "17f896e0-0a51-4e3a-b2d8-11e728f80862",
-                "naam": "Sprengen College",
-                "plaats": "WAPENVELD",
-                "oidcurls": []
             },
             {
                 "uuid": "34ff99c9-8c65-405c-aaa7-bff48738a746",
@@ -696,52 +728,25 @@
                 "plaats": "ZWOLLE",
                 "oidcurls": [
                     {
-                        "omschrijving": "ooz.onmicrosoft.com",
-                        "url": "https://login.microsoftonline.com/ooz.onmicrosoft.com/v2.0",
-                        "domain_hint": "ooz.onmicrosoft.com"
-                    },
-                    {
                         "omschrijving": "OOZ",
                         "url": "https://accounts.google.com",
                         "domain_hint": ""
+                    },
+                    {
+                        "omschrijving": "ooz.onmicrosoft.com",
+                        "url": "https://login.microsoftonline.com/ooz.onmicrosoft.com/v2.0",
+                        "domain_hint": "ooz.onmicrosoft.com"
                     }
                 ]
             },
             {
                 "uuid": "842bf7ef-4fa0-4e22-baee-172c47401191",
                 "naam": "Yulius",
-                "plaats": "DORDRECHT",
+                "plaats": "BARENDRECHT",
                 "oidcurls": [
                     {
                         "omschrijving": "Yulius OIDC 02-02-2023",
                         "url": "https://yulius.helloid.com/oauth2/v2/6060c63a-2600-4ce3-9a39-1ffad0efc05a",
-                        "domain_hint": ""
-                    }
-                ]
-            },
-            {
-                "uuid": "68716a63-2766-4269-af2b-f3499f3ecb65",
-                "naam": "Jan van Brabant College, Deltaweg OUD",
-                "plaats": "HELMOND",
-                "oidcurls": [
-                    {
-                        "omschrijving": "Jan van Brabant Deltaweg",
-                        "url": "https://bd.janvanbrabant.nl",
-                        "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "Jan van Brabant Secundair domain",
-                        "url": "https://accounts.google.com",
-                        "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "Jan van Brabant Secundair domain",
-                        "url": "https://accounts.google.com",
-                        "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "Jan van brabant Topleveldomain",
-                        "url": "https://accounts.google.com",
                         "domain_hint": ""
                     }
                 ]
@@ -773,7 +778,7 @@
             {
                 "uuid": "cbeab658-c9e6-4a54-b419-8f682f82ea54",
                 "naam": "Greijdanus",
-                "plaats": "ZWOLLE",
+                "plaats": "-",
                 "oidcurls": [
                     {
                         "omschrijving": "Medewerkers Greijdanus",
@@ -847,53 +852,19 @@
                 ]
             },
             {
-                "uuid": "7cea699b-f4d0-4c74-aadf-269507d98dc9",
-                "naam": "Willem van Oranje College",
-                "plaats": "WAALWIJK",
-                "oidcurls": [
-                    {
-                        "omschrijving": "wvoranje.onmicrosoft.com",
-                        "url": "https://login.microsoftonline.com/wvoranje.nl/v2.0",
-                        "domain_hint": "wvoranje.nl"
-                    },
-                    {
-                        "omschrijving": "Willem van Oranje OIDC WIS",
-                        "url": "https://beheer.het-willem.nl",
-                        "domain_hint": ""
-                    }
-                ]
-            },
-            {
-                "uuid": "75993090-8fbd-4ced-a0fd-5f160fe215a9",
-                "naam": "Willibrord Gymnasium oud",
-                "plaats": "DEURNE",
-                "oidcurls": [
-                    {
-                        "omschrijving": "Azure Willibrord Gymnasium",
-                        "url": "https://login.microsoftonline.com/commanderijcollege.onmicrosoft.com/v2.0",
-                        "domain_hint": "commanderijcollege.onmicrosoft.com"
-                    },
-                    {
-                        "omschrijving": "St. Willibrord Gymnasium OIDC WIS",
-                        "url": "https://beheersportal.willibrordgymnasium.nl",
-                        "domain_hint": ""
-                    }
-                ]
-            },
-            {
                 "uuid": "336efef2-2012-4ebc-ab7d-22f05669bc53",
                 "naam": "Johan de Witt-gymnasium",
                 "plaats": "DORDRECHT",
                 "oidcurls": [
                     {
-                        "omschrijving": "Johan de Witt Gymnasium OIDC WIS",
-                        "url": "https://beheer.jdw.nl",
-                        "domain_hint": ""
-                    },
-                    {
                         "omschrijving": "JDW Azure",
                         "url": "https://login.microsoftonline.com/jdw.nl/v2.0",
                         "domain_hint": "jdw.nl"
+                    },
+                    {
+                        "omschrijving": "Johan de Witt Gymnasium OIDC WIS",
+                        "url": "https://beheer.jdw.nl",
+                        "domain_hint": ""
                     }
                 ]
             },
@@ -903,14 +874,14 @@
                 "plaats": "COEVORDEN",
                 "oidcurls": [
                     {
-                        "omschrijving": "sgdnv.onmicrosoft.com",
-                        "url": "https://login.microsoftonline.com/sgdnv.onmicrosoft.com/v2.0",
-                        "domain_hint": "sgdnv.onmicrosoft.com"
-                    },
-                    {
                         "omschrijving": "De Nieuwe Veste OIDC",
                         "url": "https://dnv.de.trustedauth.com/api/oidc",
                         "domain_hint": ""
+                    },
+                    {
+                        "omschrijving": "sgdnv.onmicrosoft.com",
+                        "url": "https://login.microsoftonline.com/sgdnv.onmicrosoft.com/v2.0",
+                        "domain_hint": "sgdnv.onmicrosoft.com"
                     }
                 ]
             },
@@ -932,9 +903,9 @@
                 "plaats": "WADDINXVEEN",
                 "oidcurls": [
                     {
-                        "omschrijving": "coenecoopcollege.nl",
-                        "url": "https://login.microsoftonline.com/coenecoopcollege.nl/v2.0",
-                        "domain_hint": "coenecoopcollege.nl"
+                        "omschrijving": "Scala en Coenecoop",
+                        "url": "https://login.microsoftonline.com/44556182-de12-4bb0-96be-8239df742ef5/v2.0",
+                        "domain_hint": "44556182-de12-4bb0-96be-8239df742ef5"
                     }
                 ]
             },
@@ -1047,7 +1018,7 @@
             {
                 "uuid": "68c2db45-81a5-46a1-80ea-4e08f378228c",
                 "naam": "Leo Kanner Onderwijsgroep",
-                "plaats": "LEIDERDORP",
+                "plaats": "OEGSTGEEST",
                 "oidcurls": [
                     {
                         "omschrijving": "Leo Kanner Azure",
@@ -1071,7 +1042,7 @@
             {
                 "uuid": "fdb8e7f8-27f4-465f-b85d-ab60a5339ec3",
                 "naam": "Attendiz",
-                "plaats": "HENGELO OV",
+                "plaats": "ENSCHEDE",
                 "oidcurls": []
             },
             {
@@ -1116,22 +1087,7 @@
                 "plaats": "VOORHOUT",
                 "oidcurls": [
                     {
-                        "omschrijving": "G-Suite SFT, Fioretti Teylingen (02KB) stichtingfiorettiteylingen.nl",
-                        "url": "https://accounts.google.com",
-                        "domain_hint": ""
-                    },
-                    {
                         "omschrijving": "G-Suite SFT, Fioretti Teylingen (02KB) fiorettileerling.nl",
-                        "url": "https://accounts.google.com",
-                        "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "G-Suite SFT, Fioretti Teylingen (02KB) teylingen-college.nl",
-                        "url": "https://accounts.google.com",
-                        "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "G-Suite SFT, Fioretti Teylingen (02KB) isk-db.nl",
                         "url": "https://accounts.google.com",
                         "domain_hint": ""
                     },
@@ -1141,7 +1097,22 @@
                         "domain_hint": ""
                     },
                     {
+                        "omschrijving": "G-Suite SFT, Fioretti Teylingen (02KB) isk-db.nl",
+                        "url": "https://accounts.google.com",
+                        "domain_hint": ""
+                    },
+                    {
                         "omschrijving": "G-Suite SFT, Fioretti Teylingen (02KB) sft-vo.nl",
+                        "url": "https://accounts.google.com",
+                        "domain_hint": ""
+                    },
+                    {
+                        "omschrijving": "G-Suite SFT, Fioretti Teylingen (02KB) stichtingfiorettiteylingen.nl",
+                        "url": "https://accounts.google.com",
+                        "domain_hint": ""
+                    },
+                    {
+                        "omschrijving": "G-Suite SFT, Fioretti Teylingen (02KB) teylingen-college.nl",
                         "url": "https://accounts.google.com",
                         "domain_hint": ""
                     }
@@ -1168,29 +1139,24 @@
             {
                 "uuid": "286d8636-7821-475a-979c-2def14069c7c",
                 "naam": "Rijnlands Lyceum",
-                "plaats": "WASSENAAR",
+                "plaats": "-",
                 "oidcurls": [
                     {
-                        "omschrijving": "72024664-e8e9-4bbe-94fd-2e0f4a7f19ff",
-                        "url": "https://login.microsoftonline.com/72024664-e8e9-4bbe-94fd-2e0f4a7f19ff/v2.0",
-                        "domain_hint": "72024664-e8e9-4bbe-94fd-2e0f4a7f19ff"
+                        "omschrijving": "Het Rijnlands Lyceum SSO",
+                        "url": "https://login.microsoftonline.com/rijnlands.onmicrosoft.com/v2.0",
+                        "domain_hint": "rijnlands.onmicrosoft.com"
                     }
                 ]
             },
             {
                 "uuid": "58405be0-5611-4aba-be66-9894a1009f12",
                 "naam": "Markland College",
-                "plaats": "OUDENBOSCH",
+                "plaats": "-",
                 "oidcurls": [
                     {
                         "omschrijving": "Markland College (06XL)",
                         "url": "https://login.microsoftonline.com/596ef504-a68b-463d-b4a9-10cc240c0a9f/v2.0",
                         "domain_hint": "596ef504-a68b-463d-b4a9-10cc240c0a9f"
-                    },
-                    {
-                        "omschrijving": "Markland College OIDC/Wis",
-                        "url": "https://beheer.markland.nl",
-                        "domain_hint": ""
                     }
                 ]
             },
@@ -1200,12 +1166,7 @@
                 "plaats": "ZALTBOMMEL",
                 "oidcurls": [
                     {
-                        "omschrijving": "Cambium College 17AY",
-                        "url": "https://fs.cambiumcollege.nl/adfs",
-                        "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "Cambium Azure",
+                        "omschrijving": "Cambium College",
                         "url": "https://login.microsoftonline.com/cambiumcollege.nl/v2.0",
                         "domain_hint": "cambiumcollege.nl"
                     }
@@ -1235,14 +1196,14 @@
                 "plaats": "EINDHOVEN",
                 "oidcurls": [
                     {
-                        "omschrijving": "Montessori College Eindhoven (25MB)",
-                        "url": "https://adfs-p.summacollege.nl/adfs",
-                        "domain_hint": ""
-                    },
-                    {
                         "omschrijving": "Montessori College Eindhoven",
                         "url": "https://login.microsoftonline.com/summacollege.onmicrosoft.com/v2.0",
                         "domain_hint": "summacollege.onmicrosoft.com"
+                    },
+                    {
+                        "omschrijving": "Montessori College Eindhoven (25MB)",
+                        "url": "https://adfs-p.summacollege.nl/adfs",
+                        "domain_hint": ""
                     }
                 ]
             },
@@ -1285,7 +1246,7 @@
             {
                 "uuid": "3ce215c6-6c03-4eaf-98f3-40c9fc492501",
                 "naam": "J.H. Donnerschool",
-                "plaats": "BARNEVELD",
+                "plaats": "DE GLIND",
                 "oidcurls": [
                     {
                         "omschrijving": "J.H. Donnerschool Azure",
@@ -1298,12 +1259,18 @@
                 "uuid": "7e4891db-9f80-4d0d-978a-ba60426d2d4a",
                 "naam": "VSO SG de Keyzer",
                 "plaats": "GOIRLE",
-                "oidcurls": []
+                "oidcurls": [
+                    {
+                        "omschrijving": "VSO SG de Keyzer Azure",
+                        "url": "https://login.microsoftonline.com/biezonderwijs.nl/v2.0",
+                        "domain_hint": "biezonderwijs.nl"
+                    }
+                ]
             },
             {
                 "uuid": "e108263a-222b-4bc1-baa2-28428f9754af",
                 "naam": "Mondia Scholengroep",
-                "plaats": "VLISSINGEN",
+                "plaats": "MIDDELBURG",
                 "oidcurls": [
                     {
                         "omschrijving": "Azure Mondia Scholengroep (Scheldemond en Nehalennia)",
@@ -1324,7 +1291,7 @@
                 "plaats": "MIDDELBURG",
                 "oidcurls": [
                     {
-                        "omschrijving": "257eb968-a984-464c-bd33-ed5c72b8767b",
+                        "omschrijving": "Azure CSWalcheren",
                         "url": "https://login.microsoftonline.com/257eb968-a984-464c-bd33-ed5c72b8767b/v2.0",
                         "domain_hint": "257eb968-a984-464c-bd33-ed5c72b8767b"
                     }
@@ -1398,18 +1365,18 @@
             },
             {
                 "uuid": "932cb2e1-bb3e-47dd-9a37-e5553e9c1b3c",
-                "naam": "Almeerse scholengroep",
+                "naam": "Almeerse Scholen Groep",
                 "plaats": "ALMERE",
                 "oidcurls": [
-                    {
-                        "omschrijving": "ASGVO",
-                        "url": "https://login.microsoftonline.com/asgvo.onmicrosoft.com/v2.0",
-                        "domain_hint": "asgvo.onmicrosoft.com"
-                    },
                     {
                         "omschrijving": "ASG OIDC WIS",
                         "url": "https://beheer.artecollege.nl",
                         "domain_hint": ""
+                    },
+                    {
+                        "omschrijving": "ASGVO",
+                        "url": "https://login.microsoftonline.com/asgvo.onmicrosoft.com/v2.0",
+                        "domain_hint": "asgvo.onmicrosoft.com"
                     }
                 ]
             },
@@ -1419,14 +1386,14 @@
                 "plaats": "HOOGEVEEN",
                 "oidcurls": [
                     {
-                        "omschrijving": "Roelof van Echten OIDC WIS",
-                        "url": "https://beheer.rvec.nl",
-                        "domain_hint": ""
-                    },
-                    {
                         "omschrijving": "Azure Roelof van Echten College",
                         "url": "https://login.microsoftonline.com/rvec.nl/v2.0",
                         "domain_hint": "rvec.nl"
+                    },
+                    {
+                        "omschrijving": "Roelof van Echten OIDC WIS",
+                        "url": "https://beheer.rvec.nl",
+                        "domain_hint": ""
                     }
                 ]
             },
@@ -1463,24 +1430,12 @@
             {
                 "uuid": "3fe512d3-1661-422e-bc9f-4acd610c7d73",
                 "naam": "Dollard College",
-                "plaats": "STADSKANAAL",
+                "plaats": "WINSCHOTEN",
                 "oidcurls": [
                     {
                         "omschrijving": "Dollard College Azure",
                         "url": "https://login.microsoftonline.com/mijndollardcollege.onmicrosoft.com/v2.0",
                         "domain_hint": "mijndollardcollege.onmicrosoft.com"
-                    }
-                ]
-            },
-            {
-                "uuid": "906cb706-163f-44e2-8a27-04e3f4b0557f",
-                "naam": "PrO Hardenberg",
-                "plaats": "HARDENBERG",
-                "oidcurls": [
-                    {
-                        "omschrijving": "Azure PRO Hardenberg",
-                        "url": "https://login.microsoftonline.com/prohardenberg.onmicrosoft.com/v2.0",
-                        "domain_hint": "prohardenberg.onmicrosoft.com"
                     }
                 ]
             },
@@ -1541,7 +1496,7 @@
             {
                 "uuid": "6f77a2d3-8ab6-4bc0-82a7-67d1b054ddec",
                 "naam": "Cornelius Haga Lyceum",
-                "plaats": "'S-GRAVENHAGE",
+                "plaats": "AMSTERDAM",
                 "oidcurls": []
             },
             {
@@ -1583,7 +1538,7 @@
             {
                 "uuid": "de3170df-3b5b-408b-aedb-0e6a4cc65c04",
                 "naam": "Visio",
-                "plaats": "AMSTERDAM",
+                "plaats": "A'DAM/GRAVE/R'DAM",
                 "oidcurls": [
                     {
                         "omschrijving": "Visio Azure",
@@ -1619,7 +1574,7 @@
             {
                 "uuid": "4c2dadc2-f319-48f7-98b1-03faaecc55bf",
                 "naam": "LVOa",
-                "plaats": "WEERT",
+                "plaats": "LVOA",
                 "oidcurls": [
                     {
                         "omschrijving": "LVO",
@@ -1631,7 +1586,7 @@
             {
                 "uuid": "99f5d02e-c928-47af-ba6a-1f72e364d753",
                 "naam": "LVOc",
-                "plaats": "MAASTRICHT",
+                "plaats": "LVOC",
                 "oidcurls": [
                     {
                         "omschrijving": "LVO",
@@ -1667,7 +1622,7 @@
             {
                 "uuid": "ae1f272a-8c45-48d2-a471-ec76a7997f6b",
                 "naam": "Auris",
-                "plaats": "ROTTERDAM",
+                "plaats": "AMERSFOORT",
                 "oidcurls": [
                     {
                         "omschrijving": "Auris",
@@ -1700,14 +1655,9 @@
                 "plaats": "OUD-BEIJERLAND",
                 "oidcurls": [
                     {
-                        "omschrijving": "Actief College",
-                        "url": "https://login.microsoftonline.com/acleerling.nl/v2.0",
-                        "domain_hint": "acleerling.nl"
-                    },
-                    {
-                        "omschrijving": "Hoeksch Lyceum",
-                        "url": "https://login.microsoftonline.com/hoekschlyceum.nl/v2.0",
-                        "domain_hint": "hoekschlyceum.nl"
+                        "omschrijving": "Actief College - Hoeksch Lyceum",
+                        "url": "https://login.microsoftonline.com/44f2d52a-e353-4c93-b6c8-5eb8691cda0a/v2.0",
+                        "domain_hint": "44f2d52a-e353-4c93-b6c8-5eb8691cda0a"
                     }
                 ]
             },
@@ -1751,9 +1701,9 @@
                         "domain_hint": ""
                     },
                     {
-                        "omschrijving": "Carmel",
-                        "url": "https://idpcluster.stichtingcarmelcollege.nl/nidp/oauth/nam",
-                        "domain_hint": ""
+                        "omschrijving": "Stichting Carmel SSO",
+                        "url": "https://login.microsoftonline.com/carmel.nl/v2.0",
+                        "domain_hint": "carmel.nl"
                     }
                 ]
             },
@@ -1778,12 +1728,18 @@
                 "uuid": "5369852c-1747-47f1-8af6-be80c9aecc9e",
                 "naam": "De Bolster",
                 "plaats": "VOORST GEM VOORST",
-                "oidcurls": []
+                "oidcurls": [
+                    {
+                        "omschrijving": "De Onderwijsspecialisten",
+                        "url": "https://login.microsoftonline.com/do31.onmicrosoft.com/v2.0",
+                        "domain_hint": "do31.onmicrosoft.com"
+                    }
+                ]
             },
             {
                 "uuid": "c43e40dc-c68a-4cd6-b7bd-01c1ccedf62c",
                 "naam": "VSO Eefde-Deventer",
-                "plaats": "BORCULO",
+                "plaats": "EEFDE",
                 "oidcurls": []
             },
             {
@@ -1795,7 +1751,7 @@
             {
                 "uuid": "ed034bd0-2f03-45f2-8d68-02686570320e",
                 "naam": "De Sprong",
-                "plaats": "ZEIST",
+                "plaats": "MAARSBERGEN",
                 "oidcurls": []
             },
             {
@@ -1810,12 +1766,12 @@
                 "plaats": "ZEIST",
                 "oidcurls": [
                     {
-                        "omschrijving": "CVO-groep G-suite clz.nl",
+                        "omschrijving": "CVO Groep G-suite clz.nl",
                         "url": "https://accounts.google.com",
                         "domain_hint": ""
                     },
                     {
-                        "omschrijving": "Microsoft 365 CVO groep",
+                        "omschrijving": "Microsoft 365 CVO Groep",
                         "url": "https://login.microsoftonline.com/ccz.nu/v2.0",
                         "domain_hint": "ccz.nu"
                     }
@@ -1823,8 +1779,8 @@
             },
             {
                 "uuid": "10b959df-2773-4ac0-a6e3-5229ba55971d",
-                "naam": "iHUBonderwijs",
-                "plaats": "AMSTERDAM",
+                "naam": "iHub onderwijs",
+                "plaats": "ROTTERDAM",
                 "oidcurls": [
                     {
                         "omschrijving": "iHUB",
@@ -1836,7 +1792,7 @@
             {
                 "uuid": "75efbbaf-c9e2-4c05-8569-ad7f37f58c29",
                 "naam": "OZEO PRO",
-                "plaats": "GOES",
+                "plaats": "MIDDELBURG",
                 "oidcurls": []
             },
             {
@@ -1860,6 +1816,11 @@
                         "omschrijving": "Carmel",
                         "url": "https://idpcluster.stichtingcarmelcollege.nl/nidp/oauth/nam",
                         "domain_hint": ""
+                    },
+                    {
+                        "omschrijving": "Stichting Carmel SSO",
+                        "url": "https://login.microsoftonline.com/carmel.nl/v2.0",
+                        "domain_hint": "carmel.nl"
                     }
                 ]
             },
@@ -1890,7 +1851,7 @@
             {
                 "uuid": "3190281f-d2b7-4cb7-8613-ae128c4fb9fe",
                 "naam": "Pvo",
-                "plaats": "AMSTERDAM",
+                "plaats": "-",
                 "oidcurls": []
             },
             {
@@ -1898,6 +1859,11 @@
                 "naam": "Fritz Redlschool",
                 "plaats": "UTRECHT",
                 "oidcurls": [
+                    {
+                        "omschrijving": "KSU.nl",
+                        "url": "https://login.microsoftonline.com/ksu.nl/v2.0",
+                        "domain_hint": "ksu.nl"
+                    },
                     {
                         "omschrijving": "Prof. Fritz Redlschool Azure",
                         "url": "https://login.microsoftonline.com/redl.nl/v2.0",
@@ -1919,16 +1885,6 @@
                         "omschrijving": "Comenius OIDC WIS",
                         "url": "https://beheer.comenius.nl",
                         "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "OIDC CSG Calvijn",
-                        "url": "https://beheer.calvijn.nl",
-                        "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "Azure CSG Calvijn",
-                        "url": "https://login.microsoftonline.com/educalvijn.onmicrosoft.com/v2.0",
-                        "domain_hint": "educalvijn.onmicrosoft.com"
                     }
                 ]
             },
@@ -1946,18 +1902,13 @@
                         "omschrijving": "OIDC CSG Calvijn",
                         "url": "https://beheer.calvijn.nl",
                         "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "Farelcollege Azure",
-                        "url": "https://login.microsoftonline.com/farelcollege.nl/v2.0",
-                        "domain_hint": "farelcollege.nl"
                     }
                 ]
             },
             {
                 "uuid": "0ba887d1-6024-4611-afe4-48edd08ecd40",
                 "naam": "Corlaer College",
-                "plaats": "AMERSFOORT",
+                "plaats": "NIJKERK",
                 "oidcurls": [
                     {
                         "omschrijving": "Corlaer College Google",
@@ -1975,7 +1926,7 @@
             {
                 "uuid": "d554f350-a4b1-4bde-b7f1-7ea0a96775a5",
                 "naam": "CVO Zuid-West Fryslân",
-                "plaats": "SNEEK",
+                "plaats": "-",
                 "oidcurls": [
                     {
                         "omschrijving": "CVO zw Fryslân (25CR)",
@@ -1987,10 +1938,10 @@
             {
                 "uuid": "7f69059a-7a2b-4e01-9c9b-9d2802869d58",
                 "naam": "Quadraam",
-                "plaats": "ZEVENAAR",
+                "plaats": "-",
                 "oidcurls": [
                     {
-                        "omschrijving": "Liemers College Azure",
+                        "omschrijving": "Quadraam Azure",
                         "url": "https://login.microsoftonline.com/2f2e8c11-4710-4677-8f54-8b94c9ae7efa/v2.0",
                         "domain_hint": "2f2e8c11-4710-4677-8f54-8b94c9ae7efa"
                     }
@@ -2003,28 +1954,8 @@
                 "oidcurls": [
                     {
                         "omschrijving": "Veluwse onderwijsgroep",
-                        "url": "https://login.microsoftonline.com/veluwseonderwijsgroep.nl/v2.0",
-                        "domain_hint": "veluwseonderwijsgroep.nl"
-                    },
-                    {
-                        "omschrijving": "Veluwse onderwijsgroep",
-                        "url": "https://login.microsoftonline.com/veluwseonderwijsgroep.nl/v2.0",
-                        "domain_hint": "veluwseonderwijsgroep.nl"
-                    },
-                    {
-                        "omschrijving": "Veluwse onderwijsgroep",
-                        "url": "https://login.microsoftonline.com/veluwseonderwijsgroep.nl/v2.0",
-                        "domain_hint": "veluwseonderwijsgroep.nl"
-                    },
-                    {
-                        "omschrijving": "Veluwse onderwijsgroep",
-                        "url": "https://login.microsoftonline.com/veluwseonderwijsgroep.nl/v2.0",
-                        "domain_hint": "veluwseonderwijsgroep.nl"
-                    },
-                    {
-                        "omschrijving": "Veluwse onderwijsgroep",
-                        "url": "https://login.microsoftonline.com/veluwseonderwijsgroep.nl/v2.0",
-                        "domain_hint": "veluwseonderwijsgroep.nl"
+                        "url": "https://login.microsoftonline.com/4800b5e0-5b58-471d-87ea-4bb1a74e0887/v2.0",
+                        "domain_hint": "4800b5e0-5b58-471d-87ea-4bb1a74e0887"
                     }
                 ]
             },
@@ -2037,7 +1968,7 @@
             {
                 "uuid": "ebb6bfbb-8b4a-4c81-802f-a83790e6d666",
                 "naam": "Kentalis",
-                "plaats": "ZALTBOMMEL",
+                "plaats": "-",
                 "oidcurls": [
                     {
                         "omschrijving": "Azure Kentalis",
@@ -2073,7 +2004,7 @@
             {
                 "uuid": "28398de4-5710-458b-bb0a-1b03b250aa75",
                 "naam": "Archief.Bolwerk",
-                "plaats": "MIDDELBURG",
+                "plaats": "",
                 "oidcurls": []
             },
             {
@@ -2121,13 +2052,8 @@
             {
                 "uuid": "88d73d70-7c88-478e-bb7b-ac0ee32142b0",
                 "naam": "Scholengroep Driestar- Wartburg",
-                "plaats": "GOUDA",
+                "plaats": ".",
                 "oidcurls": [
-                    {
-                        "omschrijving": "Driestar Wartburg",
-                        "url": "https://login.microsoftonline.com/driestarwartburg.nl/v2.0",
-                        "domain_hint": "driestarwartburg.nl"
-                    },
                     {
                         "omschrijving": "Driestar Wartburg",
                         "url": "https://login.microsoftonline.com/driestarwartburg.nl/v2.0",
@@ -2138,7 +2064,7 @@
             {
                 "uuid": "d091c475-43f3-494f-8b1a-84946a5c2142",
                 "naam": "LVOb",
-                "plaats": "GELEEN",
+                "plaats": "LVOB",
                 "oidcurls": [
                     {
                         "omschrijving": "LVO",
@@ -2150,46 +2076,24 @@
             {
                 "uuid": "282b7065-62b2-4f53-80ca-41e3b14a6021",
                 "naam": "SCOPE VO",
-                "plaats": "ALPHEN AAN DEN RIJN",
+                "plaats": "-",
                 "oidcurls": [
-                    {
-                        "omschrijving": "Groene Hart leerling/medewerker",
-                        "url": "https://accounts.google.com",
-                        "domain_hint": ""
-                    },
                     {
                         "omschrijving": "Ashram leerling/medewerker",
                         "url": "https://accounts.google.com",
                         "domain_hint": ""
-                    }
-                ]
-            },
-            {
-                "uuid": "fc3d8061-7dd9-468f-a116-df0ee78b9e1f",
-                "naam": "Test College",
-                "plaats": "DEVENTER",
-                "oidcurls": [
-                    {
-                        "omschrijving": "som.today",
-                        "url": "https://login.microsoftonline.com/som.today/v2.0",
-                        "domain_hint": "som.today"
                     },
                     {
-                        "omschrijving": "Topicus education test",
+                        "omschrijving": "Groene Hart leerling/medewerker",
                         "url": "https://accounts.google.com",
                         "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "Topicus Azure",
-                        "url": "https://login.microsoftonline.com/topicusonderwijs.onmicrosoft.com/v2.0",
-                        "domain_hint": "topicusonderwijs.onmicrosoft.com"
                     }
                 ]
             },
             {
                 "uuid": "266776ab-7a58-4f04-b80a-37db2f982948",
                 "naam": "Vonk",
-                "plaats": "ALKMAAR",
+                "plaats": "VMBO",
                 "oidcurls": [
                     {
                         "omschrijving": "VONK",
@@ -2201,7 +2105,7 @@
             {
                 "uuid": "3f3fe45d-4e36-4431-98d2-d3cd828649f7",
                 "naam": "OGMF - Onderwijsgroep Midden Friesland",
-                "plaats": "HEERENVEEN",
+                "plaats": "-",
                 "oidcurls": [
                     {
                         "omschrijving": "Onderwijsgroep Midden Friesland",
@@ -2213,7 +2117,7 @@
             {
                 "uuid": "8b74e093-4fab-4314-b81f-f8ffd5485598",
                 "naam": "Al Amana College",
-                "plaats": "",
+                "plaats": "UTRECHT",
                 "oidcurls": [
                     {
                         "omschrijving": "Al Amana College Azure",
@@ -2226,81 +2130,59 @@
                 "uuid": "f12ef155-cab1-4245-ab21-ab330b7ed493",
                 "naam": "Montessori College Maastricht",
                 "plaats": "MAASTRICHT",
-                "oidcurls": []
+                "oidcurls": [
+                    {
+                        "omschrijving": "Montessori College Maastricht Azure",
+                        "url": "https://login.microsoftonline.com/mcmaastricht.nl/v2.0",
+                        "domain_hint": "mcmaastricht.nl"
+                    }
+                ]
+            },
+            {
+                "uuid": "16edafe9-0fe3-42cc-8582-e62243b01d5a",
+                "naam": "Aeres",
+                "plaats": "VMBO EN PRO",
+                "oidcurls": [
+                    {
+                        "omschrijving": "Aeres ADFS",
+                        "url": "https://adfs.aeres.nl/adfs",
+                        "domain_hint": ""
+                    }
+                ]
             },
             {
                 "uuid": "8abf956a-287f-4b07-a118-6257fbe0ed1b",
                 "naam": "De Einder praktijkschool",
                 "plaats": "'S-GRAVENHAGE",
-                "oidcurls": []
-            },
-            {
-                "uuid": "914ad64e-493d-4263-91e2-3150d8a7a03d",
-                "naam": "Commanderij College oud",
-                "plaats": "GEMERT",
-                "oidcurls": []
+                "oidcurls": [
+                    {
+                        "omschrijving": "Praktijkschool De Einder medewerkers",
+                        "url": "https://login.microsoftonline.com/deeinder.onmicrosoft.com/v2.0",
+                        "domain_hint": "deeinder.onmicrosoft.com"
+                    }
+                ]
             },
             {
                 "uuid": "14501062-5323-4e16-98aa-b66c52184748",
                 "naam": "Gymnasium Haganum",
                 "plaats": "'S-GRAVENHAGE",
-                "oidcurls": []
+                "oidcurls": [
+                    {
+                        "omschrijving": "Gymnasium Haganum leerling/medewerker",
+                        "url": "https://login.microsoftonline.com/haganum.onmicrosoft.com/v2.0",
+                        "domain_hint": "haganum.onmicrosoft.com"
+                    }
+                ]
             },
             {
                 "uuid": "8febe24c-b0b5-4e7b-a3fe-ae6de33f5582",
-                "naam": "JdW Johan de Witt",
+                "naam": "Johan de Witt Scholengroep",
                 "plaats": "'S-GRAVENHAGE",
-                "oidcurls": []
-            },
-            {
-                "uuid": "6bbcfcef-28e5-4f76-a84f-8a62862a54e4",
-                "naam": "OnderwijsGroep Oost-Brabant",
-                "plaats": "HELMOND",
                 "oidcurls": [
                     {
-                        "omschrijving": "Jan van Brabant Molenstraat OIDC WIS",
-                        "url": "https://bm.janvanbrabant.nl",
-                        "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "Jan van brabant Topleveldomain",
-                        "url": "https://accounts.google.com",
-                        "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "Jan van Brabant Secundair domain",
-                        "url": "https://accounts.google.com",
-                        "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "Jan van Brabant Deltaweg",
-                        "url": "https://bd.janvanbrabant.nl",
-                        "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "Jan van Brabant Secundair domain",
-                        "url": "https://accounts.google.com",
-                        "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "Jan van Brabant Secundair domain",
-                        "url": "https://accounts.google.com",
-                        "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "Jan van brabant Topleveldomain",
-                        "url": "https://accounts.google.com",
-                        "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "St. Willibrord Gymnasium OIDC WIS",
-                        "url": "https://beheersportal.willibrordgymnasium.nl",
-                        "domain_hint": ""
-                    },
-                    {
-                        "omschrijving": "Azure Willibrord Gymnasium",
-                        "url": "https://login.microsoftonline.com/commanderijcollege.onmicrosoft.com/v2.0",
-                        "domain_hint": "commanderijcollege.onmicrosoft.com"
+                        "omschrijving": "Johan de Witt Den Haag leerling/medewerker",
+                        "url": "https://login.microsoftonline.com/johandewitt.onmicrosoft.com/v2.0",
+                        "domain_hint": "johandewitt.onmicrosoft.com"
                     }
                 ]
             },
@@ -2308,13 +2190,158 @@
                 "uuid": "16349dd5-3746-4ef5-9958-efd68b1758bd",
                 "naam": "Haags Montessori Lyceum",
                 "plaats": "'S-GRAVENHAGE",
-                "oidcurls": []
+                "oidcurls": [
+                    {
+                        "omschrijving": "Haags Montessori Lyceum leerling/medewerker",
+                        "url": "https://login.microsoftonline.com/haagsmontessorilyceum.onmicrosoft.com/v2.0",
+                        "domain_hint": "haagsmontessorilyceum.onmicrosoft.com"
+                    }
+                ]
             },
             {
                 "uuid": "dac21bd7-1b06-4552-977f-a7fdc6ab292b",
                 "naam": "Dalton Den Haag",
                 "plaats": "'S-GRAVENHAGE",
-                "oidcurls": []
+                "oidcurls": [
+                    {
+                        "omschrijving": "Dalton Den Haag leerling/medewerker",
+                        "url": "https://login.microsoftonline.com/daltondenhaag.onmicrosoft.com/v2.0",
+                        "domain_hint": "daltondenhaag.onmicrosoft.com"
+                    }
+                ]
+            },
+            {
+                "uuid": "6bbcfcef-28e5-4f76-a84f-8a62862a54e4",
+                "naam": "OnderwijsGroep Oost-Brabant",
+                "plaats": "HELMOND",
+                "oidcurls": [
+                    {
+                        "omschrijving": "Jan van Brabant Molenstraat Ouders/Verzorgers",
+                        "url": "https://bm.janvanbrabant.nl",
+                        "domain_hint": ""
+                    },
+                    {
+                        "omschrijving": "OnderwijsGroep Oost-Brabant",
+                        "url": "https://login.microsoftonline.com/onderwijsgroepoostbrabant.nl/v2.0",
+                        "domain_hint": "onderwijsgroepoostbrabant.nl"
+                    },
+                    {
+                        "omschrijving": "Willibrord Gymnasium Ouders/verzorgers",
+                        "url": "https://beheersportal.willibrordgymnasium.nl",
+                        "domain_hint": ""
+                    }
+                ]
+            },
+            {
+                "uuid": "7521aec7-ec91-4344-bd3e-7d15b61af6d3",
+                "naam": "Maerlant Lyceum",
+                "plaats": "'S-GRAVENHAGE",
+                "oidcurls": [
+                    {
+                        "omschrijving": "Maerlant-Lyceum leerling/medewerker",
+                        "url": "https://login.microsoftonline.com/maerlantoffice365.onmicrosoft.com/v2.0",
+                        "domain_hint": "maerlantoffice365.onmicrosoft.com"
+                    }
+                ]
+            },
+            {
+                "uuid": "5d0c8c45-0baf-480b-9b43-dd3cfae2c0a6",
+                "naam": "Lyceum Ypenburg",
+                "plaats": "DEN  HAAG",
+                "oidcurls": [
+                    {
+                        "omschrijving": "Lyceum Ypenburg leerling/medewerker",
+                        "url": "https://login.microsoftonline.com/lyceumypenburg.onmicrosoft.com/v2.0",
+                        "domain_hint": "lyceumypenburg.onmicrosoft.com"
+                    }
+                ]
+            },
+            {
+                "uuid": "d8a9128c-31ff-4984-91b6-e5ea4347f9a5",
+                "naam": "Maris College",
+                "plaats": "'S-GRAVENHAGE",
+                "oidcurls": [
+                    {
+                        "omschrijving": "Maris College leerling/medewerker",
+                        "url": "https://login.microsoftonline.com/Mariscollege.onmicrosoft.com/v2.0",
+                        "domain_hint": "Mariscollege.onmicrosoft.com"
+                    }
+                ]
+            },
+            {
+                "uuid": "99ec084a-6412-40c3-af8d-4e18815e1c63",
+                "naam": "Willem van Oranje Onderwijsgroep",
+                "plaats": "-",
+                "oidcurls": [
+                    {
+                        "omschrijving": "Willem van Oranje OIDC WIS",
+                        "url": "https://beheer.het-willem.nl",
+                        "domain_hint": ""
+                    },
+                    {
+                        "omschrijving": "Willem van Oranje Onderwijsgroep noord",
+                        "url": "https://login.microsoftonline.com/cvoav.onmicrosoft.com/v2.0",
+                        "domain_hint": "cvoav.onmicrosoft.com"
+                    },
+                    {
+                        "omschrijving": "Willem van Oranje Onderwijsgroep zuid",
+                        "url": "https://login.microsoftonline.com/wvoranje.nl/v2.0",
+                        "domain_hint": "wvoranje.nl"
+                    }
+                ]
+            },
+            {
+                "uuid": "20ce4b97-3d00-45ae-853d-358d7c9fbf6e",
+                "naam": "RLVVC",
+                "plaats": "RIJSWIJK ZH",
+                "oidcurls": [
+                    {
+                        "omschrijving": "Rijswijks Lyceum en Van Vredenburch College leerling/medewerker",
+                        "url": "https://login.microsoftonline.com/rijswijkslyceum.onmicrosoft.com/v2.0",
+                        "domain_hint": "rijswijkslyceum.onmicrosoft.com"
+                    }
+                ]
+            },
+            {
+                "uuid": "ab757188-874b-4dcd-bb41-586bc29a406b",
+                "naam": "Segbroek College",
+                "plaats": "'S-GRAVENHAGE",
+                "oidcurls": [
+                    {
+                        "omschrijving": "Segbroek College leerling/medewerker",
+                        "url": "https://login.microsoftonline.com/segbroeknl.onmicrosoft.com/v2.0",
+                        "domain_hint": "segbroeknl.onmicrosoft.com"
+                    }
+                ]
+            },
+            {
+                "uuid": "068c645f-4a0b-42ed-9320-988c533591f0",
+                "naam": "Test College",
+                "plaats": "DEVENTER",
+                "oidcurls": [
+                    {
+                        "omschrijving": "Azure CSWalcheren",
+                        "url": "https://login.microsoftonline.com/257eb968-a984-464c-bd33-ed5c72b8767b/v2.0",
+                        "domain_hint": "257eb968-a984-464c-bd33-ed5c72b8767b"
+                    },
+                    {
+                        "omschrijving": "Topicus education test",
+                        "url": "https://accounts.google.com",
+                        "domain_hint": ""
+                    }
+                ]
+            },
+            {
+                "uuid": "ed87a425-e3cb-4919-8ea7-70124600ec4c",
+                "naam": "Kangoeroe High",
+                "plaats": "",
+                "oidcurls": [
+                    {
+                        "omschrijving": "Leerling / Medewerker Kangoeroeschool",
+                        "url": "https://accounts.google.com",
+                        "domain_hint": ""
+                    }
+                ]
             }
         ]
     }

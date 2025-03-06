@@ -1,16 +1,15 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, input } from '@angular/core';
-import { AvatarComponent, IconDirective } from 'harmony';
+import { AvatarComponent, SpinnerComponent } from 'harmony';
 import { IconPijlRechts, provideIcons } from 'harmony-icons';
 import { GegevensService, SchoolContactgegevensComponent } from 'leerling-account-modal';
 import { derivedAsync } from 'ngxtension/derived-async';
 
 @Component({
     selector: 'sl-schoolgegevens',
-    standalone: true,
     templateUrl: './schoolgegevens.component.html',
     styleUrls: ['./schoolgegevens.component.scss'],
-    imports: [CommonModule, IconDirective, AvatarComponent, SchoolContactgegevensComponent],
+    imports: [CommonModule, AvatarComponent, SchoolContactgegevensComponent, SpinnerComponent],
     providers: [provideIcons(IconPijlRechts)]
 })
 export class SchoolgegevensComponent {
@@ -22,7 +21,5 @@ export class SchoolgegevensComponent {
     leerlingNaam = input.required<string>();
     leerlingID = input.required<number>();
 
-    public schoolgegevens = derivedAsync(() => {
-        return this._gegevensService.getSchoolgegevens$();
-    });
+    public schoolgegevens = derivedAsync(() => this._gegevensService.getSchoolgegevens$());
 }

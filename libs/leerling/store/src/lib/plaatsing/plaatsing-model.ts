@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 import { parseISO } from 'date-fns';
 import { isPresent } from 'harmony';
 import { RLeerlingSchoolgegevens, RPlaatsing, RVestiging } from 'leerling-codegen';

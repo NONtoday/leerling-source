@@ -1,0 +1,7 @@
+@if (!useLegacyRendering()) {
+    @if (hasTemplate()) {
+        <ng-container #container />
+    } @else {
+        {{ content() }}
+    }
+}

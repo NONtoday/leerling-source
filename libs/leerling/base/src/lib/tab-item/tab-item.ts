@@ -1,6 +1,6 @@
-import { IconBericht, IconHuiswerk, IconKalenderToevoegen, IconName, IconResultaten, IconRooster, IconVandaag } from 'harmony-icons';
+import { IconBericht, IconHuiswerk, IconName, IconPersoonKruisBlock, IconResultaten, IconRooster, IconVandaag } from 'harmony-icons';
 import { AccountRecht } from 'leerling/store';
-import { AFWEZIG_MELDEN, BERICHTEN, CIJFERS, ROOSTER, STUDIEWIJZER, VANDAAG } from '../router/router.service';
+import { AFWEZIGHEID, BERICHTEN, CIJFERS, ROOSTER, STUDIEWIJZER, VANDAAG } from '../router/router.service';
 
 export interface TabItem {
     icon: IconName;
@@ -42,13 +42,13 @@ export const CIJFERS_TAB: TabItem = {
     url: CIJFERS
 };
 
-export const AFWEZIG_MELDEN_TAB: TabItem = {
-    icon: IconKalenderToevoegen.name,
+export const AFWEZIGHEID_TAB: TabItem = {
+    icon: IconPersoonKruisBlock.name,
     titel: 'Afwezig',
-    titelDesktop: 'Afwezig melden',
+    titelDesktop: 'Afwezigheid',
     recht: 'absentiesBekijkenAan',
-    alleenVoorVerzorger: true,
-    url: AFWEZIG_MELDEN
+    url: AFWEZIGHEID,
+    alleenVoorVerzorger: true
 };
 
 export const BERICHTEN_TAB: TabItem = {

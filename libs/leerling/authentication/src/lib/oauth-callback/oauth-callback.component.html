@@ -4,9 +4,17 @@
         <p>
             {{ message }}
         </p>
+
         @if (tryAgain) {
             <hmy-button class="button" (click)="tryAgainNow()" label="Opnieuw inloggen" size="small" mode="secondary"></hmy-button>
         }
+        @if (toonSomtodayKnop) {
+            <hmy-button class="button" (click)="tryAgainNow()" label="Inloggen als ouder" size="small" mode="secondary"></hmy-button>
+            <hmy-button class="button" (click)="naarSomtoday()" label="Terug naar Somtoday" size="small" mode="secondary"></hmy-button>
+        }
+        <p>
+            <a [href]="inlogServiceDeskUrl" target="_blank">Hulp nodig bij inloggen? Klik hier.</a>
+        </p>
     </div>
 } @else {
     <hmy-spinner></hmy-spinner>

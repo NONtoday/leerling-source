@@ -5,6 +5,7 @@ import { ModalService } from '../modalwindow/service/modal.service';
 import { PopupSettings, createPopupSettings } from '../popup/popup-settings';
 import { PopupService } from '../popup/service/popup.service';
 import { SidebarService } from '../sidebar/service/sidebar.service';
+import { SidebarCloseTrigger } from '../sidebar/sidebar-model';
 import { SidebarSettings } from '../sidebar/sidebar-settings';
 
 @Injectable({
@@ -67,7 +68,7 @@ export class OverlayService {
         }
     }
 
-    close(component: any) {
+    close(component: any, closeTrigger: SidebarCloseTrigger) {
         const uuid = this._openedPopups.get(component);
         if (uuid) {
             this._popupService.close(uuid);
@@ -76,7 +77,7 @@ export class OverlayService {
             this._modalService.close();
             this._modalComponent = undefined;
         } else if (this._sidebarComponent) {
-            this._sidebarService.close();
+            this._sidebarService.close(true, closeTrigger);
             this._sidebarComponent = undefined;
         }
     }

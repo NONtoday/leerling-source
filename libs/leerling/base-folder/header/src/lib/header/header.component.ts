@@ -1,6 +1,6 @@
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { A11yModule } from '@angular/cdk/a11y';
-import { AsyncPipe, NgTemplateOutlet } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import {
     AfterViewInit,
     ChangeDetectionStrategy,
@@ -15,16 +15,7 @@ import {
     viewChild
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import {
-    AvatarComponent,
-    ButtonComponent,
-    IconDirective,
-    OverlayService,
-    SpinnerComponent,
-    TooltipDirective,
-    createModalSettings,
-    createPopupSettings
-} from 'harmony';
+import { AvatarComponent, IconDirective, OverlayService, TooltipDirective } from 'harmony';
 import {
     IconBoek,
     IconChevronOnder,
@@ -37,11 +28,13 @@ import {
     IconSettings,
     provideIcons
 } from 'harmony-icons';
+import { WeergaveService } from 'leerling-account-modal';
+import { AppStatusService } from 'leerling-app-status';
 import { TabBarComponent } from 'leerling-base';
 import { LeerlingMenuActiesComponent } from 'leerling-menu-acties';
 import { LeerlingSwitcherComponent } from 'leerling-menu-leerling-switcher';
-import { AVATAR_TAB_INDEX, AccessibilityService, PopupOpenDirective } from 'leerling-util';
-import { HeeftRechtDirective } from 'leerling/store';
+import { AVATAR_TAB_INDEX } from 'leerling-util';
+
 import { HeaderService } from './service/header.service';
 
 export interface HeaderViewModel {
@@ -71,21 +64,15 @@ const ANIMATIONS = [FADE_IN_OUT_ANIMATION];
 
 @Component({
     selector: 'sl-header',
-    standalone: true,
     imports: [
-        AsyncPipe,
         TabBarComponent,
         A11yModule,
         IconDirective,
         AvatarComponent,
-        PopupOpenDirective,
-        ButtonComponent,
         NgTemplateOutlet,
         LeerlingMenuActiesComponent,
-        SpinnerComponent,
         TooltipDirective,
-        LeerlingSwitcherComponent,
-        HeeftRechtDirective
+        LeerlingSwitcherComponent
     ],
     templateUrl: './header.component.html',
     styleUrls: ['./header.component.scss'],
@@ -117,10 +104,13 @@ export class HeaderComponent implements AfterViewInit {
     public headerService = inject(HeaderService);
     private _changeDetector = inject(ChangeDetectorRef);
     private _overlayService = inject(OverlayService);
-    accessibilityService = inject(AccessibilityService);
+    private _statusService = inject(AppStatusService);
 
-    menuActiesTemplateRef = viewChild.required('menuacties', { read: TemplateRef });
-    leerlingSwitcherTemplateRef = viewChild.required('leerlingswitcher', { read: TemplateRef });
+    private _weergaveService = inject(WeergaveService);
+    profielfotoVerbergen = this._weergaveService.profielfotoVerbergen;
+
+    menuActiesTemplateRef = viewChild('menuacties', { read: TemplateRef });
+    leerlingSwitcherTemplateRef = viewChild('leerlingswitcher', { read: TemplateRef });
     hamburgerRef = viewChild('hamburger', { read: ViewContainerRef });
     avatarRef = viewChild('avatar', { read: ViewContainerRef });
     menuAvatarRef = viewChild('menuavatar', { read: ViewContainerRef });
@@ -130,6 +120,8 @@ export class HeaderComponent implements AfterViewInit {
     viewModel = toSignal(this.headerService.getViewModel(), { requireSync: true });
 
     avatarAriaLabel = computed(() => (this.viewModel().isVerzorger ? `${this.viewModel().leerlingNaam} is geselecteerd` : ''));
+
+    isOnline = this._statusService.isOnlineSignal();
 
     ngAfterViewInit() {
         this.headerService.headerRef = this;
@@ -149,45 +141,33 @@ export class HeaderComponent implements AfterViewInit {
     }
 
     verzorgerAvatarClick() {
-        if (!this.viewModel().isVerzorger) return;
+        if (!this.viewModel().isVerzorger || !this.isOnline().valueOf()) return;
 
         this.openLeerlingSwitcherComponent();
     }
 
-    goToContent() {
-        document.getElementById('mainContent')?.focus();
-        this.accessibilityService.goToContent();
-    }
-
     openLeerlingSettingsComponent(ref: ViewContainerRef | undefined) {
-        if (!ref || this._overlayService.isOpen(ref)) return;
+        const settingsTemplate = this.menuActiesTemplateRef();
+        if (!settingsTemplate || !ref || this._overlayService.isOpen(ref)) return;
 
-        this._overlayService.popupOrModal(
-            this.menuActiesTemplateRef(),
-            ref,
-            {
-                leerling: {
-                    avatarSrc: this.viewModel().avatarSrc,
-                    initialen: this.viewModel().initialen,
-                    naam: this.viewModel().leerlingNaam,
-                    organisatienaam: this.viewModel().organisatienaam
-                }
-            },
-            createPopupSettings({ width: '280px' }),
-            createModalSettings({ contentPadding: 0 })
-        );
+        this._overlayService.popupOrModal({
+            template: settingsTemplate,
+            element: ref,
+            popupSettings: { width: '280px', preventScrollElementInViewport: true },
+            modalSettings: { contentPadding: 0 }
+        });
     }
 
     openLeerlingSwitcherComponent() {
         const avatarRef = this.avatarRef();
-        if (!avatarRef || this._overlayService.isOpen(avatarRef)) return;
-        this._overlayService.popupOrModal(
-            this.leerlingSwitcherTemplateRef(),
-            avatarRef,
-            {},
-            createPopupSettings({ position: 'under', alignment: 'start' }),
-            createModalSettings({ title: 'Mijn accounts', contentPadding: 0, showClose: false })
-        ) as LeerlingSwitcherComponent;
+        const switcherTemplate = this.leerlingSwitcherTemplateRef();
+        if (!avatarRef || !switcherTemplate || this._overlayService.isOpen(avatarRef)) return;
+        this._overlayService.popupOrModal({
+            template: switcherTemplate,
+            element: avatarRef,
+            popupSettings: { position: 'under', alignment: 'start', preventScrollElementInViewport: true },
+            modalSettings: { title: 'Mijn accounts', contentPadding: 0, showClose: false }
+        });
     }
 
     onBackButtonClicked() {

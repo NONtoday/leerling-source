@@ -5,7 +5,6 @@ import { IconChevronOnder, provideIcons } from 'harmony-icons';
 
 @Component({
     selector: 'sl-bericht-seperator',
-    standalone: true,
     imports: [CommonModule, IconDirective],
     templateUrl: './bericht-seperator.component.html',
     styleUrl: './bericht-seperator.component.scss',
@@ -19,6 +18,7 @@ import { IconChevronOnder, provideIcons } from 'harmony-icons';
 export class BerichtSeperatorComponent {
     label = input.required<string>();
     clickable = input<boolean>(false);
+    expanded = input<boolean>();
 
     role = computed(() => (this.clickable() ? 'button' : null));
 }

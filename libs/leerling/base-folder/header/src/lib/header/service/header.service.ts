@@ -21,6 +21,7 @@ export class HeaderService {
     private _headerRefSubject = new BehaviorSubject<HeaderComponent | undefined>(undefined);
     private _backButtonClickedSubject = new Subject<void>();
     private _heeftBackButtonSubject = new BehaviorSubject<boolean>(false);
+    private _toonAltijdScrollableTitleSubject = new BehaviorSubject<boolean>(false);
     private _scrollableTitle$: Observable<string | undefined>;
     private _titleElementRef$ = new BehaviorSubject<ElementRef | undefined>(undefined);
 
@@ -29,9 +30,19 @@ export class HeaderService {
 
     constructor() {
         const scroll$ = fromEvent(window, 'scroll').pipe(startWith(new Event('scroll')));
-        this._scrollableTitle$ = combineLatest([this.title$, this._titleElementRef$, from(SafeArea.getSafeAreaInsets()), scroll$]).pipe(
-            map(([title, elementRef, safeAreaInsets]) => {
+        this._scrollableTitle$ = combineLatest([
+            this.title$,
+            this._titleElementRef$,
+            from(SafeArea.getSafeAreaInsets()),
+            this._toonAltijdScrollableTitleSubject,
+            scroll$
+        ]).pipe(
+            map(([title, elementRef, safeAreaInsets, toonAltijdScrollableTitle]) => {
                 if (!title || !elementRef) return undefined;
+
+                if (toonAltijdScrollableTitle) {
+                    return title;
+                }
                 const rect = elementRef.nativeElement.getBoundingClientRect();
                 let threshold = safeAreaInsets.insets.top;
                 if (isIOS()) {
@@ -102,6 +113,10 @@ export class HeaderService {
 
     public set heeftBackButton(value: boolean) {
         this._heeftBackButtonSubject.next(value);
+    }
+
+    public set toonAltijdScollableTitle(value: boolean) {
+        this._toonAltijdScrollableTitleSubject.next(value);
     }
 
     public set headerRef(value: HeaderComponent | undefined) {

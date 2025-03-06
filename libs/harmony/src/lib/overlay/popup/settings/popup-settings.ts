@@ -2,6 +2,8 @@ export const DEFAULT_ELEMENT_OFFSET = 8;
 export const DEFAULT_SCROLL_OFFSET = 8;
 
 export interface PopupSettings {
+    domPosition: 'body' | 'sibling';
+    preventScrollElementInViewport: boolean;
     animation: 'none' | 'fade' | 'slide';
     position: 'above' | 'under' | 'left' | 'right';
     alignment: 'start' | 'center' | 'end';
@@ -11,9 +13,12 @@ export interface PopupSettings {
     keepOnNavigation?: boolean;
     width: string;
     maxWidth: string;
+    maxHeight: string;
     left?: number;
     popupOpenClass: string;
     onClose?: () => void;
+    overflow: string;
+    allowBodyScroll: boolean;
 }
 
 export const createPopupSettings = (updatedSettings?: Partial<PopupSettings>, includeStickyOffsets = true): PopupSettings => {
@@ -27,6 +32,8 @@ export const createPopupSettings = (updatedSettings?: Partial<PopupSettings>, in
     }
 
     return {
+        domPosition: 'body',
+        preventScrollElementInViewport: false,
         animation: 'fade',
         position: 'under',
         alignment: 'center',
@@ -39,8 +46,11 @@ export const createPopupSettings = (updatedSettings?: Partial<PopupSettings>, in
         keepOnNavigation: false,
         width: 'initial',
         maxWidth: 'none',
+        maxHeight: 'none',
         left: undefined,
         popupOpenClass: 'popup-open',
+        overflow: 'initial',
+        allowBodyScroll: false,
         ...updatedSettings
     };
 };

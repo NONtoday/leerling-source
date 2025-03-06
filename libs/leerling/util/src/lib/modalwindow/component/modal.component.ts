@@ -53,10 +53,10 @@ const contentAnimation = trigger('contentAnimation', [
 ]);
 
 const ANIMATIONS = [maskAnimation, contentAnimation];
+export const MODAL_COMPONENT_SELECTOR = 'sl-modal';
 
 @Component({
-    selector: 'sl-modal',
-    standalone: true,
+    selector: MODAL_COMPONENT_SELECTOR,
     imports: [CommonModule, IconDirective],
     templateUrl: './modal.component.html',
     animations: ANIMATIONS,
@@ -98,9 +98,7 @@ export class ModalComponent implements OnInit, OnDestroy, ISwipable, AfterViewIn
                 filter((event) => event instanceof NavigationStart && !this.settings.keepOnNavigation),
                 takeUntilDestroyed()
             )
-            .subscribe(() => {
-                this.close();
-            });
+            .subscribe(() => this.close(true));
 
         this._keyPressedService.overlayKeyboardEvent$.pipe(takeUntilDestroyed()).subscribe((event) => this.handleKeyEvent(event));
     }
@@ -125,11 +123,11 @@ export class ModalComponent implements OnInit, OnDestroy, ISwipable, AfterViewIn
             const provider = this.contentComponent as ModalScrollableElementsProvider;
             provider.getScrollableElements().subscribe((elements) => {
                 this._currentScrollingElements.forEach((element) => {
-                    element?.nativeElement && enableBodyScroll(element.nativeElement);
+                    if (element?.nativeElement) enableBodyScroll(element.nativeElement);
                 });
 
                 elements.forEach((element) => {
-                    element?.nativeElement && disableBodyScroll(element.nativeElement);
+                    if (element?.nativeElement) disableBodyScroll(element.nativeElement);
                 });
 
                 this._currentScrollingElements = elements;
@@ -145,7 +143,7 @@ export class ModalComponent implements OnInit, OnDestroy, ISwipable, AfterViewIn
 
     ngOnDestroy(): void {
         this._currentScrollingElements.forEach((element) => {
-            element?.nativeElement && enableBodyScroll(element.nativeElement);
+            if (element?.nativeElement) enableBodyScroll(element.nativeElement);
         });
     }
 
@@ -220,7 +218,7 @@ export class ModalComponent implements OnInit, OnDestroy, ISwipable, AfterViewIn
         this._changeDetector.markForCheck();
     }
 
-    public close() {
-        this._modalService.close();
+    public close(allowNavigation = false) {
+        this._modalService.close(allowNavigation);
     }
 }

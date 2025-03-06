@@ -4,7 +4,6 @@ import { ToetssoortGemiddelde } from '../../../services/vakresultaten/vakresulta
 
 @Component({
     selector: 'sl-toetssoortgemiddelde-item',
-    standalone: true,
     imports: [CommonModule],
     templateUrl: './toetssoortgemiddelde-item.component.html',
     styleUrls: ['./toetssoortgemiddelde-item.component.scss'],

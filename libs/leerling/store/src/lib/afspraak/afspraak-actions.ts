@@ -16,7 +16,8 @@ export class VoerKwtActieUit {
 
     constructor(
         public kwtInfo: SKWTInfo,
-        public afspraakActie: SAfspraakActie
+        public afspraakActie: SAfspraakActie,
+        public jaarWeek: string
     ) {}
 }
 

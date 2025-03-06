@@ -1,5 +1,6 @@
 <div class="weergave-wrapper">
-    <div class="thema-wrapper">
+    <div class="subtitle">Thema & Voorkeur</div>
+    <div class="blok">
         <div
             class="container light"
             [attr.aria-checked]="selectedTheme() === 'light'"
@@ -12,7 +13,7 @@
             <input [ngModel]="selectedTheme()" type="radio" name="thema" value="light" tabindex="-1" />
         </div>
         <div
-            class="container dark"
+            class="container dark right"
             [attr.aria-checked]="selectedTheme() === 'dark'"
             (click)="toggleThemeDark()"
             tabindex="0"
@@ -22,7 +23,7 @@
             <label>Donker</label>
             <input [ngModel]="selectedTheme()" type="radio" name="thema" value="dark" tabindex="-1" />
         </div>
-        <div class="container-voorkeur settings">
+        <div class="settings">
             <span class="settings-span">Gebruik systeemvoorkeur</span>
             <hmy-toggle
                 class="toggle-systeemvoorkeur"
@@ -33,8 +34,7 @@
                 aria-label="Gebruik systeemvoorkeur"
                 role="checkbox"></hmy-toggle>
         </div>
-    </div>
-    <div class="settings-wrapper">
+        <div class="setting-divider"></div>
         <div class="settings with-preview">
             <div class="setting-preview onvoldoendes">
                 <span class="fg-on-negative-weak">5,0</span>
@@ -67,5 +67,67 @@
                 aria-label="Maak gebruik van een dyslexie lettertype voor een betere leeservaring"
                 role="checkbox"></hmy-toggle>
         </div>
+        @if (!isOuder && accountLeerling()?.leerling?.avatarSrc) {
+            <div class="setting-divider"></div>
+            <div class="settings with-preview profielfoto-optie">
+                <div class="setting-preview profielfoto">
+                    <i hmyIcon="persoon" size="medium"></i>
+                </div>
+                <span class="settings-span"
+                    >Verberg profielfoto
+                    <p class="settings-subtext">Toon je voorletter in plaats van je profielfoto</p>
+                </span>
+                <hmy-toggle
+                    class="toggle-profielfoto-verbergen"
+                    [ngModel]="profielfotoVerbergen()"
+                    [attr.aria-checked]="profielfotoVerbergen()"
+                    (click)="toggleProfielfotoVerbergen()"
+                    tabindex="0"
+                    aria-label="Toon je voorletter in plaats van je profielfoto"
+                    role="checkbox"></hmy-toggle>
+            </div>
+        }
     </div>
+    @if (isPhoneOrTabletPortrait()) {
+        <div class="studiewijzer-header">
+            <div class="subtitle">Studiewijzer</div>
+            <div class="subsubtitle">Toon taken in studiewijzer als</div>
+        </div>
+        <div class="blok studiewijzermodus">
+            <div
+                class="container dagview"
+                [attr.aria-checked]="studiewijzerModus() === 'dagview'"
+                (click)="setStudiewijzerModusDagview()"
+                aria-label="Studiewijzer per dag"
+                tabindex="0"
+                role="radio">
+                <sl-dagview-img />
+                <label>Dag</label>
+                <input
+                    class="dagview-radio"
+                    [ngModel]="studiewijzerModus()"
+                    type="radio"
+                    name="studiewijzermodus"
+                    value="dagview"
+                    tabindex="-1" />
+            </div>
+            <div
+                class="container lijstview right"
+                [attr.aria-checked]="studiewijzerModus() === 'lijstview'"
+                (click)="setStudiewijzerModusLijstview()"
+                tabindex="0"
+                aria-label="Studiewijzer in een lijst"
+                role="radio">
+                <sl-lijstview-img />
+                <label>Lijst</label>
+                <input
+                    class="lijstview-radio"
+                    [ngModel]="studiewijzerModus()"
+                    type="radio"
+                    name="studiewijzermodus"
+                    value="lijstview"
+                    tabindex="-1" />
+            </div>
+        </div>
+    }
 </div>

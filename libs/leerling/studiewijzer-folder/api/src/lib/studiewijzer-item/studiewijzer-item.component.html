@@ -4,20 +4,26 @@
     @if (alternatieveOmschrijving()) {
         <span class="omschrijving">{{ alternatieveOmschrijving() }}</span>
     } @else {
-        @if (item().omschrijving | stripHTML; as omschrijving) {
-            <span class="omschrijving">{{ omschrijving }}</span>
+        @if (omschrijving) {
+            <span class="omschrijving">{{ omschrijving | stripHTML }}</span>
         }
     }
 </div>
-@if (item().isInleveropdracht && !item().heeftInlevering) {
+@if (toonWaarschuwing()) {
     <i class="inlever-waarschuwing" [onTouchAllowed]="true" hmyIcon="waarschuwing" size="small" hmyTooltip="Geen inlevering"></i>
+}
+@if (toonSlot()) {
+    <i class="inlever-slot" [onTouchAllowed]="true" hmyIcon="slot" size="small" hmyTooltip="Inlevering in behandeling"></i>
 }
 @if (toonAankomend()) {
     <hmy-pill text="Aankomend" color="accent"></hmy-pill>
 }
 
 @if (toonAfvinkKnopZonderScreenReader()) {
-    <hmy-checkbox [checked]="afgevinkt" (click)="$event.stopPropagation()" (valueChanged)="onAfvinken()" color="positive" />
+    @if (state().saving()) {
+        <hmy-spinner />
+    }
+    <hmy-checkbox [checked]="afgevinkt" [class.hide]="state().saving()" (click)="onAfvinken($event)" color="positive" />
 }
 @if (toonChevron()) {
     <i class="chevron" [color]="item().gemaakt ? 'fg-on-positive-weak' : 'action-neutral-weak'" hmyIcon="chevronRechts" size="smallest"></i>

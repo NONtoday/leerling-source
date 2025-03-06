@@ -7,7 +7,6 @@ import { IconDirective } from '../icon/icon.directive';
 
 @Component({
     selector: 'hmy-verwijder-confirmation',
-    standalone: true,
     imports: [CommonModule, IconDirective, A11yModule, ButtonComponent],
     templateUrl: './verwijder-confirmation.component.html',
     styleUrl: './verwijder-confirmation.component.scss',

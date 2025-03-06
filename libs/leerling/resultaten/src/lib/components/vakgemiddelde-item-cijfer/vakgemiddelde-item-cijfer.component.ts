@@ -4,7 +4,6 @@ import { TooltipDirective } from 'harmony';
 
 @Component({
     selector: 'sl-vakgemiddelde-item-cijfer',
-    standalone: true,
     imports: [CommonModule, TooltipDirective],
     templateUrl: './vakgemiddelde-item-cijfer.component.html',
     styleUrls: ['./vakgemiddelde-item-cijfer.component.scss'],

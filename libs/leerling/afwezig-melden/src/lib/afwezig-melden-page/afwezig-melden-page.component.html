@@ -1,4 +1,4 @@
-<sl-header />
+<sl-header [hideBorderBottomMobile]="true" />
 
 <div class="container" id="mainContent" [class.with-wizard]="showWizard()" tabindex="-1">
     @if (isPhoneOrTabletPortrait()) {
@@ -10,12 +10,17 @@
     @if (finishedLoading()) {
         @if (showWizard()) {
             <sl-afwezig-melden-wizard
+                #wizard
                 [absentieRedenen]="absentieRedenen()!"
                 [leerling]="leerling()!"
                 (isDirty)="wizardIsDirty.set($event)" />
-        } @else if (leerling()) {
+        } @else if (leerling() && absentieRedenen()?.length === 0) {
             <div class="school-contactgegevens">
-                <sl-school-contactgegevens [alwaysShowBorder]="true" [leerlingID]="leerling()!.id" />
+                <sl-geen-data />
+                <p tabindex="0">Afwezig melden via Somtoday is door je school uitgeschakeld</p>
+
+                <!--Schoolgegevens worden op dit moment niet getoond vanwege klachten over absent melden van scholen met een alternatieve methode hiervoor -->
+                <!-- <sl-school-contactgegevens [alwaysShowBorder]="true" [leerlingID]="leerling()!.id" /> -->
             </div>
         }
     } @else {

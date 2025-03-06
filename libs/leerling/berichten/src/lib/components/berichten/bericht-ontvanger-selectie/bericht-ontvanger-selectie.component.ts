@@ -1,3 +1,4 @@
+import { A11yModule } from '@angular/cdk/a11y';
 import { CommonModule } from '@angular/common';
 import {
     ChangeDetectionStrategy,
@@ -10,24 +11,21 @@ import {
     forwardRef,
     inject,
     signal,
-    untracked,
     viewChild
 } from '@angular/core';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { AutoFocusDirective, DeviceService, ModalService, PopupService, TagComponent, createPopupSettings, isPresent } from 'harmony';
+import { BerichtOntvangerOptieComponent, MedewerkerVolledigeNaamPipe } from 'leerling-berichten-api';
 import { onRefresh } from 'leerling-util';
 import { SMedewerker } from 'leerling/store';
 import { derivedAsync } from 'ngxtension/derived-async';
+import * as removeAccents from 'remove-accents';
 import { Subject, filter } from 'rxjs';
 import { BerichtService } from '../../../services/bericht.service';
-import { TABINDEX_NIEUW_BERICHT } from '../bericht-nieuw/bericht-nieuw.component';
-import { BerichtOntvangerOptieComponent } from '../bericht-ontvanger-optie/bericht-ontvanger-optie.component';
 import { MedewerkerToBoodschapCorrespondentPipe } from '../medewerker-to-boodschap-correspondent-pipe/medewerker-to-boodschap-correspondent.pipe';
-import { MedewerkerVolledigeNaamPipe } from '../medewerker-volledige-naam-pipe/medewerker-volledige-naam.pipe';
 
 @Component({
     selector: 'sl-bericht-ontvanger-selectie',
-    standalone: true,
     imports: [
         CommonModule,
         FormsModule,
@@ -35,7 +33,8 @@ import { MedewerkerVolledigeNaamPipe } from '../medewerker-volledige-naam-pipe/m
         BerichtOntvangerOptieComponent,
         MedewerkerVolledigeNaamPipe,
         AutoFocusDirective,
-        MedewerkerToBoodschapCorrespondentPipe
+        MedewerkerToBoodschapCorrespondentPipe,
+        A11yModule
     ],
     templateUrl: './bericht-ontvanger-selectie.component.html',
     styleUrl: './bericht-ontvanger-selectie.component.scss',
@@ -61,8 +60,6 @@ export class BerichtOntvangerSelectieComponent implements ControlValueAccessor {
         initialValue: []
     });
     public searchResults = computed(() => this.filterMedewerkers(this.toegestaneOntvangers(), this.search(), this.ontvangers()));
-    public tabindexNieuwBericht = TABINDEX_NIEUW_BERICHT;
-    public tabindexOntvanger = TABINDEX_ONTVANGER;
 
     private zoekresultatenPopup = viewChild.required('zoekresultatenPopup', { read: TemplateRef });
 
@@ -84,7 +81,7 @@ export class BerichtOntvangerSelectieComponent implements ControlValueAccessor {
         onRefresh(() => this._berichtService.refreshToegestaneOntvangers());
         effect(() => {
             if (this.search().length > 0) {
-                untracked(() => this.openSearchOptions());
+                this.openSearchOptions();
             }
         });
     }
@@ -112,10 +109,10 @@ export class BerichtOntvangerSelectieComponent implements ControlValueAccessor {
     openSearchOptions() {
         if (!this._popupService.isOpen(this.textInput())) {
             const popupSettings = this.deviceService.isTabletOrDesktop()
-                ? createPopupSettings({ alignment: 'start', width: '344px' })
-                : createPopupSettings({ width: '344px', left: 16 });
+                ? createPopupSettings({ alignment: 'start', width: '344px', domPosition: 'sibling' })
+                : createPopupSettings({ left: 16, maxWidth: '344px', domPosition: 'sibling' });
 
-            this._popupService.popup(this.zoekresultatenPopup(), this.textInput(), {}, popupSettings);
+            this._popupService.popup({ template: this.zoekresultatenPopup(), element: this.textInput(), settings: popupSettings });
         }
     }
 
@@ -145,7 +142,7 @@ export class BerichtOntvangerSelectieComponent implements ControlValueAccessor {
         this._changeDetectorRef.detectChanges();
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function, no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
     onChange = (ontvangers: SMedewerker[]) => {};
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -168,17 +165,13 @@ export class BerichtOntvangerSelectieComponent implements ControlValueAccessor {
 
     private filterMedewerkers = (medewerkers: SMedewerker[], search: string, selectedMedewerkers: SMedewerker[]) => {
         const possibleResults = medewerkers.filter((medewerker) => !selectedMedewerkers.includes(medewerker));
+
         if (!search) {
             return possibleResults;
         }
-        const searchLower = search.toLowerCase();
-        return possibleResults.filter(
-            (medewerker) =>
-                medewerker.achternaam?.toLowerCase().includes(searchLower) ||
-                medewerker.roepnaam?.toLowerCase().includes(searchLower) ||
-                medewerker.afkorting?.toLowerCase().includes(searchLower)
-        );
+        //accenten verwijderen, lowercase, punten en () weghalen
+        const searchLower = removeAccents.remove(search.toLowerCase().split('.').join('').replace('(', '').replace(')', '')).trim();
+
+        return possibleResults.filter((medewerker) => medewerker.zoekNaam?.includes(searchLower));
     };
 }
-
-const TABINDEX_ONTVANGER = 200;

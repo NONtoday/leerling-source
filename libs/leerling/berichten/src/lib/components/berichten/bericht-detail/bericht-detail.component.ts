@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import {
     ChangeDetectionStrategy,
     Component,
+    ElementRef,
     EventEmitter,
     Injector,
     OnInit,
@@ -11,35 +12,37 @@ import {
     effect,
     inject,
     input,
+    runInInjectionContext,
     viewChild
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { collapseOnLeaveAnimation, expandOnEnterAnimation } from 'angular-animations';
-import { ModalService, TooltipDirective, VerwijderConfirmationComponent, createModalSettings } from 'harmony';
+
+import { RouterService } from 'leerling-base';
+import { BerichtActiesComponent, BerichtComponent } from 'leerling-berichten-api';
 import { HeaderActionButtonComponent, injectHeaderConfig } from 'leerling-header';
+import { StudiewijzerItemComponent } from 'leerling-studiewijzer-api';
 import { SConversatie } from 'leerling/store';
+
 import { last } from 'lodash-es';
 import { computedPrevious } from 'ngxtension/computed-previous';
+import { filter } from 'rxjs';
 import { match } from 'ts-pattern';
 import { BerichtService } from '../../../services/bericht.service';
-import { BerichtActiesComponent } from '../bericht-acties/bericht-acties.component';
 import { BerichtSeperatorComponent } from '../bericht-seperator/bericht-seperator.component';
-import { BerichtComponent } from '../bericht/bericht.component';
 import { BerichtenTabLink } from '../berichten.component';
 import { meestRecentRelevanteBericht, nieuwereBerichten, ongelezenBerichten } from './../../../services/conversatie.service';
 
 export const TAGNAME_BERICHT_DETAIL = 'sl-bericht-detail';
 @Component({
     selector: TAGNAME_BERICHT_DETAIL,
-    standalone: true,
     imports: [
         CommonModule,
         BerichtComponent,
-        VerwijderConfirmationComponent,
-        TooltipDirective,
         BerichtActiesComponent,
         HeaderActionButtonComponent,
-        BerichtSeperatorComponent
+        BerichtSeperatorComponent,
+        StudiewijzerItemComponent
     ],
     templateUrl: './bericht-detail.component.html',
     styleUrl: './bericht-detail.component.scss',
@@ -51,12 +54,14 @@ export const TAGNAME_BERICHT_DETAIL = 'sl-bericht-detail';
     providers: [BerichtService]
 })
 export class BerichtDetailComponent implements OnInit {
-    private readonly router = inject(Router);
-    private readonly modalService = inject(ModalService);
-    private readonly injector = inject(Injector);
-    private readonly berichtService = inject(BerichtService);
+    studiewijzerItemComponentRef = viewChild(StudiewijzerItemComponent, { read: ElementRef });
 
-    tabindexDetailContent = TABINDEX_BERICHT_DETAIL_CONTENT;
+    private router = inject(Router);
+    private injector = inject(Injector);
+    private berichtService = inject(BerichtService);
+
+    private _routerService = inject(RouterService);
+
     tab = input.required<BerichtenTabLink>();
     conversatie = input.required<SConversatie>();
     ongelezenVanaf = input.required<Date | undefined>();
@@ -88,20 +93,12 @@ export class BerichtDetailComponent implements OnInit {
         const vanafIndex = this.conversatie().boodschappen.findIndex((bood) => bood.id === laatsteMainThreadBericht?.id) ?? 0 + 1;
         return this.conversatie().boodschappen.slice(vanafIndex + 1);
     });
-    previousConversatie = computedPrevious(this.conversatie);
 
     seperatorLabel = computed(
         () => `${this.nieuwereBerichten().length} ${this.nieuwereBerichten().length === 1 ? 'nieuwer bericht' : 'nieuwere berichten'}`
     );
     showNieuwereBerichten = false;
 
-    constructor() {
-        effect(() => {
-            if (this.conversatie().id !== this.previousConversatie()?.id) {
-                this.showNieuwereBerichten = false;
-            }
-        });
-    }
     ngOnInit() {
         injectHeaderConfig({
             onBackButtonClick: () => this.router.navigate([], { queryParams: { conversatie: undefined } }),
@@ -109,22 +106,31 @@ export class BerichtDetailComponent implements OnInit {
             injector: this.injector,
             headerActions: this.headerActions
         });
+        // computedPrevious moet in dit geval in de ngOnInit omdat anders de input van conversatie nog niet beschikbaar is
+        runInInjectionContext(this.injector, () => {
+            const previousConversatie = computedPrevious(this.conversatie);
+            effect(() => {
+                if (this.conversatie().id !== previousConversatie()?.id) {
+                    this.showNieuwereBerichten = false;
+                }
+            });
+        });
     }
 
     openVerwijderConfirm() {
-        const popup = this.modalService.modal(
-            VerwijderConfirmationComponent,
-            { label: 'Gesprek verwijderen?' },
-            createModalSettings({ title: 'Gesprek verwijderen?' })
-        ) as VerwijderConfirmationComponent;
-        popup.confirmed.subscribe(() => this.verwijder.emit());
-        popup.canceled.subscribe(() => this.modalService.animateAndClose());
+        const modal = this.berichtService.createVerwijderDialog();
+
+        modal?.confirmResult.pipe(filter((confirmResult) => confirmResult === 'Positive')).subscribe(() => this.verwijder.emit());
     }
 
     handleMeerOntvangersPillClick(boodschapId: number) {
         this.berichtService.getExtraOntvangersBoodschap(this.conversatie(), boodschapId);
     }
-}
 
-export const TABINDEX_BERICHT_DETAIL = 200;
-export const TABINDEX_BERICHT_DETAIL_CONTENT = 201;
+    onInleverperiodeStudiewijzeritemClick() {
+        const studiewijzerItem = this.conversatie().studiewijzerItemVanInleverperiode;
+        if (!studiewijzerItem) return;
+
+        this._routerService.routeToStudiewijzer(studiewijzerItem.id, studiewijzerItem.datumTijd, 'Reacties');
+    }
+}

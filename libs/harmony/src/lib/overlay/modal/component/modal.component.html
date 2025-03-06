@@ -3,11 +3,11 @@
     class="content-container"
     #container
     [@contentAnimation]="contentState()"
-    [ngxDragConfig]="dragConfig"
+    [ngxDragConfig]="dragConfig()"
     [class.with-title]="settings().title"
     [class.is-scrolling]="isScrolling()"
     [class.can-scroll]="canScroll()"
-    [cdkTrapFocusAutoCapture]="true"
+    [cdkTrapFocusAutoCapture]="settings().cdkTrapFocusAutoCapture"
     (@contentAnimation.done)="onContentAnimationDone()"
     (ngxDrag)="onDrag($event)"
     (ngxScroll)="calculateScroll.notify()"
@@ -18,17 +18,27 @@
         <div class="indicator"></div>
     </div>
     <div class="modal-header">
+        @if (settings().showBackButton) {
+            <i
+                class="terug"
+                (click)="settings().onBackButton?.()"
+                role="button"
+                tabindex="0"
+                size="medium"
+                color="action-neutral-weak"
+                hmyIcon="pijlLinks"></i>
+        }
         @if (settings().title) {
-            <div class="title" role="text" tabindex="0">
-                @if (settings().titleIcon) {
-                    <i class="title-icon" [color]="settings().titleIconColor" [hmyIcon]="settings().titleIcon!" size="medium"></i>
+            <div class="title-container" role="text" tabindex="0">
+                @if (settings().titleIcon; as titleIcon) {
+                    <i class="title-icon" [color]="settings().titleIconColor" [hmyIcon]="titleIcon" size="medium"></i>
                 }
-                {{ settings().title }}
+                <span class="title ellipsis">{{ settings().title }}</span>
             </div>
         }
         @if (settings().showClose) {
-            <div class="sluiten-icon-wrapper" (click)="animateAndClose()" tabindex="0" role="button">
-                <i class="sluiten-icon" [sizes]="['smallest', 'small', 'medium']" hmyIcon="sluiten"></i>
+            <div class="sluiten-icon-wrapper" (click)="animateAndClose()" tabindex="0" role="button" aria-label="sluiten">
+                <i class="sluiten-icon" size="medium" hmyIcon="sluiten"></i>
             </div>
         }
     </div>

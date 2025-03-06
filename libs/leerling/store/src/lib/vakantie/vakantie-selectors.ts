@@ -29,7 +29,7 @@ export interface VakantieDisplay {
 }
 
 export class VakantieSelectors {
-    public static getVakanties(beginDatum: Date, eindDatum: Date) {
+    public static getVakanties(beginDatum: Date, eindDatum: Date, afkappen = true) {
         const peilInterval = { start: beginDatum, end: eindDatum };
 
         return createSelector([VakantieState], (state: SVakantieModel) => {
@@ -41,7 +41,10 @@ export class VakantieSelectors {
                 .map((sVakantie) => {
                     const vakantie: Vakantie = {
                         naam: sVakantie.naam,
-                        intervalInRange: { start: max([beginDatum, sVakantie.beginDatum]), end: min([eindDatum, sVakantie.eindDatum]) }
+                        intervalInRange: {
+                            start: afkappen ? max([beginDatum, sVakantie.beginDatum]) : sVakantie.beginDatum,
+                            end: afkappen ? min([eindDatum, sVakantie.eindDatum]) : sVakantie.eindDatum
+                        }
                     };
                     return vakantie;
                 });
@@ -84,7 +87,6 @@ export class VakantieSelectors {
 function bepaalAantalDagen(vakantie: Vakantie | undefined): number {
     // Er is geen vakantie, dan hebben we 1 dag, namelijk in ieder geval vandaag.
     if (!vakantie) return 1;
-
     // Omdat we datums zonder tijd hebben, moeten we er 1 bij optellen.
     // 2023-11-06 0:00 tot 2023-11-07 0:00 ziet hij als 1 dag, terwijl we toch echt 2 dagen vakantie hebben.
     return differenceInCalendarDays(vakantie.intervalInRange.end, vakantie.intervalInRange.start) + 1;

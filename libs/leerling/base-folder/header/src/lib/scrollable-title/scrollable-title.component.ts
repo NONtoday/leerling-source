@@ -6,11 +6,11 @@ import { HeaderService } from '../header/service/header.service';
 
 @Component({
     selector: 'sl-scrollable-title',
-    standalone: true,
     imports: [CommonModule, TooltipDirective, VakIconComponent],
     templateUrl: './scrollable-title.component.html',
     styleUrls: ['./scrollable-title.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    host: { '[class.ellipsis]': 'ellipsis()' }
 })
 export class ScrollableTitleComponent implements OnChanges, OnDestroy {
     private _elementRef = inject(ElementRef);
@@ -18,6 +18,7 @@ export class ScrollableTitleComponent implements OnChanges, OnDestroy {
 
     public title = input<string>('');
     public vakNaam = input<string | undefined>(undefined);
+    public ellipsis = input<boolean>(true);
 
     headerTitle = toSignal(this.headerService.title$);
 

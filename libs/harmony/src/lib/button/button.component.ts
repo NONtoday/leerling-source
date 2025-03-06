@@ -4,9 +4,10 @@ import { IconName } from 'harmony-icons';
 import { match } from 'ts-pattern';
 import { ClassOnClickDirective } from '../directives/class-on-click.directive';
 import { IconDirective, IconSize } from '../icon/icon.directive';
+import { SpinnerComponent } from '../spinner/spinner.component';
 import { ColorToken } from '../tokens/color-token';
 
-export type ButtonMode = 'primary' | 'secondary' | 'tertiary' | 'quaternary' | 'delete';
+export type ButtonMode = 'primary' | 'secondary' | 'tertiary' | 'quaternary' | 'delete' | 'add';
 
 export type ButtonType = 'button' | 'submit' | 'reset';
 
@@ -16,8 +17,7 @@ export type JustifyContent = 'center' | 'space-between';
 
 @Component({
     selector: 'hmy-button',
-    standalone: true,
-    imports: [CommonModule, ClassOnClickDirective, IconDirective],
+    imports: [CommonModule, ClassOnClickDirective, IconDirective, SpinnerComponent],
     templateUrl: './button.component.html',
     styleUrls: ['./button.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
@@ -27,6 +27,8 @@ export class ButtonComponent {
     public mode = input<ButtonMode>('primary');
     public type = input<ButtonType>('button');
     public size = input<ButtonSize>('normal');
+    public showSpinner = input(false);
+    public isSpinnerWhite = computed(() => this.mode() === 'primary' || this.mode() === 'secondary');
     public disabled = input(false);
     public customTabindex = input<string>();
 
@@ -43,10 +45,12 @@ export class ButtonComponent {
     get getLabelColor(): ColorToken {
         return match(this.mode())
             .returnType<ColorToken>()
-            .with('primary', 'secondary', () => 'fg-on-primary-normal')
-            .with('tertiary', () => 'fg-on-primary-weak')
-            .with('quaternary', () => 'fg-on-neutral-weak')
+            .with('primary', () => 'fg-on-positive-normal')
+            .with('secondary', () => 'fg-on-primary-normal')
+            .with('tertiary', () => 'action-primary-normal')
+            .with('quaternary', () => 'action-neutral-normal')
             .with('delete', () => 'fg-on-negative-weak')
+            .with('add', () => 'fg-on-positive-normal')
             .exhaustive();
     }
 }

@@ -1,0 +1,18 @@
+@if (inleverOpdrachten(); as inleverOpdrachten) {
+    @if (inleverOpdrachten.length > 0) {
+        @for (inleverStatus of inleverStatussen; track $index) {
+            <sl-inlevering-map
+                [mapStatus]="inleverStatus"
+                [inleverOpdrachten]="inleverOpdrachten"
+                [isMapOpen]="inleverStatus !== 'AANKOMEND'"
+                (inleverOpdrachtClick)="openInleverOpdracht($event)" />
+        }
+    } @else {
+        <div class="geen-inleveropdrachten">
+            <sl-geen-data />
+            <p tabindex="0">Je hebt geen inleveropdrachten</p>
+        </div>
+    }
+} @else {
+    <hmy-spinner />
+}

@@ -1,12 +1,72 @@
-<hmy-tab-row class="sidebar-tabs" [tabs]="tabs" (activeTabChange)="onTabSwitch($event)"></hmy-tab-row>
+@if (isTabletOrDesktop()) {
+    <div class="header" [class.with-border]="!tabs()">
+        <div class="studiewijzer-header">
+            @if (showBackButton()) {
+                <i
+                    class="terug iconleft"
+                    [sizes]="['medium', 'medium', 'large']"
+                    (click)="terug()"
+                    hmyIcon="pijlLinks"
+                    tabindex="0"
+                    role="link"
+                    aria-label="Terug"></i>
+            }
+            <div class="titel-container">
+                @if (vak(); as vaknaam) {
+                    <hmy-vak-icon [vaknaam]="vaknaam" />
+                }
+                <span class="titel" tabindex="0">{{ titel() }}</span>
+            </div>
+            <hmy-button
+                (click)="openStudiemateriaal()"
+                iconLeft="boek"
+                iconLeftSize="small"
+                label="Studiemateriaal"
+                mode="quaternary"
+                size="small" />
+            <i
+                class="sluiten"
+                [sizes]="['medium', 'medium', 'large']"
+                (click)="close()"
+                hmyIcon="sluiten"
+                tabindex="0"
+                role="link"
+                aria-label="Sluiten"></i>
+        </div>
+    </div>
+}
+
+@if (tabs(); as tabs) {
+    <hmy-tab-row class="sidebar-tabs" [tabs]="tabs" [canDeactivate]="canDeactivate$" (activeTabChange)="onTabSwitch($event)" />
+}
 
 @switch (modus()) {
     @case ('Instructie') {
-        <sl-studiewijzer-item-instructie [item]="item()" />
+        <sl-studiewijzer-item-instructie [item]="item()" [toonInleverenKnop]="toonInleverenKnop()" (bestandenInleveren)="naarInleveren()" />
     }
-    @case ('Studiemateriaal') {
-        @if (item().vak || item().lesgroep) {
-            <sl-studiemateriaal [vak]="item().vak" [lesgroep]="item().lesgroep" />
+    @case ('Inleveren') {
+        @if (item().inlevermoment; as inlevermoment) {
+            @if (inleverDetails(); as details) {
+                <sl-studiewijzer-item-inleveringen
+                    [categorie]="item().inleveropdrachtCategorie!"
+                    [inlevermoment]="inlevermoment"
+                    [inleveringen]="details.inleveringen"
+                    [turnitInEulaUrl]="details.url"
+                    [aantalInleveringenInVerwerking]="details.aantalInleveringenInVerwerking"
+                    [toonInleverenKnop]="toonInleverenKnop()"
+                    [toekenningId]="item().toekenningId" />
+            } @else {
+                <hmy-spinner />
+            }
+        } @else {
+            <span class="empty-state">Geen inleverperiode</span>
+        }
+    }
+    @case ('Reacties') {
+        @if (inleverDetails(); as details) {
+            <sl-reacties [item]="item()" [details]="details" (verstuurReactie)="verstuurReactie($event)" />
+        } @else {
+            <hmy-spinner />
         }
     }
 }

@@ -1,0 +1,8 @@
+<div class="onboarding-content">
+    <img class="onboarding-img" [src]="'../../assets/img/onboarding/mobile.png'" alt="" />
+    <p class="onboarding-info">
+        Ga naar <i>Instellingen > Weergave</i> om in te stellen of je studiewijzer per dag of als scrollbare lijst wordt weergegeven.
+    </p>
+</div>
+<hmy-button (click)="openInstellingen()" customTabindex="0" mode="tertiary" label="Ga naar instellingen" cdkFocusInitial />
+<hmy-button class="sluiten" (click)="close()" customTabindex="0" mode="secondary" label="Sluiten" />

@@ -1,0 +1,33 @@
+<sl-header [hideBorderBottomMobile]="true" />
+
+<div class="container" id="mainContent" [class.with-wizard]="leerling() && ouderavondInfo()" tabindex="-1">
+    @if (ouderavondInfo()) {
+        @if (isPhoneOrTabletPortrait()) {
+            <sl-scrollable-title [title]="pageTitle()" />
+        } @else {
+            <div class="text-heading-1">{{ pageTitle() }}</div>
+        }
+    }
+
+    @if (leerling()) {
+        @if (ouderavondInfo(); as ouderavondInfo) {
+            <sl-ouderavond-wizard #wizard [info]="ouderavondInfo" [paramId]="param()!" (isDirty)="wizardIsDirty.set($event)" />
+        } @else if (ouderavondInfo() === null) {
+            <div class="geen-data">
+                <sl-geen-data />
+                <p tabindex="0">Ouderavond niet gevonden</p>
+            </div>
+        } @else {
+            <div class="page-loading">
+                <hmy-spinner [large]="true" />
+            </div>
+        }
+    } @else {
+        <div class="geen-data">
+            <sl-geen-data />
+            <p tabindex="0">Ouderavond niet gevonden</p>
+        </div>
+    }
+</div>
+
+<sl-tab-bar />

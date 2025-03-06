@@ -1,0 +1,30 @@
+<div
+    class="dag-header"
+    #dagHeader
+    [attr.aria-label]="(dag().datum | slDate: 'dag_uitgeschreven_dagnummer_maand') + (dagitems() | aantalAfgevinktAria)"
+    [style.--header-offset]="headerOffset() + 'px'"
+    tabindex="0"
+    role="text">
+    <div class="datumheader">
+        @if (dag().isVandaag) {
+            <hmy-notification-solid [size]="8" color="accent" />
+        }
+        <p class="datum" [ngClass]="{ vandaag: dag().isVandaag }">
+            {{ dag().datum | slDate: 'dag_uitgeschreven_dagnummer_maand' }}
+        </p>
+    </div>
+    @if (dagitems(); as items) {
+        @if (items.length > 0) {
+            <hmy-pill [text]="items | aantalAfgevinkt" [color]="(items | allesAfgevinkt) ? 'positive' : 'neutral'" />
+        }
+    }
+</div>
+@if (dagitems(); as items) {
+    @if (items.length > 0) {
+        <sl-studiewijzer-items [items]="items" [toonAfvinkKnop]="toonAfvinkKnop" [peildatum]="dag().datum" data-testid="dagitems" />
+    } @else {
+        <span class="niets-gepland" tabindex="0">Niets gepland</span>
+    }
+} @else {
+    <hmy-spinner />
+}

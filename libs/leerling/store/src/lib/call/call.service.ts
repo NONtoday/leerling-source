@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { Store } from '@ngxs/store';
-import { StoreCallStart, StoreCallSuccess } from './call-actions';
+import { MarkDirty, StoreCallStart, StoreCallSuccess } from './call-actions';
 import { CallSelectors } from './call-selectors';
 
 export interface SCallDefinition {
@@ -21,16 +21,21 @@ const _3_MIN = 3 * MIN;
     providedIn: 'root'
 })
 export class CallService {
+    // Details zijn zo specifiek - die cachen we niet en willen we up to date houden.
+    public static readonly INLEVERDETAILS_TIMEOUT = 0;
+
     public static readonly AFSPRAKEN_TIMEOUT = _3_MIN;
 
     public static readonly RESULTATEN_TIMEOUT = _15_MIN;
     public static readonly STUDIEMATERIAAL_TIMEOUT = _15_MIN;
     public static readonly SWI_TIMEOUT = _15_MIN;
+    public static readonly INLEVEROPDRACHT_TIMEOUT = _15_MIN;
     public static readonly VAKKEUZE_GEMIDDELDE_TIMEOUT = _15_MIN;
     public static readonly MAATREGELEN_TIMEOUT = _15_MIN;
     public static readonly ABSENTIE_TIMEOUT = _15_MIN;
 
     public static readonly BERICHTEN_TIMEOUT = UUR;
+    public static readonly LANDELIJKE_MEDEDELINGEN_TIMEOUT = UUR;
 
     public static readonly EDUROUTEPORTAL_TIMEOUT = _8_UUR; // Wordt nachtelijks ververst in Somtoday.
     public static readonly VAKKEN_TIMEOUT = _8_UUR;
@@ -41,6 +46,7 @@ export class CallService {
     public static readonly SCHOOLJAAR_TIMEOUT = DAG;
     public static readonly VAKANTIE_TIMEOUT = DAG;
     public static readonly REGISTRATIES_TIMEOUT = DAG;
+    public static readonly EXAMENDOSSIER_CONTEXT_TIMEOUT = DAG;
 
     private _store = inject(Store);
 
@@ -58,5 +64,9 @@ export class CallService {
 
     public storeCallStart(call: SCallDefinition) {
         this._store.dispatch(new StoreCallStart(call.callNaam, call.parameters));
+    }
+
+    public markDirty(callNaam: string) {
+        this._store.dispatch(new MarkDirty(callNaam));
     }
 }

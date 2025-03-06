@@ -136,6 +136,8 @@ export class AuthenticationState {
             currentLeerling: leerling
         });
         await this._removeSessionFromStorage(teVerwijderenProfiel.sessionIdentifier);
+        info('Start sanitizing CapacitorPreferences');
+        this.sanitizeStorageAPI().then(() => info('Sanitizing done'));
     }
 
     public async generatedBaseContext(): Promise<SessionIdentifier> {
@@ -163,6 +165,7 @@ export class AuthenticationState {
     public async purge(): Promise<void> {
         this._metaData.allAuthenticationRecords.forEach((record) => this._removeSessionFromStorage(record.sessionIdentifier));
         await this.updateMetadata({ currentLeerling: undefined, currentSessionIdentifier: undefined, allAuthenticationRecords: [] });
+        await this.sanitizeStorageAPI();
     }
 
     private _generateNewSessionIdentifier(): SessionIdentifier {
@@ -194,6 +197,18 @@ export class AuthenticationState {
         }
     }
 
+    public async reloadSessionIdFromStorage(): Promise<SessionIdentifier | undefined> {
+        const { value } = await Preferences.get({ key: AuthenticationState.STORAGE_RECORD });
+        warn(`${value ? value : 'Geen opgeslagen IDP metadata.'}`);
+
+        if (!value) return undefined;
+
+        const metadata: AuthenticationMetadata = JSON.parse(value) as AuthenticationMetadata;
+        if (metadata && metadata.allAuthenticationRecords.length >= 1 && metadata.currentSessionIdentifier)
+            return metadata.currentSessionIdentifier;
+        return undefined;
+    }
+
     public async loadSessionFromStorage(sessionIdentifier: SessionIdentifier): Promise<string> {
         const { value }: GetResult = await Preferences.get({ key: sessionIdentifier.UUID });
         return value ?? '{}';
@@ -217,6 +232,10 @@ export class AuthenticationState {
         return this._authenticationMetaData$.asObservable().pipe(map((metadata) => metadata.allAuthenticationRecords));
     }
 
+    public get beschikbareSessionIdentifiers() {
+        return this.metadata.allAuthenticationRecords.map((record) => record.sessionIdentifier.UUID);
+    }
+
     public get currentProfiel$(): Observable<SomtodayAccountProfiel | undefined> {
         return this.beschikbareProfielen$.pipe(
             map((profiles) => profiles.find((value) => isEqual(value.sessionIdentifier, this.getCurrentSessionIdentifier())))
@@ -225,6 +244,27 @@ export class AuthenticationState {
 
     public get currentAffiliation$(): Observable<Affiliation | undefined> {
         return this.currentProfiel$.pipe(map((profile: SomtodayAccountProfiel) => profile?.affiliation));
+    }
+
+    public async sanitizeStorageAPI(): Promise<void> {
+        const keys = await Preferences.keys();
+        const knownSessionIdentifiers: string[] = this._metaData.allAuthenticationRecords.map((profile) =>
+            profile.sessionIdentifier?.UUID.toLowerCase()
+        );
+        for (const possibleSessionIdentifier of keys.keys) {
+            if (this._isValidUUID(possibleSessionIdentifier)) {
+                const foundRecord = knownSessionIdentifiers.find((uuid) => uuid?.toLowerCase() === possibleSessionIdentifier);
+                if (!foundRecord) {
+                    await Preferences.remove({ key: possibleSessionIdentifier });
+                    info('Removing old session: ' + possibleSessionIdentifier);
+                }
+            }
+        }
+    }
+
+    private _isValidUUID(possibleUuid: string) {
+        const regex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+        return regex.test(possibleUuid);
     }
 
     get isCurrentContextLoggedIn$(): Observable<boolean> {

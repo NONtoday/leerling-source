@@ -14,6 +14,7 @@ export class DeeltoetsToResultaatItemPipe implements PipeTransform {
             weging: `${value.weging}x`,
             toetstype: value.type,
             resultaat: (isAlternatieveNormering ? geldend.formattedResultaatAlternatief : value.formattedResultaat) ?? '-',
+            isLeegResultaat: (isAlternatieveNormering ? geldend.formattedResultaatAlternatief : value.formattedResultaat) === undefined,
             isHerkansing: false,
             isVoldoende: formatIsVoldoende(value.weging, true, isAlternatieveNormering ? geldend.isVoldoendeAlternatief : value.isVoldoende)
         };

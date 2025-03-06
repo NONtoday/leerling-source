@@ -33,7 +33,8 @@ export class ToResultaatItemPipe implements PipeTransform {
                       }
                     : undefined,
                 isAlternatief: resultaat.isAlternatief
-            }
+            },
+            pogingTooltipOmschrijving: resultaat.isHerkansing ? 'Cijfer is een herkansing' : 'Cijfer is eerste poging'
         };
     }
 }

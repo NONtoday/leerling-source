@@ -14,7 +14,7 @@ import {
 } from 'date-fns';
 import { isPresent } from 'harmony';
 import { formatDateNL } from 'leerling-util';
-import { SAfspraakActie, SAfspraakDag, SAfspraakItem, SKWTInfo, SSWIDag, SStudiewijzerItem } from 'leerling/store';
+import { SAfspraakActie, SAfspraakDag, SAfspraakItem, SKWTInfo, SMaatregelToekenning, SSWIDag, SStudiewijzerItem } from 'leerling/store';
 
 const nu = new Date();
 const INSCHRIJVEN_NIET_MOGELIJK = 'Inschrijven niet meer mogelijk';
@@ -49,6 +49,7 @@ export interface RoosterDag {
     datum: Date;
     dagitems: SStudiewijzerItem[];
     afspraken: RoosterItem[];
+    maatregelen: SMaatregelToekenning[];
 }
 
 export interface RoosterViewModel {
@@ -61,12 +62,13 @@ export function getRooster(
     eindDatum: Date,
     afspraken: SAfspraakDag[],
     huiswerkItems: SSWIDag[],
+    maatregelen: SMaatregelToekenning[],
     weekitems: SStudiewijzerItem[],
     toonLesuren: boolean
 ): RoosterViewModel {
     return {
         weekitems: weekitems,
-        dagen: stelRoosterSamen(beginDatum, eindDatum, afspraken, huiswerkItems, toonLesuren)
+        dagen: stelRoosterSamen(beginDatum, eindDatum, afspraken, huiswerkItems, maatregelen, toonLesuren)
     };
 }
 
@@ -75,6 +77,7 @@ function stelRoosterSamen(
     eindDatum: Date,
     afspraken: SAfspraakDag[],
     huiswerkItems: SSWIDag[],
+    maatregelen: SMaatregelToekenning[],
     toonLesuren: boolean
 ): RoosterDag[] {
     const rooster: RoosterDag[] = [];
@@ -82,7 +85,7 @@ function stelRoosterSamen(
     let selectedDate = new Date(beginDatum.getFullYear(), beginDatum.getMonth(), beginDatum.getDate());
 
     for (let i = 0; i <= differenceCalenderDays; i++) {
-        rooster.push(getRoosterDag(selectedDate, afspraken, huiswerkItems, toonLesuren));
+        rooster.push(getRoosterDag(selectedDate, afspraken, huiswerkItems, maatregelen, toonLesuren));
         selectedDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate() + 1);
     }
     return rooster;
@@ -113,7 +116,7 @@ function bepaalLestijd(afspraakItem: SAfspraakItem, toonLesuren: boolean): strin
     const beginLesuur = afspraakItem.beginLesuur;
     const eindLesuur = afspraakItem.eindLesuur;
 
-    if (!toonLesuren || !beginLesuur || !eindLesuur) {
+    if (!toonLesuren || !isPresent(beginLesuur) || !isPresent(eindLesuur)) {
         return format(afspraakItem.beginDatumTijd, 'H:mm');
     }
 
@@ -124,13 +127,24 @@ function bepaalLestijd(afspraakItem: SAfspraakItem, toonLesuren: boolean): strin
     }
 }
 
-function getRoosterDag(datum: Date, SAfspraakDagen: SAfspraakDag[], huiswerkDagen: SSWIDag[], toonLesuren: boolean): RoosterDag {
+function getRoosterDag(
+    datum: Date,
+    SAfspraakDagen: SAfspraakDag[],
+    huiswerkDagen: SSWIDag[],
+    maatregelen: SMaatregelToekenning[],
+    toonLesuren: boolean
+): RoosterDag {
     const afspraken: RoosterItem[] =
         SAfspraakDagen.find((dag) => isWithinInterval(datum, { start: startOfDay(dag.datum), end: endOfDay(dag.datum) }))?.items.map(
             (afspraak) => createRoosterItem(afspraak, toonLesuren)
         ) ?? [];
 
-    const roosterDag: RoosterDag = { datum: datum, afspraken: afspraken, dagitems: [] };
+    const dagMaatregelen: SMaatregelToekenning[] =
+        maatregelen.filter((maatregel) =>
+            isWithinInterval(datum, { start: startOfDay(maatregel.maatregelDatum), end: endOfDay(maatregel.maatregelDatum) })
+        ) ?? [];
+
+    const roosterDag: RoosterDag = { datum: datum, afspraken: afspraken, dagitems: [], maatregelen: dagMaatregelen };
     return fillHuiswerk(roosterDag, huiswerkDagen);
 }
 
@@ -186,11 +200,8 @@ function findAfspraakBijHuiswerk(afspraken: RoosterItem[], huiswerkItem: SStudie
     matchendeAfspraak = getEerstMatchendeAfspraakLesgroepOfVak(afspraken, huiswerkItem);
     if (matchendeAfspraak) return matchendeAfspraak;
 
-    // Geen match enkele match op lesgroep/vak. Is er iets wat precies op tijd begint?
-    if (afsprakenMetZelfdeBegintijd.length > 0) return afsprakenMetZelfdeBegintijd[0];
-
-    // totaal geen match.
-    return undefined;
+    // Geen enkele match op lesgroep/vak. Is er iets wat precies op tijd begint en waarvoor de afspraak geen vak heeft? Anders is er geen match gevonden.
+    return afsprakenMetZelfdeBegintijd.find((afspraak) => afspraak.afspraakItem.vak === undefined);
 }
 
 function getEerstMatchendeAfspraakLesgroepOfVak(afspraken: RoosterItem[], huiswerkItem: SStudiewijzerItem): RoosterItem | undefined {
@@ -219,7 +230,6 @@ function isHuiswerkVoorAfspraakVak(studiewijzerItem: SStudiewijzerItem, afspraak
 
 function mapKwtInfo(afspraakItem: SAfspraakItem): KWTInfo | undefined {
     if (!afspraakItem.kwtInfo) return undefined;
-
     const skwtInfo = afspraakItem.kwtInfo;
     const isIngeschreven = skwtInfo.inschrijfStatus === 'WEL' || skwtInfo.inschrijfStatus === 'DEFINITIEF';
     const afspraakActies = skwtInfo.afspraakActies;
@@ -227,13 +237,12 @@ function mapKwtInfo(afspraakItem: SAfspraakItem): KWTInfo | undefined {
     const gekozenKWTItem = afspraakActies.find(
         (actie) =>
             actie.ingeschreven &&
-            isEqual(actie.beginDatumTijd, afspraakItem.beginDatumTijd) &&
-            isEqual(actie.eindDatumTijd, afspraakItem.eindDatumTijd)
+            isIntervalWithinInterval(afspraakItem.beginDatumTijd, afspraakItem.eindDatumTijd, actie.beginDatumTijd, actie.eindDatumTijd)
     );
 
     return {
         status: getStatus(skwtInfo, isInschrijvenMogelijk),
-        keuzeTitel: isIngeschreven ? gekozenKWTItem?.titel ?? '' : getKeuzetitel(afspraakActies),
+        keuzeTitel: isIngeschreven ? (gekozenKWTItem?.titel ?? '') : getKeuzetitel(afspraakActies),
         ondertitel: isIngeschreven ? undefined : getOndertitel(afspraakActies),
         uitschrijfActie: gekozenKWTItem
     };
@@ -245,7 +254,7 @@ function getStatus(skwtInfo: SKWTInfo, isInschrijvenMogelijk: boolean): KWTStatu
     if (skwtInfo.inschrijfStatus === 'WEL' || skwtInfo.inschrijfStatus === 'DEFINITIEF') {
         status = 'Ingeschreven';
     } else {
-        isInschrijvenMogelijk ? (status = 'Open') : (status = 'Disabled');
+        status = isInschrijvenMogelijk ? 'Open' : 'Disabled';
     }
     return status;
 }
@@ -306,6 +315,10 @@ function getOndertitel(afspraakActies: SAfspraakActie[]): string | undefined {
 function isBinnenInschrijfTermijn(actie: SAfspraakActie): boolean {
     if (!actie.inschrijfBeginDatum || !actie.inschrijfEindDatum) return true;
     return isWithinInterval(nu, { start: actie.inschrijfBeginDatum, end: actie.inschrijfEindDatum });
+}
+
+function isIntervalWithinInterval(startOne: Date, endOne: Date, startTwo: Date, endTwo: Date) {
+    return (isAfter(startOne, startTwo) || isEqual(startOne, startTwo)) && (isBefore(endOne, endTwo) || isEqual(endOne, endTwo));
 }
 
 function isInschrijfDatumInToekomst(datum?: Date): boolean {

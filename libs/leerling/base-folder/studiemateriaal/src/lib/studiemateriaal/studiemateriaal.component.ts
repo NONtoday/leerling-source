@@ -18,11 +18,9 @@ import { LeermiddelenComponent } from './leermiddelen/leermiddelen.component';
 
 @Component({
     selector: 'sl-studiemateriaal',
-    standalone: true,
     imports: [CommonModule, SpinnerComponent, JaarbijlagenComponent, LeermiddelenComponent, LesstofComponent, GeenDataComponent],
     templateUrl: './studiemateriaal.component.html',
     styleUrl: './studiemateriaal.component.scss',
-
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class StudiemateriaalComponent {
@@ -63,11 +61,11 @@ export class StudiemateriaalComponent {
         });
     }
 
-    public static getSidebarSettings(vak: SVak, onClose?: () => void): SidebarSettings {
+    public static getSidebarSettings(vak?: SVak, onClose?: () => void): SidebarSettings {
         return createSidebarSettings({
-            title: vak.naam ?? 'Studiemateriaal',
+            title: vak?.naam ?? 'Studiemateriaal',
             headerType: 'normal',
-            vakIcon: getIconVoorVak(vak.naam ?? ''),
+            vakIcon: vak ? getIconVoorVak(vak.naam ?? '') : undefined,
             onClose
         });
     }

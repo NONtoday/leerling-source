@@ -1,6 +1,6 @@
 import { Pipe, PipeTransform } from '@angular/core';
+import { getVolledigeNaamMedewerker } from 'leerling-berichten-api';
 import { SBoodschapCorrespondent, SMedewerker } from 'leerling/store';
-import { getVolledigeNaamMedewerker } from '../medewerker-volledige-naam-pipe/medewerker-volledige-naam.pipe';
 
 @Pipe({
     name: 'medewerkerToBoodschapCorrespondent',

@@ -8,6 +8,7 @@ export interface TabInput {
      * Add additional HTML attributes to the tab element, useful for custom `data-` attributes.
      */
     additionalAttributes?: Record<string, string>;
+    disabled?: boolean;
     label: string;
     notification?: NotificationTabInput;
 }

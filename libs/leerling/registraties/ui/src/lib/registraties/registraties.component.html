@@ -1,15 +1,28 @@
-<span class="desktop-title title text-heading-1" tabIndex="0" role="text">Registraties</span>
-<hmy-dropdown
-    class="tijdspan-selectie"
-    [items]="dropdownItems"
-    [selected]="selectedItem"
-    [listWidth]="210"
-    (onSelectionChanged)="selectTijdspan($event)"
-    size="medium" />
-@if (registratieCategorieeen(); as categorieen) {
+<span class="desktop-title title text-heading-1" tabIndex="0" role="text">Afwezigheid</span>
+<div class="header-buttons">
+    <hmy-dropdown
+        class="tijdspan-selectie"
+        [items]="dropdownItems"
+        [selected]="selectedItem"
+        [listWidth]="210"
+        (onSelectionChanged)="selectTijdspan($event)"
+        size="medium"
+        customTabindex="0"
+        customId="mainContent" />
+
+    @if (toonAbsentieToevoegen()) {
+        <hmy-button
+            class="afwezig-melden"
+            (click)="naarAfwezigMelden()"
+            iconLeft="kalenderToevoegen"
+            mode="secondary"
+            label="Afwezig melden" />
+    }
+</div>
+@if (!isLoading() && registraties(); as registraties) {
     @if (heeftRegistraties()) {
         <div class="registratie-categorieen">
-            @for (categorie of categorieen; track categorie.naam) {
+            @for (categorie of categorieen(); track categorie.naam) {
                 @if (categorie.aantal > 0) {
                     <hmy-registratie-categorie
                         [class]="'categorie ' + categorie.naam | slugify"
@@ -17,7 +30,8 @@
                         [aantal]="categorie.aantal"
                         [categorie]="categorie.naam"
                         [attr.aria-label]="categorie.naam + ', ' + categorie.aantal + 'keer vermeld'"
-                        (click)="openRegistratiesSidebar(categorie)"
+                        [tabIndex]="0"
+                        (click)="openSidebar(categorie.naam)"
                         tabindex="0"
                         role="button" />
                 }

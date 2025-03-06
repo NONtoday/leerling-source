@@ -13,11 +13,13 @@ import {
     Type,
     ViewContainerRef
 } from '@angular/core';
+import { Router } from '@angular/router';
 import { disableBodyScroll, enableBodyScroll } from 'body-scroll-lock';
 import { SignalInputs } from 'harmony';
 import { AccessibilityService } from '../../accessibility/accessibility.service';
 import { getHTMLElement } from '../../component-ref.util';
 import { KeyPressedService } from '../../keypressed/keypressed.service';
+import { isCurrentUrlInitialUrl } from '../../url-util';
 import { ModalComponent } from '../component/modal.component';
 import { createModalSettings, ModalSettings } from '../component/modal.settings';
 
@@ -30,6 +32,7 @@ export class ModalService {
     private _rendererFactory = inject(RendererFactory2);
     private _keyPressedService = inject(KeyPressedService);
     private _accessibilityService = inject(AccessibilityService);
+    private _router = inject(Router);
     private _renderer: Renderer2;
 
     private _modalRef: ComponentRef<ModalComponent> | undefined;
@@ -52,7 +55,7 @@ export class ModalService {
     ): T {
         if (this._modalRef) {
             this.close();
-            throw Error('Er is al een modal window open, er wordt er maar 1 ondersteund');
+            throw Error('Er is al een modal window open, er wordt er maar 1 ondersteund ');
         }
         const viewContainerRef = this._appRef.components[0].instance['_viewContainerRef'] as ViewContainerRef;
 
@@ -91,8 +94,11 @@ export class ModalService {
         });
     }
 
-    close() {
+    close(allowOtherNavigation = false) {
         if (this._modalRef) {
+            const hasBookmarkableUrl = this._modalRef.instance.settings.hasBookmarkableUrl;
+            const returnURL = this._modalRef.instance.settings.returnURL;
+
             enableBodyScroll(this._modalRef.instance.contentRef.nativeElement);
             this._accessibilityService.enableHomeComponentTabIndex();
             this._keyPressedService.setOverlayOff();
@@ -100,6 +106,14 @@ export class ModalService {
             this._inputEffectRef?.destroy();
             this._modalRef.instance.settings.onClose?.();
             this._modalRef.destroy();
+
+            if (!allowOtherNavigation) {
+                if (returnURL) {
+                    this._router.navigate([`/${returnURL}`]);
+                } else if (hasBookmarkableUrl && !isCurrentUrlInitialUrl()) {
+                    history.back();
+                }
+            }
         }
         this._modalRef = undefined;
         this._inputEffectRef = undefined;
@@ -108,4 +122,6 @@ export class ModalService {
     animateAndClose() {
         this._modalRef?.instance.animateAndClose();
     }
+
+    isOpen = () => !!this._modalRef;
 }

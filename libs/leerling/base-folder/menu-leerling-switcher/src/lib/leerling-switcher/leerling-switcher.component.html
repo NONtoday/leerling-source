@@ -5,14 +5,15 @@
             @for (leerling of profiel.subLeerlingen; track $index) {
                 <div
                     class="account-leerling"
-                    [class.active]="currentAccountLeerling().leerling === leerling"
+                    [class.active]="currentAccountLeerling().leerling?.id === leerling?.id"
+                    [class.disabled]="!isOnline()"
                     [tabIndex]="0"
                     [attr.role]="currentAccountLeerling().leerling === leerling ? '' : 'link'"
                     [attr.aria-label]="leerling.nn + (currentAccountLeerling().leerling === leerling ? ' geselecteerd' : '')"
                     (click)="switchLeerling(profiel.sessionIdentifier, leerling)">
                     <hmy-avatar [lazyLoading]="true" [initialen]="initialen(leerling)" [src]="leerling.avatarSrc"></hmy-avatar>
                     <span class="ellipsis">{{ leerling.nn }}</span>
-                    @if (currentAccountLeerling().leerling === leerling) {
+                    @if (currentAccountLeerling().leerling?.id === leerling?.id) {
                         <i hmyIcon="yesRadio" size="small" color="fg-on-neutral-weak"></i>
                     }
                 </div>
@@ -20,7 +21,7 @@
         </div>
     }
 
-    @if (isOnline()) {
+    @if (isOnline() && !ouderIsImpersonated()) {
         <div class="delimiter"></div>
         <div class="selector-option account" (click)="addNewAccount()" role="link" tabindex="0" role="link">
             <i hmyIcon="persoonToevoegen" size="small"></i>

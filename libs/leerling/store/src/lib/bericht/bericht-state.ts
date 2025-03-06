@@ -13,10 +13,11 @@ import { IncomingPushAction } from '../pushaction/pushaction-actions';
 import { AvailablePushType } from '../pushaction/pushaction-model';
 import { RechtenService } from '../rechten/rechten.service';
 import { SwitchContext } from '../shared/shared-actions';
-import { AbstractState } from '../util/abstract-state';
+import { AbstractState, Callproperties } from '../util/abstract-state';
 import {
     GetExtraOntvangersBoodschap,
     MarkeerGelezen,
+    MarkeerInleverboodschapGelezen,
     MarkeerOngelezen,
     RefreshConversaties,
     RefreshToegestaneOntvangers,
@@ -26,11 +27,13 @@ import {
 } from './bericht-actions';
 import {
     ADDITIONAL_AANTAL_EXTRA_ONTVANGERS,
+    ADDITIONAL_ACTIEF_VOOR_GEBRUIKER,
     ADDITIONAL_ONTVANGER_CORRESPONDENTEN,
     ADDITIONAL_VAKKEN_DOCENT_VOOR_LEERLING,
     ADDITIONAL_VERZENDER_CORRESPONDENT,
     ADDITIONAL_VERZONDEN_DOOR_GEBRUIKER,
     SBerichtenState,
+    SBoodschap,
     SConversatie,
     mapBoodschap,
     mapBoodschapCorrespondent,
@@ -44,6 +47,8 @@ export const BERICHT_STATE_TOKEN = new StateToken<SBerichtenState>('bericht');
 const DEFAULT_STATE: SBerichtenState = { conversaties: undefined, toegestaneOntvangers: undefined, alleConversatiesOpgehaald: false };
 
 const POLLING_INTERVAL = 15 * 60 * 1000; // 15 minuten
+
+export const REFRESH_CONVERSATIES_PATH = '/boodschappen/conversaties';
 
 @State<SBerichtenState>({
     name: BERICHT_STATE_TOKEN,
@@ -63,27 +68,39 @@ export class BerichtState extends AbstractState implements NgxsAfterBootstrap {
 
     @Action(RefreshConversaties)
     refreshConversaties(ctx: StateContext<SBerichtenState>, action: RefreshConversaties) {
+        const leerlingId = this.getLeerlingID();
+        if (!leerlingId) {
+            return;
+        }
+
         this.restartPolling();
 
         const alleConversatiesOphalen = action.refreshOptions?.alleConversaties ?? false;
-        if (alleConversatiesOphalen) {
-            // Op undefined zetten in de state, zodat de loader wordt getoond.
-            ctx.setState(patch({ alleConversatiesOpgehaald: undefined }));
+        const callProperties: Callproperties = {};
+        if (action.refreshOptions.forceRequest) {
+            callProperties.force = true;
         }
         return this.cachedUnwrappedGet<RBoodschapConversatie>(
-            '/boodschappen/conversaties',
+            REFRESH_CONVERSATIES_PATH,
             new RequestInformationBuilder()
                 .additionals(
                     ADDITIONAL_VERZONDEN_DOOR_GEBRUIKER,
                     ADDITIONAL_VERZENDER_CORRESPONDENT,
                     ADDITIONAL_ONTVANGER_CORRESPONDENTEN,
-                    ADDITIONAL_AANTAL_EXTRA_ONTVANGERS
+                    ADDITIONAL_AANTAL_EXTRA_ONTVANGERS,
+                    ADDITIONAL_ACTIEF_VOOR_GEBRUIKER
                 )
                 .parameter('alle', action.refreshOptions.alleConversaties)
                 .build()
         )?.pipe(
+            tap(() => {
+                if (alleConversatiesOphalen) {
+                    // Op undefined zetten in de state, zodat de loader wordt getoond.
+                    ctx.setState(patch({ alleConversatiesOpgehaald: undefined }));
+                }
+            }),
             tap((rconversaties) => {
-                const newConversaties = rconversaties.map((x) => mapConversatie(x));
+                const newConversaties = rconversaties.map((x) => mapConversatie(leerlingId, x));
                 const conversatiesBaseState = ctx.getState().conversaties ?? [];
                 const updatedConversaties = uniqBy([...newConversaties, ...conversatiesBaseState], (conversatie) => conversatie.id);
 
@@ -104,19 +121,34 @@ export class BerichtState extends AbstractState implements NgxsAfterBootstrap {
 
     @Action(MarkeerGelezen)
     markeerGelezen(ctx: StateContext<SBerichtenState>, action: MarkeerGelezen) {
-        const boodschapId = action.conversatie.boodschappen[0].id;
+        return this.markeerAlsGelezen(ctx, action.conversatie.boodschappen[0], action.conversatie);
+    }
+
+    private markeerAlsGelezen(ctx: StateContext<SBerichtenState>, boodschap: SBoodschap, conversatie?: SConversatie) {
         const beforeState = ctx.getState();
-        ctx.setState(
-            patch({
-                conversaties: updateItem((conversatie) => conversatie.id === action.conversatie.id, {
-                    ...action.conversatie,
-                    datumOudsteOngelezenBoodschap: undefined
+        if (conversatie) {
+            ctx.setState(
+                patch({
+                    conversaties: updateItem((bestaandeConversatie) => bestaandeConversatie.id === conversatie.id, {
+                        ...conversatie,
+                        datumOudsteOngelezenBoodschap: undefined
+                    })
                 })
-            })
-        );
+            );
+        }
+
         return this.requestService
-            .post<void>(`/boodschappen/conversatie/${boodschapId}/markeerGelezen`, new RequestInformationBuilder().build())
+            .post<void>(`/boodschappen/conversatie/${boodschap.id}/markeerGelezen`, new RequestInformationBuilder().build())
             .subscribe({ error: () => ctx.setState(beforeState) });
+    }
+
+    @Action(MarkeerInleverboodschapGelezen)
+    markeerInleverboodschapGelezen(ctx: StateContext<SBerichtenState>, action: MarkeerInleverboodschapGelezen) {
+        const conversatie = ctx
+            .getState()
+            .conversaties?.find((conversatie) => conversatie.boodschappen.map((boodschap) => boodschap.id).includes(action.boodschap.id));
+
+        return this.markeerAlsGelezen(ctx, action.boodschap, conversatie);
     }
 
     @Action(MarkeerOngelezen)
@@ -177,7 +209,8 @@ export class BerichtState extends AbstractState implements NgxsAfterBootstrap {
                     const nieuweConversatie: SConversatie = {
                         id: createdStoreBoodschap.id,
                         boodschappen: [createdStoreBoodschap],
-                        datumOudsteOngelezenBoodschap: undefined
+                        datumOudsteOngelezenBoodschap: undefined,
+                        studiewijzerItemVanInleverperiode: undefined
                     };
                     const updatedConversaties = [nieuweConversatie, ...(ctx.getState().conversaties ?? [])];
                     ctx.setState(patch({ conversaties: updatedConversaties }));
@@ -251,13 +284,19 @@ export class BerichtState extends AbstractState implements NgxsAfterBootstrap {
     @Selector()
     static postvakIn(state: SBerichtenState) {
         if (state.conversaties === undefined) return undefined;
-        return state.conversaties.filter((conversatie) => conversatie.boodschappen.some((boodschap) => !boodschap.verzondenDoorGebruiker));
+        return state.conversaties.filter((conversatie) =>
+            conversatie.boodschappen.some((boodschap) => !boodschap.verzondenDoorGebruiker && boodschap.verwijderd !== true)
+        );
     }
 
     @Selector()
     static postvakUit(state: SBerichtenState) {
         if (state.conversaties === undefined) return undefined;
-        return state.conversaties.filter((conversatie) => conversatie.boodschappen.some((boodschap) => boodschap.verzondenDoorGebruiker));
+        return state.conversaties.filter((conversatie) =>
+            conversatie.boodschappen.some(
+                (boodschap) => boodschap.verzondenDoorGebruiker && !boodschap.isSomtodayAutomatischBericht && boodschap.verwijderd !== true
+            )
+        );
     }
 
     @Selector()
@@ -281,8 +320,8 @@ export class BerichtState extends AbstractState implements NgxsAfterBootstrap {
     @Action(IncomingPushAction)
     incomingPushAction(ctx: StateContext<any>, action: IncomingPushAction): void {
         // Berichten push notification: haal conversaties opnieuw op.
-        if (action.type === AvailablePushType.BERICHTEN) {
-            ctx.dispatch(new RefreshConversaties());
+        if (action.type === AvailablePushType.BERICHTEN || action.type === AvailablePushType.INLEVERPERIODEBERICHT) {
+            ctx.dispatch(new RefreshConversaties({ forceRequest: true }));
         }
     }
 

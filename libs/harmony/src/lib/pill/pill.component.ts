@@ -5,7 +5,6 @@ import { BasePillComponent } from './base-pill.component';
 
 @Component({
     selector: 'hmy-pill',
-    standalone: true,
     imports: [CommonModule, IconDirective],
     template: `<span [innerHTML]="text"></span>
         @if (metChevron) {

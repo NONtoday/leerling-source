@@ -6,7 +6,6 @@ import { Optional } from 'leerling/store';
 
 @Component({
     selector: 'sl-stacked-avatar',
-    standalone: true,
     imports: [CommonModule, AvatarComponent],
     templateUrl: './stacked-avatar.component.html',
     styleUrls: ['./stacked-avatar.component.scss'],

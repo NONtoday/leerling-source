@@ -8,10 +8,10 @@ import { tap } from 'rxjs';
 import { CallService } from '../call/call.service';
 import { SwitchContext } from '../shared/shared-actions';
 import { AbstractState } from '../util/abstract-state';
-import { RefreshRechten, RemoveRechten } from './rechten-action';
+import { InitializeRechten, RefreshRechten, RemoveRechten, SanitizeRechten } from './rechten-action';
 import { mapAccountRechtenModel, SAccountRechtenModel, SRechtenModel } from './rechten-model';
-
-export const RECHTEN_STATE_TOKEN = new StateToken<SRechtenModel>('rechten');
+const STATE_NAME = 'rechten';
+export const RECHTEN_STATE_TOKEN = new StateToken<SRechtenModel>(STATE_NAME);
 const DEFAULT_STATE: SRechtenModel = {
     accounts: [],
     isVerzorger: false
@@ -27,9 +27,21 @@ const DEFAULT_STATE: SRechtenModel = {
 export class RechtenState extends AbstractState {
     private _oauthService: OAuthService = inject(OAuthService);
 
+    /**
+     * Tijdens het inlog-proces staan de account-context-ID nog niet netjes in de store.
+     * Haal al wel rechten op, want die hebben we al nodig.
+     */
+    @Action(InitializeRechten)
+    initializeRechten(ctx: StateContext<SRechtenModel>, action: InitializeRechten) {
+        return this.haalRechtenOp(ctx, action.accountContextID, true);
+    }
+
     @Action(RefreshRechten)
-    refreshRechten(ctx: StateContext<SRechtenModel>) {
-        const accountContextID = this.getContextID();
+    refreshRechten(ctx: StateContext<SRechtenModel>, action: RefreshRechten) {
+        return this.haalRechtenOp(ctx, this.getContextID(), action.forceUpdate);
+    }
+
+    private haalRechtenOp(ctx: StateContext<SRechtenModel>, accountContextID: string, forceUpdate: boolean) {
         const tokenAvailable = this._oauthService.hasValidAccessToken();
         if (!accountContextID || !tokenAvailable) {
             return;
@@ -38,7 +50,11 @@ export class RechtenState extends AbstractState {
         // We geven ook de account-id mee, om bij een verkeerde inlog sn
         return this.cachedGet<RAccount>(
             'account/me',
-            new RequestInformationBuilder().additional('restricties').parameter('dummy-param-account', accountContextID).build()
+            new RequestInformationBuilder()
+                .additionals('restricties', 'impersonated')
+                .parameter('dummy-param-account', accountContextID)
+                .build(),
+            { force: forceUpdate }
         )?.pipe(
             tap((account) => {
                 const combinedState = [...ctx.getState().accounts, mapAccountRechtenModel(account, accountContextID)];
@@ -60,6 +76,19 @@ export class RechtenState extends AbstractState {
         ctx.setState(newState);
     }
 
+    @Action(SanitizeRechten)
+    sanitizeRechten(ctx: StateContext<SRechtenModel>, action: SanitizeRechten): void {
+        const knownSessionIdentifiers: string[] = action.knownSessions || [];
+        const sanitizedRechten = ctx.getState().accounts.filter((account) => {
+            return knownSessionIdentifiers.includes(account.localAuthenticationContext);
+        });
+        ctx.setState(
+            patch<SRechtenModel>({
+                accounts: sanitizedRechten
+            })
+        );
+    }
+
     @Action(SwitchContext)
     override switchContext(ctx: StateContext<SRechtenModel>): void {
         ctx.setState(patch<SRechtenModel>({ accounts: this.ontdubbelRechten(ctx.getState().accounts) }));
@@ -72,5 +101,9 @@ export class RechtenState extends AbstractState {
 
     private ontdubbelRechten(state: SAccountRechtenModel[]): SAccountRechtenModel[] {
         return [...new Map(state.map((account) => [account.localAuthenticationContext, account])).values()];
+    }
+
+    public static getName(): string {
+        return STATE_NAME;
     }
 }

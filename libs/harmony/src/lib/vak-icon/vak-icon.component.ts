@@ -41,7 +41,7 @@ import {
 import { IconDirective, IconSize } from '../icon/icon.directive';
 import { VakType, overig, vaknamen } from './vaknamen';
 
-export const provideVakIcons: Provider[] = provideIcons(
+export const vakIcons = [
     IconAardrijkskunde,
     IconBedrijfseconomie,
     IconBiologie,
@@ -76,18 +76,27 @@ export const provideVakIcons: Provider[] = provideIcons(
     IconTekenen,
     IconVerzorging,
     IconWiskunderekenen
-);
+];
+
+export const provideVakIcons: Provider[] = provideIcons(...vakIcons);
 
 export function getIconVoorVak(vaknaam: string): IconName {
     const DEFAULT_ICON = 'overig6';
     const lowercaseVaknaam = vaknaam.toLowerCase();
     const firstChar = lowercaseVaknaam.charAt(0);
 
-    return findExactMatch(lowercaseVaknaam)?.icon ?? findPartialMatch(firstChar)?.icon ?? DEFAULT_ICON;
+    const match =
+        findVakNaamMatch(lowercaseVaknaam)?.icon ?? findAfkortingMatch(lowercaseVaknaam)?.icon ?? findPartialMatch(firstChar)?.icon;
+
+    return match ?? DEFAULT_ICON;
 }
 
-function findExactMatch(vaknaam: string): VakType | undefined {
-    return vaknamen.find((vaktype) => vaktype.keywords.includes(vaknaam));
+function findVakNaamMatch(vaknaam: string): VakType | undefined {
+    return vaknamen.find((vaktype) => vaktype.keywords.find((keyword) => vaknaam.includes(keyword)));
+}
+
+function findAfkortingMatch(afkorting: string): VakType | undefined {
+    return vaknamen.find((vaktype) => vaktype.abreviation.includes(afkorting));
 }
 
 function findPartialMatch(firstChar: string): VakType | undefined {
@@ -96,7 +105,6 @@ function findPartialMatch(firstChar: string): VakType | undefined {
 
 @Component({
     selector: 'hmy-vak-icon',
-    standalone: true,
     imports: [CommonModule, IconDirective],
     templateUrl: './vak-icon.component.html',
     styleUrl: './vak-icon.component.scss',

@@ -25,9 +25,12 @@
         [tabindex]="titleHidden() ? -1 : 0"
         [attr.aria-hidden]="titleHidden()"
         role="text">
+        @if (titleIcon(); as titleIcon) {
+            <i [hmyIcon]="titleIcon.name" [color]="titleIcon.color" size="medium"></i>
+        }
         @if (vakNaam(); as vakNaam) {
             <hmy-vak-icon [vaknaam]="vakNaam" />
         }
-        {{ title() }}
+        <span>{{ title() }}</span>
     </span>
 </div>

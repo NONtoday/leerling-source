@@ -47,5 +47,16 @@ export function getAdditionalNumber(linkable: Linkable, key: string): number | u
         return undefined;
     }
 
-    return linkable.additionalObjects[key] as number;
+    return Number(linkable.additionalObjects[key]);
+}
+
+export function getAdditionalBoolean(linkable: Linkable, key: string): boolean | undefined {
+    if (!linkable.additionalObjects) {
+        return undefined;
+    }
+
+    const object = linkable.additionalObjects[key];
+    if (object === undefined || object === null) return undefined;
+
+    return Boolean(object);
 }

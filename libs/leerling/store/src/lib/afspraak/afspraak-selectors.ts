@@ -12,6 +12,12 @@ export class AfspraakSelectors {
         });
     }
 
+    static heeftAfspraakWeek(jaarWeek: string) {
+        return createSelector([this.getSAfspraakWeek(jaarWeek)], (sAfspraakWeek: SAfspraakWeek) => {
+            return sAfspraakWeek !== undefined;
+        });
+    }
+
     static getDagAfspraken(beginDatum: Date, eindDatum: Date) {
         const jaarWeek = getJaarWeek(beginDatum);
         if (jaarWeek !== getJaarWeek(eindDatum)) {
@@ -22,6 +28,13 @@ export class AfspraakSelectors {
         return createSelector([this.getSAfspraakWeek(jaarWeek)], (sAfspraakWeek: SAfspraakWeek) => {
             if (sAfspraakWeek === undefined) return undefined;
             return sAfspraakWeek.dagen.filter((dag) => isWithinInterval(dag.datum, { start: beginDatum, end: eindDatum })) ?? [];
+        });
+    }
+
+    static getWeekNotifications(date: Date) {
+        const jaarWeek = getJaarWeek(date);
+        return createSelector([this.getSAfspraakWeek(jaarWeek)], (sAfspraakWeek: SAfspraakWeek) => {
+            return sAfspraakWeek?.statusNotications ?? [];
         });
     }
 }

@@ -6,7 +6,6 @@ import { DayDateTab } from '../dag-header/dag-header.component';
 
 @Component({
     selector: 'sl-dag-header-tab',
-    standalone: true,
     imports: [CommonModule, WerkdrukIndicatorComponent, ToHuiswerkTypenPipe],
     templateUrl: './dag-header-tab.component.html',
     styleUrls: ['./dag-header-tab.component.scss'],

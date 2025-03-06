@@ -1,0 +1,16 @@
+@for (week of weken; track $index) {
+    <sl-studiewijzer-lijst-week
+        [id]="week.weeknummer"
+        [week]="week"
+        [toonWeekend]="toonWeekend()"
+        [scrollOffset]="scrollOffset()"
+        [peildatum]="datum()"
+        [initialLoadCompleted]="initialLoadCompleted()"
+        (scrollNaarWeek)="onScrollNaarWeek($event)" />
+}
+
+@if (!initialLoadCompleted()) {
+    <div class="main-spinner">
+        <hmy-spinner />
+    </div>
+}

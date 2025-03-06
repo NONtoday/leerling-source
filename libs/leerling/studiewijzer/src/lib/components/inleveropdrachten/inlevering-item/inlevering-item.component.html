@@ -1,0 +1,18 @@
+<div class="links">
+    <span class="titel">{{ inleverOpdracht().vak?.naam }}</span>
+    <span
+        class="omschrijving"
+        [innerHTML]="this.inleverOpdracht().onderwerp ?? this.inleverOpdracht().omschrijving | stripAndElipsePipe"></span>
+</div>
+<div class="rechts">
+    <span class="datum">{{ deadline() }}</span>
+
+    <div class="indicatie">
+        @if (indicatieType()) {
+            <hmy-pill [text]="indicatieType() ?? ''" [color]="indicatieType() === 'Te laat' ? 'negative' : 'alternative'" />
+        }
+        @if (isInBeoordelingOfGeaccepteerd()) {
+            <i class="slot" hmyIcon="slot" size="small" color="action-neutral-normal"></i>
+        }
+    </div>
+</div>

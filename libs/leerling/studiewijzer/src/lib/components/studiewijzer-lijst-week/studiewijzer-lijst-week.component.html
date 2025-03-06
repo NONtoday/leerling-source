@@ -1,0 +1,52 @@
+<div class="weeknummer">
+    <hmy-pill [text]="'Week ' + week().weeknummer" color="neutral" type="outline" />
+    <div class="week-divider"></div>
+</div>
+@if (shouldRender()) {
+    <div
+        class="header"
+        #weekHeader
+        [ngClass]="{
+            gevuld: heeftWeektaken(),
+            leeg: !heeftWeektaken(),
+            sticky: isWeekCurrentWeek(),
+            'zijn-weektaken-niet-volledig-in-beeld': !isEersteWeektaakVolledigInBeeld()
+        }"
+        [style.--scroll-offset]="scrollOffset() + 'px'"
+        (click)="scrollNaarWeek.emit(week())">
+        @if (weekitems(); as items) {
+            @if (items.length > 0) {
+                <p tabindex="0">Weektaken</p>
+                <div class="datums-en-aantal-taken">
+                    <p class="datums">{{ startDagEindDagTekst() }}</p>
+                    <hmy-pill [text]="aantalWeektakenLabel()" color="neutral" />
+                </div>
+            }
+        } @else {
+            <hmy-spinner />
+        }
+    </div>
+    @if (weekitems(); as items) {
+        @if (items.length > 0) {
+            <div class="weektaken" #weekTaken>
+                <sl-studiewijzer-items
+                    [items]="items"
+                    [toonAfvinkKnop]="toonAfvinkKnop"
+                    [peildatum]="dagen()[0].datum"
+                    [toonStacked]="true"
+                    [collapseStackOnPeildatumChange]="false"
+                    (isStackedOutput)="onWeekitemsStackChanged($event)" />
+            </div>
+        }
+    }
+
+    @for (dag of dagen(); track $index) {
+        <sl-studiewijzer-lijst-dag
+            [ngClass]="{ weekend: dag.isWeekendDag }"
+            [dag]="dag"
+            [headerOffset]="headerOffset()"
+            [initialLoadCompleted]="initialLoadCompleted()" />
+    }
+} @else {
+    <hmy-spinner />
+}

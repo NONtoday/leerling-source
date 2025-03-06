@@ -7,6 +7,7 @@ import { addHours, isBefore, subMinutes } from 'date-fns';
 import { sha256 } from 'js-sha256';
 import { environment } from 'leerling-environment';
 import { AppCheckToken } from 'leerling-plugins';
+import { setHref, windowOpen } from 'leerling-util';
 import { Observable, catchError, from, map, of, switchMap } from 'rxjs';
 import { APP_SPINNER } from '../app-spinner';
 import { AuthenticationService } from './authentication.service';
@@ -25,9 +26,10 @@ export class SsoService {
 
     public openExternalLink(url: string) {
         if (this._authenticationService.isCurrentContextOuderVerzorger || !Capacitor.isNativePlatform() || this.isStillAuthenticated()) {
-            window.open(url, '_blank');
+            windowOpen(url);
             return;
         }
+        this.saveAuthenticationMoment();
         this.appSpinner.set(true);
         this.getSSOToken()
             .pipe(
@@ -39,7 +41,6 @@ export class SsoService {
                 })
             )
             .subscribe((token) => {
-                this.saveAuthenticationMoment();
                 const sessionCreationUrl = `${environment.leerlingBaseUriForCurrentIridiumConfig}/redirect?url=${encodeURIComponent(url)}#${encodeURIComponent(token)}`;
                 this.appSpinner.set(false);
                 this.setHref(sessionCreationUrl);
@@ -83,6 +84,6 @@ export class SsoService {
     }
 
     private setHref(url: string) {
-        window.location.href = url;
+        setHref(url);
     }
 }

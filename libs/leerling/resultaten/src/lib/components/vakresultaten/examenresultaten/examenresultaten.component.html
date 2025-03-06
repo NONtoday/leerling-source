@@ -10,15 +10,17 @@
 @for (toetssoortGemiddelde of examendossier.toetssoortGemiddelden; track $index) {
     <sl-toetssoortgemiddelde-item [toetssoortGemiddelde]="toetssoortGemiddelde" tabindex="100" role="text"></sl-toetssoortgemiddelde-item>
 }
-@if (examendossier.resultaten.length > 0) {
-    <div class="header">
-        <div class="header-label" tabindex="100">Cijfers</div>
-    </div>
-}
+
 @for (toetsResultaat of examendossier.resultaten; track $index) {
+    @if (isFirstInLeerjaar($index)) {
+        <div class="header">
+            <div class="header-label" tabindex="100">Leerjaar {{ toetsResultaat.geldendResultaat.leerjaar }}</div>
+        </div>
+    }
     <sl-vakresultaat-item
         [resultaat]="toetsResultaat"
         [toonDetails]="toetsResultaat === selectedResultaat()"
+        [toonKolommen]="toonKolommen()"
         [isAlternatiefNiveau]="false"
         [attr.aria-label]="toetsResultaat | toResultaatItem: false | resultaatItemAriaLabel"
         [attr.aria-expanded]="toetsResultaat === selectedResultaat()"

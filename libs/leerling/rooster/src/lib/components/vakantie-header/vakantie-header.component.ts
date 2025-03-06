@@ -8,7 +8,6 @@ import { VakantieService } from '../../services/vakantie.service';
 
 @Component({
     selector: 'sl-vakantie-header',
-    standalone: true,
     imports: [CommonModule],
     templateUrl: './vakantie-header.component.html',
     styleUrls: ['./vakantie-header.component.scss'],

@@ -1,128 +1,131 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, input, model, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, input, model, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { differenceInWeeks, isAfter, isBefore, isSameDay, previousSunday } from 'date-fns';
-import { DropdownComponent, DropdownItem, IconDirective, ToggleComponent } from 'harmony';
+import { differenceInWeeks, isBefore, isSameDay, previousSunday } from 'date-fns';
+import { DropdownComponent, DropdownItem, isPresent } from 'harmony';
 import { IconChevronOnder, provideIcons } from 'harmony-icons';
-import { formatDateNL } from 'leerling-util';
-import { DagOptie, TijdOptie, createInitialSelectedTijdOptie, createTijdOpties, createWeekOpties } from '../afwezig-melden-model';
+import { first, isEqual, last } from 'lodash-es';
+import {
+    createTijdOptiesMinuten,
+    createTijdOptiesUren,
+    createWeekOpties,
+    DagOptie,
+    TijdOptieMinuten,
+    TijdOptieUren
+} from '../afwezig-melden-model';
 
 @Component({
     selector: 'sl-datum-selectie',
-    standalone: true,
-    imports: [FormsModule, ToggleComponent, IconDirective, DropdownComponent],
+    imports: [FormsModule, DropdownComponent],
     providers: [provideIcons(IconChevronOnder)],
     templateUrl: './datum-selectie.component.html',
     styleUrl: './datum-selectie.component.scss',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DatumSelectieComponent implements OnInit {
+    // selectie door gebruiker
     beginDag = model<DagOptie>();
-    beginTijd = model<TijdOptie>();
+    beginTijdMinuten = model<TijdOptieMinuten>();
+    beginTijdUren = model<TijdOptieUren>();
     eindDag = model<DagOptie>();
-    eindTijd = model<TijdOptie>();
-    heleDag = model<boolean>(true);
+    eindTijdMinuten = model<TijdOptieMinuten>();
+    eindTijdUren = model<TijdOptieUren>();
 
-    fromDate = input(new Date()); // niet verplicht, maakt testen makkelijker
+    // inputs
+    eindDatumVerplicht = input.required<boolean>();
+    fromDate = input(new Date()); // maakt testen makkelijker
     magTijdstipKiezen = input.required<boolean>();
-    mode = input.required<DatePickerMode>();
+    mode = input.required<DatumSelectieMode>();
+    disabled = input<boolean>(false);
 
-    selectedTijdOptieDropdownItem = model<DropdownItem<TijdOptie>>();
-    tijdOptieDropdownItems = computed<DropdownItem<TijdOptie>[]>(() => this.createTijdOptieDropdownItems());
-    weekOpties = computed(() => createWeekOpties(this.weekOptiesFromDate(), this.weekOptiesShowTotalWeken(), this.fromDate()));
-    weekOptiesFromDate = computed<Date>(() => {
-        const beginDate = this.beginDate();
-        return this.mode() === 'Eind' && beginDate ? beginDate : this.fromDate();
+    // opties
+    minutenDropdownItems = computed<DropdownItem<TijdOptieMinuten>[]>(() => this.createMinutenDropdownItems());
+    selectedMinutenDropdownItem = computed<DropdownItem<TijdOptieMinuten> | undefined>(() => {
+        const selected = this.mode() === 'Begin' ? this.beginTijdMinuten() : this.eindTijdMinuten();
+        return this.minutenDropdownItems().find((item) => item.data.minuten === selected?.minuten);
     });
-    weekOptiesShowTotalWeken = signal<number>(WeekOptiesShowWeken);
+    urenDropdownItems = computed<DropdownItem<TijdOptieUren>[]>(() => this.createUrenDropdownItems());
+    selectedUrenDropdownItem = computed<DropdownItem<TijdOptieUren> | undefined>(() => {
+        const selected = this.mode() === 'Begin' ? this.beginTijdUren() : this.eindTijdUren();
+        return this.urenDropdownItems().find((item) => item.data.uren === selected?.uren);
+    });
+    weekOpties = computed(() =>
+        createWeekOpties({
+            startDate: this.weekOptiesFromDate(),
+            now: this.fromDate(),
+            rangeStart: this.mode() === 'Eind' ? this.beginDate() : undefined,
+            selected: this.mode() === 'Begin' ? this.beginDate() : this.eindDate(),
+            showWeken: this.weekOptiesShowTotalWeken()
+        })
+    );
 
     private beginDate = computed(() => this.beginDag()?.date);
     private eindDate = computed(() => this.eindDag()?.date);
+    private weekOptiesShowTotalWeken = signal<number>(WeekOptiesShowWeken);
+    private weekOptiesFromDate = computed<Date>(() => {
+        const beginDate = this.beginDate();
+        return this.mode() === 'Eind' && beginDate ? beginDate : this.fromDate();
+    });
 
     constructor() {
-        this.heleDag.subscribe((heleDag) => this.onHeleDagChange(heleDag));
-        this.beginTijd.subscribe(() => this.onBeginTijdChange());
-        this.eindDag.subscribe(() => this.onEindDagChange());
+        effect(() => {
+            if (!this.disabled()) {
+                this.reinitialize();
+            }
+        });
     }
-
     ngOnInit(): void {
-        this.initializeTijdSelectie();
-        this.setShowTotalWeken();
+        this.initializeWeekOpties();
+        this.initializeDagOpties();
+        this.initializeTijdOpties();
+
+        this.beginDag.subscribe(() => this.checkAndCorrectEindDag());
+        this.beginTijdUren.subscribe(() => this.checkAndCorrectEindTijd());
+        this.beginTijdMinuten.subscribe(() => this.checkAndCorrectEindTijd());
+        this.eindDag.subscribe(() => this.checkAndCorrectEindTijd());
+        this.eindTijdUren.subscribe(() => this.checkAndCorrectEindTijd());
     }
 
-    dagOptieAriaLabel(dagOptie: DagOptie): string {
-        let label = formatDateNL(dagOptie.date, 'dag_uitgeschreven_dagnummer_maand');
-        if (this.isSelectedDagOptie(dagOptie)) {
-            label += ' is geselecteerd';
-        } else if (dagOptie.disabled) {
-            label += ' niet selecteerbaar';
+    reinitialize() {
+        this.initializeWeekOpties();
+        this.initializeDagOpties();
+        this.initializeTijdOpties();
+    }
+    selectDagOptie(dagOptie: DagOptie) {
+        if (dagOptie.disabled) {
+            return;
         }
-        return label;
-    }
 
-    /**
-     * Bij het selecteren van de einddatum: markeer dagen vanaf de begindatum en tot de einddatum.
-     */
-    isBeginEindRangeOptie({ date }: DagOptie): boolean {
         if (this.mode() === 'Begin') {
-            return false;
+            this.beginDag.set(dagOptie);
+        } else if (this.mode() === 'Eind') {
+            if (!this.eindDag() || this.eindDatumVerplicht()) {
+                this.eindDag.set(dagOptie);
+            } else if (!this.eindDatumVerplicht()) {
+                const eindDate = this.eindDate();
+
+                // einddatum is niet verplicht, dus die kan worden gedeselecteerd als dezelfde dag wordt gekozen
+                if (isEqual(eindDate, dagOptie.date)) {
+                    this.eindDag.set(undefined);
+                } else {
+                    this.eindDag.set(dagOptie);
+                }
+            }
         }
-
-        const beginDate = this.beginDate();
-        const eindDate = this.eindDate();
-
-        if (!beginDate || !eindDate) {
-            return false;
-        }
-
-        // de geselecteerde einddatum is dezelfde dag als de begindatum
-        if (isSameDay(eindDate, beginDate)) {
-            return false;
-        }
-
-        // de datum is gelijk aan de begindatum, of zit tussen de begin- en einddatum
-        return isSameDay(date, beginDate) || (isAfter(date, beginDate) && isBefore(date, eindDate));
     }
 
-    isSelectedDagOptie({ date }: DagOptie): boolean {
-        const beginDate = this.beginDate();
-        const eindDate = this.eindDate();
-
-        if (this.mode() === 'Begin' && beginDate) {
-            return isSameDay(beginDate, date);
-        } else if (this.mode() === 'Eind' && eindDate) {
-            return isSameDay(eindDate, date);
-        }
-        return false;
-    }
-
-    onTijdOptieSelected(selected: TijdOptie) {
+    selectTijdOptieMinuten(tijdOptieMinuten: TijdOptieMinuten) {
         if (this.mode() === 'Begin') {
-            this.beginTijd.set(selected);
+            this.beginTijdMinuten.set(tijdOptieMinuten);
         } else {
-            this.eindTijd.set(selected);
+            this.eindTijdMinuten.set(tijdOptieMinuten);
         }
     }
 
-    tijdSelectieAriaLabel(): string {
-        let label = '';
-        if (this.mode() === 'Begin' && this.beginTijd()) {
-            label += this.beginTijd()?.text;
-        } else if (this.mode() === 'Eind' && this.eindTijd()) {
-            label += this.eindTijd()?.text;
-        }
-        if (label.length === 0) {
-            return 'selecteer tijd';
-        }
-        label += ' is geselecteerd';
-        return label;
-    }
-
-    toggleHeleDag($event: MouseEvent) {
-        const { classList } = $event.target as HTMLElement;
-
-        // moet kunnen klikken op container om de toggle te triggeren
-        if (HeleDagToggleClassNames.some((className) => classList.contains(className))) {
-            this.heleDag.set(!this.heleDag());
+    selectTijdOptieUren(tijdOptieUren: TijdOptieUren) {
+        if (this.mode() === 'Begin') {
+            this.beginTijdUren.set(tijdOptieUren);
+        } else {
+            this.eindTijdUren.set(tijdOptieUren);
         }
     }
 
@@ -130,136 +133,99 @@ export class DatumSelectieComponent implements OnInit {
         this.weekOptiesShowTotalWeken.update((totalWeken) => totalWeken + WeekOptiesShowWeken);
     }
 
-    selectDagOptie(dagOptie: DagOptie) {
-        if (dagOptie.disabled) {
+    private checkAndCorrectEindDag(): void {
+        const beginDate = this.beginDate();
+        const eindDate = this.eindDate();
+
+        // als er al een einddatum is die ligt voor de begindatum, stel dan de einddatum in op de begindatum
+        if (beginDate && eindDate && isBefore(eindDate, beginDate)) {
+            this.eindDag.set(this.beginDag());
+        }
+
+        this.checkAndCorrectEindTijd();
+    }
+
+    private checkAndCorrectEindTijd(): void {
+        const beginDate = this.beginDate();
+        const eindDate = this.eindDate();
+
+        if (beginDate && eindDate && !isSameDay(beginDate, eindDate)) {
             return;
         }
 
-        // sla huidige "hele dag" selectie op bij gekozen dag optie
-        dagOptie.heleDag = this.heleDag();
+        const beginTijdUren = this.beginTijdUren()?.uren;
+        const beginTijdMinuten = this.beginTijdMinuten()?.minuten;
+        const eindTijdUren = this.eindTijdUren()?.uren;
+        const eindTijdMinuten = this.eindTijdMinuten()?.minuten;
 
-        if (this.mode() === 'Begin') {
-            this.beginDag.set(dagOptie);
-
-            // reset de einddatum als een nieuwe begindatum wordt geselecteerd
-            this.eindDag.set(undefined);
-        } else if (this.mode() === 'Eind') {
-            this.eindDag.set(dagOptie);
-        }
-    }
-
-    private createTijdOptieDropdownItems(): DropdownItem<TijdOptie>[] {
-        const beginDate = this.beginDate();
-        const beginTijd = this.beginTijd();
-        const eindDate = this.eindDate();
-        let disabledBefore: TijdOptie | undefined = undefined;
-
-        // disable tijdopties voor de begintijd als de begindatum hetzelfde is als de einddatum
-        if (this.mode() === 'Eind' && beginTijd && beginDate && eindDate && isSameDay(beginDate, eindDate)) {
-            disabledBefore = beginTijd;
-        }
-
-        return createTijdOpties(disabledBefore).map((tijdOptie) => ({
-            label: tijdOptie.text,
-            data: tijdOptie,
-            disabled: tijdOptie.disabled
-        }));
-    }
-
-    private initializeTijdSelectie() {
-        const beginDag = this.beginDag();
-        const eindDag = this.eindDag();
-
-        if (this.mode() === 'Begin') {
-            if (beginDag) {
-                this.heleDag.set(beginDag.heleDag);
-            } else if (this.beginTijd()) {
-                this.heleDag.set(false);
-            }
-        } else if (this.mode() === 'Eind') {
-            if (eindDag) {
-                this.heleDag.set(eindDag.heleDag);
-            } else if (this.eindTijd()) {
-                this.heleDag.set(false);
-            }
-        }
-    }
-
-    private onBeginTijdChange() {
-        const beginDate = this.beginDate();
-        const beginTijd = this.beginTijd();
-        const eindDate = this.eindDate();
-        const eindTijd = this.eindTijd();
-
-        if (!beginDate || !beginTijd || !eindTijd) {
+        if (!isPresent(beginTijdUren) || !isPresent(beginTijdMinuten) || !isPresent(eindTijdUren) || !isPresent(eindTijdMinuten)) {
             return;
         }
 
-        // de eerder ingestelde eindtijd is voor de gekozen begintijd, dus verwijder de eindtijd ("hele dag")
-        if ((!eindDate || isSameDay(beginDate, eindDate)) && eindTijd.numericValue < beginTijd.numericValue) {
-            this.eindDag.update((dagOptie) => applyWhenPresent(dagOptie, (present) => (present.heleDag = true)));
-            this.eindTijd.set(undefined);
+        if (eindTijdUren < beginTijdUren) {
+            this.eindTijdUren.set(this.beginTijdUren());
+            this.eindTijdMinuten.set(this.beginTijdMinuten());
+        } else if (eindTijdMinuten < beginTijdMinuten) {
+            this.eindTijdMinuten.set(this.beginTijdMinuten());
         }
     }
 
-    private onEindDagChange(): void {
-        const beginDate = this.beginDate();
-        const beginTijd = this.beginTijd();
-        const eindDate = this.eindDate();
-        const eindTijd = this.eindTijd();
+    private createMinutenDropdownItems(): DropdownItem<TijdOptieMinuten>[] {
+        let minutenOptiesDisabledBefore: number | undefined = undefined;
+        if (this.mode() === 'Eind') {
+            const beginDate = this.beginDate();
+            const eindDate = this.eindDate();
 
-        if (!beginDate || !beginTijd || !eindTijd) {
+            if (beginDate && eindDate && isSameDay(beginDate, eindDate)) {
+                const beginTijdUren = this.beginTijdUren()?.uren;
+                const eindTijdUren = this.eindTijdUren()?.uren;
+
+                // begin en eind zelfde dag én uren: disable eind tijd minuten opties vóór begin tijd minuten
+                if (isPresent(beginTijdUren) && isPresent(eindTijdUren) && beginTijdUren === eindTijdUren) {
+                    minutenOptiesDisabledBefore = this.beginTijdMinuten()?.minuten;
+                }
+            }
+        }
+        return createTijdOptiesMinuten(minutenOptiesDisabledBefore).map(this.tijdOptieToDropdownItem);
+    }
+
+    private createUrenDropdownItems(): DropdownItem<TijdOptieUren>[] {
+        let urenOptiesDisabledBefore: number | undefined = undefined;
+        if (this.mode() === 'Eind') {
+            const beginDate = this.beginDate();
+            const eindDate = this.eindDate();
+
+            // begin en eind zelfde dag: disable eind tijd uren opties vóór begin tijd uren
+            if (beginDate && eindDate && isSameDay(beginDate, eindDate)) {
+                urenOptiesDisabledBefore = this.beginTijdUren()?.uren;
+            }
+        }
+        return createTijdOptiesUren(urenOptiesDisabledBefore).map(this.tijdOptieToDropdownItem);
+    }
+
+    private initializeDagOpties() {
+        if (this.mode() === 'Begin' && !this.beginDag()) {
+            const firstValidDagOptie = first(this.weekOpties())?.dagOpties.find((dagOptie) => !dagOptie.disabled);
+            this.beginDag.set(firstValidDagOptie);
+        }
+        if (this.mode() === 'Eind' && !this.eindDag() && this.eindDatumVerplicht()) {
+            this.eindDag.set(this.beginDag());
+        }
+    }
+
+    private initializeTijdOpties() {
+        // mag geen tijstip kiezen, dus geen default tijden instellen
+        if (!this.magTijdstipKiezen()) {
             return;
         }
 
-        // de eerder ingestelde eindtijd is voor de gekozen begintijd, dus stel de eindtijd in op de begintijd
-        if ((!eindDate || isSameDay(beginDate, eindDate)) && eindTijd.numericValue < beginTijd.numericValue) {
-            this.eindTijd.set(beginTijd);
+        if (!this.beginTijdUren() || !this.beginTijdMinuten()) {
+            this.beginTijdUren.set(first(this.urenDropdownItems())?.data);
+            this.beginTijdMinuten.set(first(this.minutenDropdownItems())?.data);
         }
-    }
-
-    private onHeleDagChange(heleDag: boolean) {
-        let selectedTijdOptie: TijdOptie | undefined = undefined;
-
-        if (this.mode() === 'Begin') {
-            this.beginDag.update((dagOptie) => applyWhenPresent(dagOptie, (present) => (present.heleDag = heleDag)));
-
-            this.beginTijd.update((beginTijd) => {
-                if (heleDag) return undefined;
-                if (beginTijd) return beginTijd;
-
-                // initialiseer met tijd optie die dichtst bij huidige tijd zit
-                return createInitialSelectedTijdOptie(this.fromDate());
-            });
-
-            if (!heleDag) {
-                selectedTijdOptie = this.beginTijd();
-            }
-        } else if (this.mode() === 'Eind') {
-            this.eindDag.update((dagOptie) => applyWhenPresent(dagOptie, (present) => (present.heleDag = heleDag)));
-
-            this.eindTijd.update((eindTijd) => {
-                if (heleDag) return undefined;
-                if (eindTijd) return eindTijd;
-
-                // initialiseer met begintijd of tijd optie die dichtst bij huidige tijd zit
-                return this.beginTijd() || createInitialSelectedTijdOptie(this.fromDate());
-            });
-
-            if (!heleDag) {
-                selectedTijdOptie = this.eindTijd();
-            }
-        }
-
-        if (selectedTijdOptie) {
-            const selectedDropdownItem = this.tijdOptieDropdownItems().find(
-                (item) => item.data.numericValue === selectedTijdOptie.numericValue
-            );
-            if (selectedDropdownItem) {
-                this.selectedTijdOptieDropdownItem.set(selectedDropdownItem);
-            } else {
-                console.error(`Kon de initieel geselecteerde tijdoptie niet bepalen`);
-            }
+        if (!this.eindTijdUren() || !this.eindTijdMinuten()) {
+            this.eindTijdUren.set(last(this.urenDropdownItems())?.data);
+            this.eindTijdMinuten.set(last(this.minutenDropdownItems())?.data);
         }
     }
 
@@ -268,7 +234,7 @@ export class DatumSelectieComponent implements OnInit {
      * Als er echter eerder een begin- of einddatum is geselecteerd die buiten die 2 weken ligt, dan moeten we bij
      * het initialiseren van het component berekenen hoeveel weken er in totaal getoond moeten worden.
      */
-    private setShowTotalWeken() {
+    private initializeWeekOpties() {
         const beginDate = this.beginDate();
         const eindDate = this.eindDate();
         let totalWekenStart: Date | undefined = undefined;
@@ -293,16 +259,12 @@ export class DatumSelectieComponent implements OnInit {
             }
         }
     }
-}
 
-type DatePickerMode = 'Begin' | 'Eind';
-
-const HeleDagToggleClassNames = ['hele-dag-toggle', 'hele-dag-toggle-text', 'tijd-selectie-container'];
-const WeekOptiesShowWeken = 2;
-
-function applyWhenPresent<T>(optional: T | undefined, apply: (present: T) => void): T | undefined {
-    if (optional !== undefined) {
-        apply(optional);
+    private tijdOptieToDropdownItem<TijdOptie extends TijdOptieUren | TijdOptieMinuten>(tijdOptie: TijdOptie): DropdownItem<TijdOptie> {
+        return { data: tijdOptie, label: tijdOptie.text, disabled: tijdOptie.disabled };
     }
-    return optional;
 }
+
+type DatumSelectieMode = 'Begin' | 'Eind';
+
+const WeekOptiesShowWeken = 2;

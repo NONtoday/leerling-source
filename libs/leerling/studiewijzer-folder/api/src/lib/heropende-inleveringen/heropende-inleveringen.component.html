@@ -1,0 +1,18 @@
+<div class="heropend" [attr.aria-expanded]="toonInleveringen()" (click)="toggleInleveringen()" tabindex="0" role="button">
+    <hmy-pill text="Heropend" color="alternative" />
+    <span class="tijd">{{ moment().datum | slDate: 'dag_kort_dagnummer_maand_kort_tijd' }}</span>
+    <i class="chevron" [class.open]="toonInleveringen()" hmyIcon="chevronLinks" size="small"></i>
+</div>
+@if (toonInleveringen()) {
+    <div [@expandOnEnter] [@collapseOnLeave]>
+        @for (inlevering of moment().inleveringen; track inlevering.id) {
+            <shared-bijlage
+                [omschrijving]="inlevering.omschrijving"
+                [ondertitel]="inlevering | inleveringOndertitel"
+                [extensie]="inlevering.extensie"
+                [url]="inlevering.url"
+                [toonVerwijderKnop]="false"
+                (click)="openUrl(inlevering.url)" />
+        }
+    </div>
+}

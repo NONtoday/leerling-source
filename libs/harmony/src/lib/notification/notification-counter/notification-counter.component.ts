@@ -1,14 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { CssVarPipe, toCssVar } from '../../css-var-pipe/css-var.pipe';
-import { PillComponent } from '../../pill/pill.component';
+
 import { getNotificationBgColor, getNotificationFgColor } from '../notification-utils';
 import { NotificationCounterBorder, notificationCounterDefaults } from './notification-counter.model';
 
 @Component({
     selector: 'hmy-notification-counter',
-    standalone: true,
-    imports: [CommonModule, CssVarPipe, PillComponent],
+    imports: [CommonModule, CssVarPipe],
     templateUrl: './notification-counter.component.html',
     styleUrls: ['../notification.scss', './notification-counter.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush

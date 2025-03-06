@@ -10,7 +10,6 @@ export const REDIRECT_KEY = 'sll-redirectUrl';
 
 @Component({
     selector: 'sl-redirect',
-    standalone: true,
     imports: [CommonModule, SpinnerComponent],
     templateUrl: './redirect.component.html',
     styleUrl: './redirect.component.scss',

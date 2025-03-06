@@ -1,0 +1,49 @@
+<div class="title-container" tabindex="0">
+    <div class="title-wrapper">
+        <h2 class="title">Maak uw keuze</h2>
+        <span class="subtext"
+            ><i class="icon" hmyIcon="kalenderDag" color="action-neutral-normal" size="small"></i>{{ titleSubtext() }}</span
+        >
+    </div>
+
+    @if (magAanvragen() && keuzes().length > 0) {
+        <hmy-icon-pill [text]="eindDatumText()" [attr.aria-label]="eindDatumTextAriaLabel()" icon="informatie" iconSize="smallest" />
+    }
+</div>
+
+@if (keuzes().length > 0) {
+    <div class="toggle-container">
+        @if (!onbeperktAantalGesprekken()) {
+            <p class="text" tabindex="0">{{ toggleText() }}</p>
+        }
+        <hmy-toggle
+            class="toggle"
+            [ngModel]="data().wilGeenGesprek"
+            [attr.aria-checked]="data().wilGeenGesprek"
+            (click)="toggleWilGeenGesprek()"
+            label="Ik wil geen gesprek"
+            aria-label="Ik wil geen gesprek"
+            role="checkbox"
+            tabindex="0"></hmy-toggle>
+    </div>
+}
+
+<div class="keuzes">
+    @if (keuzes().length > 0) {
+        @for (keuze of keuzes(); track $index) {
+            <sl-ouderavond-keuze
+                [keuze]="keuze"
+                [isChecked]="data().keuzes | slContains: keuze"
+                [isInschrijvenDisabled]="isInschrijvenDisabled()"
+                [attr.aria-label]="keuzeAriaLabel(keuze, data().keuzes | slContains: keuze)"
+                [tabindex]="isInschrijvenDisabled() && !keuze.aangevraagd ? -1 : 0"
+                (checkboxChanged)="updateData(keuze, $event)"
+                role="checkbox" />
+        }
+    } @else {
+        <hmy-message-bar
+            message="De school heeft geen keuzeopties beschikbaar gesteld voor deze ouderavond."
+            messageType="info"
+            tabindex="0" />
+    }
+</div>

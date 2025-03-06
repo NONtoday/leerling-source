@@ -21,7 +21,7 @@
                     }
                     <span class="titel">{{ resultaatItem().titel }}</span>
                     @if (resultaatItem().titelPostfix; as titelPostFix) {
-                        <span class="titel-postfix">&nbsp;({{ titelPostFix }})</span>
+                        <span class="titel-postfix">&nbsp;{{ titelPostFix }}</span>
                     }
                 </div>
                 <p class="subtitel">{{ resultaatItem().subtitel }}</p>
@@ -92,11 +92,12 @@
                             [@expandOnEnter]
                             [dossierType]="details.dossierType"
                             [samengesteldeResultaatkolomId]="details.resultaatkolomId"
-                            [isAlternatieveNormering]="details.isAlternatief || false" />
+                            [isAlternatieveNormering]="details.isAlternatief || false"
+                            [toonKolommen]="toonKolommen()" />
                     }
                 }
             }
-            @if (details.heeftHerkansing && details.pogingen) {
+            @if (details.heeftHerkansing && details.pogingen && details.pogingen.length > 0) {
                 <div class="toggle pogingen" (click)="toggleShown($event)" tabindex="200" role="link">
                     <i size="smallest" color="action-primary-normal" hmyIcon="chevronRechts"></i>
                     <p>{{ isShown() ? 'Verberg andere pogingen' : 'Toon andere pogingen' }}</p>

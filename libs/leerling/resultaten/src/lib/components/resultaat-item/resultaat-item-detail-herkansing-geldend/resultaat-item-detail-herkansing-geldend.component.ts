@@ -6,7 +6,6 @@ import { ResultaatGeldend } from '../resultaat-item-model';
 
 @Component({
     selector: 'sl-resultaat-item-detail-herkansing-geldend',
-    standalone: true,
     imports: [CommonModule, IconDirective],
     templateUrl: './resultaat-item-detail-herkansing-geldend.component.html',
     styleUrls: ['./resultaat-item-detail-herkansing-geldend.component.scss'],

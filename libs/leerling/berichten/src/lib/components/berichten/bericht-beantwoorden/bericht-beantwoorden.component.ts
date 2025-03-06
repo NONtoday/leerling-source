@@ -16,15 +16,14 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Router } from '@angular/router';
 import { collapseAnimation } from 'angular-animations';
 import { AutoFocusDirective, ButtonComponent, TagComponent } from 'harmony';
+import { BerichtComponent } from 'leerling-berichten-api';
 import { HeaderActionButtonComponent, injectHeaderConfig } from 'leerling-header';
 import { ReactieBerichtInput, SBoodschap, SConversatie } from 'leerling/store';
 import { BerichtService } from '../../../services/bericht.service';
 import { BerichtSeperatorComponent } from '../bericht-seperator/bericht-seperator.component';
-import { BerichtComponent } from '../bericht/bericht.component';
 
 @Component({
     selector: 'sl-bericht-beantwoorden',
-    standalone: true,
     imports: [
         CommonModule,
         ReactiveFormsModule,
@@ -76,7 +75,12 @@ export class BerichtBeantwoordenComponent implements OnInit {
 
     // wordt aangeroepen bij check voor de guard.
     formIsDirty = () => this.form.dirty;
-    resetForm = () => this.form.reset();
+
+    resetForm() {
+        this.form.reset();
+        this.form.markAsPristine();
+    }
+
     annuleren = () => this.router.navigate([], { queryParams: { edit: null }, queryParamsHandling: 'merge' });
 
     beantwoord() {

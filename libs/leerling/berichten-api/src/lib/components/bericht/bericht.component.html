@@ -1,0 +1,73 @@
+@if (boodschap().isSomtodayAutomatischBericht) {
+    <div
+        class="automatisch-header"
+        [attr.aria-label]="ariaLabelBerichtInfo()"
+        [attr.aria-expanded]="!collapsed()"
+        [attr.role]="role()"
+        tabindex="0">
+        <span class="datum">{{ verzenddatum() }}</span>
+        <hmy-tag [label]="automatischBericht" icon="none" color="neutral" />
+    </div>
+} @else {
+    <header [attr.aria-label]="ariaLabelBerichtInfo()" [attr.aria-expanded]="!collapsed()" [attr.role]="role()" tabindex="0">
+        <hmy-avatar [lazyLoading]="true" [initialen]="boodschap().verzenderCorrespondent.initialen" [src]="avatarSrc()" />
+        <div class="adressering">
+            <div class="van">
+                {{ boodschap().verzenderCorrespondent.naam }}
+                @for (vak of boodschap().verzenderCorrespondent.vakken; track vak.id) {
+                    <hmy-icon-pill [text]="vak.afkorting" [icon]="vak.naam | vakToIcon" [type]="'outline'" color="neutral" />
+                }
+            </div>
+            @if (!hideOntvangers()) {
+                <div class="aan">
+                    Aan:
+                    <div class="ontvangers">
+                        @for (ontvanger of boodschap().ontvangerCorrespondenten; track $index; let isLast = $last) {
+                            <span [outerHTML]="ontvanger.naam | stringToSpanWords"></span>
+                            @for (vak of ontvanger.vakken; track vak.id) {
+                                <hmy-icon-pill [text]="vak.afkorting" [icon]="vak.naam | vakToIcon" [type]="'outline'" color="neutral" />
+                            }
+                            @if (!isLast) {
+                                ,&nbsp;
+                            }
+                        }
+                        @if (meerOntvangersPillText()) {
+                            ,&nbsp;
+                            <hmy-pill
+                                class="meer-ontvangers-pill"
+                                #meerOntvangersPill
+                                [attr.aria-label]="meerOntvangersPillAriaLabel()"
+                                [text]="meerOntvangersPillText()!"
+                                [metChevron]="true"
+                                (click)="openMeerOntvangersPopup()"
+                                tabindex="0"
+                                role="button"
+                                color="primary" />
+                        }
+                    </div>
+                </div>
+            }
+            <span class="datum">{{ verzenddatum() }}</span>
+        </div>
+    </header>
+}
+<div class="detail">
+    <sl-html-content class="inhoud" [attr.aria-label]="ariaLabelBerichtInhoud()" [content]="inhoud()" tabindex="0"></sl-html-content>
+    @for (bijlage of boodschap().bijlages; track bijlage.id) {
+        <sl-bijlage [omschrijving]="bijlage.omschrijving" [uri]="bijlage.fileUrl" [icon]="true" tabindex="0" role="link" />
+    }
+</div>
+@if (showBeantwoorden()) {
+    <hmy-button class="beantwoorden" (click)="beantwoorden()" mode="tertiary" iconLeft="reply" label="Beantwoorden" />
+}
+<ng-template #meerOntvangersPopup>
+    <div class="meer-ontvangers" body-scroll-lock-ignore>
+        <div class="meer-ontvangers-inner">
+            @for (ontvanger of boodschap().extraOntvangerCorrespondenten; track $index) {
+                <sl-bericht-ontvanger-optie [correspondent]="ontvanger" [clickable]="false" tabindex="0" />
+            } @empty {
+                <hmy-spinner />
+            }
+        </div>
+    </div>
+</ng-template>

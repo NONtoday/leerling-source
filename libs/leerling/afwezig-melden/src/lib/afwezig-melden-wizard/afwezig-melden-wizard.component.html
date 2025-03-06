@@ -13,7 +13,7 @@
                     <div class="radio-group">
                         @for (reden of absentieRedenen(); track reden.id) {
                             <!-- Deze `@if` truc kan mooi vervangen worden met een `@let`, zodra dit beschikbaar is (Angular v18.1) -->
-                            <!-- Bijv: `@let matchSelected = reden.id === absentieReden()?.id;` -->
+                            <!-- Bijv: `@let matchSelected = (reden.id === absentieReden()?.id);` -->
                             @if ({ selected: reden.id === absentieReden()?.id }; as match) {
                                 <div
                                     class="radio-option"
@@ -42,22 +42,42 @@
                     <div class="stap-subtitel">Vanaf wanneer is {{ leerlingNaam() }} afwezig?</div>
                     <sl-datum-selectie
                         [(beginDag)]="beginDag"
-                        [(beginTijd)]="beginTijd"
+                        [(beginTijdMinuten)]="beginTijdMinuten"
+                        [(beginTijdUren)]="beginTijdUren"
                         [(eindDag)]="eindDag"
-                        [(eindTijd)]="eindTijd"
+                        [(eindTijdMinuten)]="eindTijdMinuten"
+                        [(eindTijdUren)]="eindTijdUren"
+                        [eindDatumVerplicht]="eindDatumVerplicht()"
                         [magTijdstipKiezen]="!!absentieReden()?.verzorgerMagTijdstipKiezen"
                         mode="Begin" />
                 }
 
                 @case ('Einddatum') {
                     <div class="stap-titel">Verwachte einddatum</div>
-                    <div class="stap-subtitel">Tot wanneer is {{ leerlingNaam() }} afwezig?</div>
+                    <div class="stap-subtitel">Tot en met wanneer is {{ leerlingNaam() }} afwezig?</div>
+                    @if (!eindDatumVerplicht()) {
+                        <div class="stap-togglelabel">
+                            <hmy-toggle
+                                class="toggle-einddatum"
+                                [ngModel]="geenEindDatum()"
+                                [attr.aria-checked]="geenEindDatum()"
+                                [label]="geenEindDatumLabel"
+                                (click)="toggleEindDatum()"
+                                tabindex="0"
+                                aria-label="Geen einddatum"
+                                role="checkbox"></hmy-toggle>
+                        </div>
+                    }
                     <sl-datum-selectie
                         [(beginDag)]="beginDag"
-                        [(beginTijd)]="beginTijd"
+                        [(beginTijdMinuten)]="beginTijdMinuten"
+                        [(beginTijdUren)]="beginTijdUren"
                         [(eindDag)]="eindDag"
-                        [(eindTijd)]="eindTijd"
+                        [(eindTijdMinuten)]="eindTijdMinuten"
+                        [(eindTijdUren)]="eindTijdUren"
+                        [eindDatumVerplicht]="eindDatumVerplicht()"
                         [magTijdstipKiezen]="!!absentieReden()?.verzorgerMagTijdstipKiezen"
+                        [disabled]="geenEindDatum()"
                         mode="Eind" />
                 }
 
@@ -76,7 +96,23 @@
                         @if (versturenError(); as errorMessage) {
                             <div class="message message-error" id="versturen-error" tabindex="0">
                                 <i hmyIcon="noRadio" size="medium"></i>
-                                <div>{{ errorMessage }}</div>
+                                <div class="error-content">
+                                    <div>{{ errorMessage }}</div>
+                                    @if (schoolgegevens(); as schoolgegevens) {
+                                        @if (schoolgegevens.telefoonnummer) {
+                                            <div
+                                                class="link"
+                                                (click)="openUrl('tel:' + schoolgegevens.telefoonnummer)"
+                                                tabindex="0"
+                                                role="link">
+                                                <i hmyIcon="telefoon" size="medium" color="action-negative-strong"></i>
+                                                <p [attr.aria-label]="'Bel naar ' + schoolgegevens.telefoonnummer">
+                                                    {{ 'Bel ' + schoolgegevens.telefoonnummer }}
+                                                </p>
+                                            </div>
+                                        }
+                                    }
+                                </div>
                             </div>
                         }
                         <div
@@ -139,9 +175,20 @@
 
                 @case ('Klaar') {
                     <div class="stap-titel">Klaar!</div>
-                    <div class="message message-success" data-testid="klaar-message">
+                    <div
+                        class="message message-success"
+                        [class.hoverable]="meldingenBekijkenToegestaan()"
+                        [attr.aria-label]="leerlingNaam() + ' is succesvol afwezig gemeld'"
+                        (click)="gaNaarMelding($event)"
+                        tabindex="0"
+                        data-testid="klaar-message">
                         <i hmyIcon="yesRadio" size="medium"></i>
-                        <div>{{ leerlingNaam() }} is succesvol afwezig gemeld</div>
+                        <div class="melding">{{ leerlingNaam() }} is succesvol afwezig gemeld</div>
+                        @if (meldingenBekijkenToegestaan()) {
+                            <div class="bekijken" (click)="gaNaarMelding($event)" tabindex="0" role="button">
+                                Melding bekijken <i hmyIcon="chevronRechts"></i>
+                            </div>
+                        }
                     </div>
                 }
             }
@@ -158,13 +205,19 @@
                 customTabindex="0" />
         }
         @if (volgendeKnop(); as knop) {
-            <hmy-button
-                [label]="knop.label"
-                [disabled]="knop.disabled"
-                (click)="volgende()"
-                data-testid="wizard-volgende"
-                mode="primary"
-                customTabindex="0" />
+            @if (versturenInProgress()) {
+                <div class="spinner-button">
+                    <hmy-spinner [isWhite]="true"></hmy-spinner>
+                </div>
+            } @else {
+                <hmy-button
+                    [label]="knop.label"
+                    [disabled]="knop.disabled"
+                    (click)="volgende()"
+                    data-testid="wizard-volgende"
+                    mode="primary"
+                    customTabindex="0" />
+            }
         }
         @if (huidigeStapNaam() === 'Klaar') {
             <hmy-button

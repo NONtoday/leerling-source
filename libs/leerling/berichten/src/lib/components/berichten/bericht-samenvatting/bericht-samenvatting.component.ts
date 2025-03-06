@@ -14,7 +14,7 @@ import {
     viewChild
 } from '@angular/core';
 import { Router } from '@angular/router';
-import * as anime from 'animejs/lib/anime.js';
+import anime from 'animejs/lib/anime.es.js';
 import { isToday } from 'date-fns';
 import { DeviceService, IconDirective, PopupService, VerwijderConfirmationComponent, createPopupSettings, isPresent } from 'harmony';
 import {
@@ -33,6 +33,7 @@ import { SConversatie, formatNL, getPreviewInhoudBoodschap } from 'leerling/stor
 import { orderBy } from 'lodash-es';
 import { NgxInjectDrag, injectDrag } from 'ngxtension/gestures';
 import { P, match } from 'ts-pattern';
+import { BerichtService } from '../../../services/bericht.service';
 import { meestRecentOntvangenBericht, meestRecentVerstuurdeBericht } from '../../../services/conversatie.service';
 import { BerichtenTabLink } from '../berichten.component';
 
@@ -40,7 +41,6 @@ type MobileSwipeState = 'confirmMarkeren' | 'default' | 'confirmVerwijderen';
 
 @Component({
     selector: 'sl-bericht-samenvatting',
-    standalone: true,
     imports: [CommonModule, IconDirective, VerwijderConfirmationComponent],
     templateUrl: './bericht-samenvatting.component.html',
     styleUrl: './bericht-samenvatting.component.scss',
@@ -64,6 +64,7 @@ type MobileSwipeState = 'confirmMarkeren' | 'default' | 'confirmVerwijderen';
 })
 export class BerichtSamenvattingComponent {
     private readonly swipeThreshold = 120;
+    private readonly berichtService = inject(BerichtService);
     popupService = inject(PopupService);
     router = inject(Router);
     deviceService = inject(DeviceService);
@@ -148,12 +149,11 @@ export class BerichtSamenvattingComponent {
 
     meerOptiesClick(event: Event) {
         event.stopPropagation();
-        this.popupService.popup(
-            this.meerOptiesTemplate(),
-            this.meerOptiesIcon(),
-            undefined,
-            createPopupSettings({ width: '246px', onClose: () => this.showVerwijderConfirmButtons.set(false) })
-        );
+        this.popupService.popup({
+            template: this.meerOptiesTemplate(),
+            element: this.meerOptiesIcon(),
+            settings: createPopupSettings({ width: '246px', onClose: () => this.showVerwijderConfirmButtons.set(false) })
+        });
     }
 
     markeerAlsGelezen() {
@@ -176,6 +176,21 @@ export class BerichtSamenvattingComponent {
         });
     }
 
+    verwijderenMetPopup() {
+        const modal = this.berichtService.createVerwijderDialog();
+
+        let alreadyPositive = false;
+        modal?.confirmResult.subscribe((confirmResult) => {
+            if (confirmResult === 'Positive') {
+                alreadyPositive = true;
+                this.confirmVerwijderSwipe();
+            }
+            if ((confirmResult === 'Negative' || confirmResult === 'Closed') && !alreadyPositive) {
+                this.resetElement();
+            }
+        });
+    }
+
     private onDragInDefaultState(state: NgxInjectDrag['state']) {
         match(state)
             .with({ last: false }, ({ offset: [x] }) => {
@@ -187,7 +202,7 @@ export class BerichtSamenvattingComponent {
                 );
             })
             .with({ offset: P.when(([x]) => x > this.swipeThreshold) }, () => this.confirmMarkeerSwipe())
-            .with({ offset: P.when(([x]) => x < -this.swipeThreshold) }, () => this.confirmVerwijderSwipe())
+            .with({ offset: P.when(([x]) => x < -this.swipeThreshold) }, () => this.verwijderenMetPopup())
             .otherwise(() => this.resetElement());
     }
 
@@ -236,7 +251,8 @@ export class BerichtSamenvattingComponent {
         event?.stopPropagation();
         this.confirmAnimationRunning.set(true);
         const onComplete = () => {
-            isPresent(this.conversatie().datumOudsteOngelezenBoodschap) ? this.markeerAlsGelezen() : this.markeerAlsOngelezen();
+            if (isPresent(this.conversatie().datumOudsteOngelezenBoodschap)) this.markeerAlsGelezen();
+            else this.markeerAlsOngelezen();
             this.swipeState.set('default');
         };
         anime

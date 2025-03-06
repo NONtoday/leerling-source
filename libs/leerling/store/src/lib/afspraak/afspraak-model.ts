@@ -9,6 +9,7 @@ import { toLocalDateTime } from '../util/date-util';
 import { DEFAULT_STRING, SEntiteit, getEntiteitId, parseOptionalDate } from '../util/entiteit-model';
 import { SVak } from '../vakkeuze/vakkeuze-model';
 
+export const NO_VAK_UUID_AVAILABLE = 'NO_VAK_UUID_AVAILABLE';
 export type AfspraakCategorie =
     | 'Individueel'
     | 'Rooster'
@@ -20,6 +21,11 @@ export type AfspraakCategorie =
     | 'Toets'
     // Onbekend indien we geen mapping kunnen maken
     | 'Onbekend';
+
+export interface SStatusNotification {
+    message?: string;
+    status?: string;
+}
 
 export interface SAfspraakActie {
     titel: string;
@@ -88,6 +94,7 @@ export interface SAfspraakDag {
 export interface SAfspraakWeek {
     jaarWeek: string;
     dagen: SAfspraakDag[];
+    statusNotications?: SStatusNotification[];
 }
 
 // Alle calls doen we per week.
@@ -136,9 +143,11 @@ function mapHerhalendeAfspraak(rHerhalendeAfspraak: RHerhalendeAfspraak | undefi
 }
 
 function mapKwtInfo(kwt: RkwtAfspraakItem): SKWTInfo {
+    const ingeschrevenVoorCancelledKwtAfspraak = kwt.inschrijfStatus === 'WEL' && !kwt.afspraakActies?.find((actie) => actie.ingeschreven);
+
     return {
         afspraakActies: kwt.afspraakActies?.map((afspraakActie) => mapAfspraakActie(afspraakActie)).filter(isPresent) ?? [],
-        inschrijfStatus: kwt.inschrijfStatus ?? 'ONBEPAALD',
+        inschrijfStatus: ingeschrevenVoorCancelledKwtAfspraak ? 'NIET' : (kwt.inschrijfStatus ?? 'ONBEPAALD'),
         minimumAantalKeuzes: kwt.minimumAantalKeuzes ?? 0,
         maximumAantalKeuzes: kwt.maximumAantalKeuzes ?? 0,
         kwtSysteem: kwt.kwtSysteem ?? 'SOMTODAY'
@@ -197,6 +206,6 @@ function mapAfspraakVak(rAfspraakVak?: RAfspraakVak): SVak | undefined {
         id: rAfspraakVak.id ?? -1,
         afkorting: rAfspraakVak.afkorting ?? '',
         naam: rAfspraakVak.naam ?? DEFAULT_STRING,
-        uuid: rAfspraakVak.UUID ?? 'NO_VAK_UUID_AVAILABLE'
+        uuid: rAfspraakVak.UUID ?? NO_VAK_UUID_AVAILABLE
     };
 }

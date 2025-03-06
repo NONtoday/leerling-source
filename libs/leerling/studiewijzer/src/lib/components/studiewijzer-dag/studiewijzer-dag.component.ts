@@ -17,7 +17,6 @@ import { StudiewijzerItemsComponent } from '../studiewijzer-items/studiewijzer-i
 
 @Component({
     selector: 'sl-studiewijzer-dag',
-    standalone: true,
     imports: [
         CommonModule,
         StudiewijzerItemsComponent,
@@ -50,11 +49,8 @@ export class StudiewijzerDagComponent implements ElementRefProvider {
         initialValue: this._deviceService.isPhoneOrTabletPortrait()
     });
 
-    public periode = computed(() => {
-        const begin = format(startOfWeek(this.dag().datum, { weekStartsOn: 1 }), 'd', { locale: nl });
-        const eind = format(endOfWeek(this.dag().datum, { weekStartsOn: 1 }), 'd MMM', { locale: nl }).replace('.', '');
-        return `${begin} t/m ${eind}`;
-    });
+    private _datePipe = new SlDatePipe();
+    public periode = computed(() => this._datePipe.transform(this.dag().datum, 'week_begin_dag_tm_eind_dag_maand_kort'));
 
     public ariaPeriode = computed(() => {
         const begin = format(startOfWeek(this.dag().datum, { weekStartsOn: 1 }), 'd', { locale: nl });

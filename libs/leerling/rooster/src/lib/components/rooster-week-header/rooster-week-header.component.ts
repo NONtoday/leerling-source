@@ -18,11 +18,15 @@ import { nl } from 'date-fns/locale';
 import { ButtonComponent, IconDirective, TooltipDirective, isPresent } from 'harmony';
 import { IconChevronLinks, IconChevronRechts, IconDownloaden, IconKalenderDag, provideIcons } from 'harmony-icons';
 import { AccessibilityService, Direction } from 'leerling-util';
+import { RechtenService } from 'leerling/store';
 import { range, upperFirst } from 'lodash-es';
-import { Observable, filter, startWith } from 'rxjs';
+import { derivedAsync } from 'ngxtension/derived-async';
+import { Observable, filter, map, startWith } from 'rxjs';
 import { RoosterViewModel } from '../../services/rooster-model';
 import { RoosterService } from '../../services/rooster.service';
+import { pluralMapping } from '../util/rooster-huiswerk-stack/plural-mapping';
 import { RoosterHuiswerkStackComponent } from '../util/rooster-huiswerk-stack/rooster-huiswerk-stack.component';
+import { RoosterMaatregelenComponent } from '../util/rooster-maatregelen/rooster-maatregelen.component';
 
 export type WeekDateTab = {
     datum: Date;
@@ -36,8 +40,7 @@ export type DirectionOfVandaag = Direction | 'vandaag';
 
 @Component({
     selector: 'sl-rooster-week-header',
-    standalone: true,
-    imports: [CommonModule, IconDirective, TooltipDirective, RoosterHuiswerkStackComponent, ButtonComponent],
+    imports: [CommonModule, IconDirective, TooltipDirective, RoosterHuiswerkStackComponent, RoosterMaatregelenComponent, ButtonComponent],
     templateUrl: './rooster-week-header.component.html',
     styleUrls: ['./rooster-week-header.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -48,9 +51,12 @@ export class RoosterWeekHeaderComponent implements OnChanges {
 
     private _roosterService = inject(RoosterService);
     private _accessibilityService = inject(AccessibilityService);
+    private _rechtenService = inject(RechtenService);
 
     public datum = input.required<Date>();
     public toonWeekend = input.required<boolean>();
+    public vorigeWeekEnabled = input.required<boolean>();
+    public volgendeWeekEnabled = input.required<boolean>();
 
     public weekend = output<boolean>();
     public navigation = output<DirectionOfVandaag>();
@@ -63,6 +69,22 @@ export class RoosterWeekHeaderComponent implements OnChanges {
     public huidigeMaand: string;
     public dates: WeekDateTab[];
     public weekRooster$: Observable<RoosterViewModel>;
+    public pluralMapping = pluralMapping;
+
+    public showStacks$: Observable<boolean>;
+    public stacksRows$: Observable<string>;
+
+    public heeftMaatregelRechten = derivedAsync(() =>
+        this._rechtenService
+            .getCurrentAccountRechten()
+            .pipe(map((rechten) => rechten.absentiesBekijkenAan && rechten.absentieMaatregelBekijkenAan))
+    );
+
+    constructor() {
+        if (this.heeftMaatregelRechten()) {
+            this._roosterService.refreshMaatregelen();
+        }
+    }
 
     public ngOnChanges(simpleChanges: SimpleChanges): void {
         const previousValue = simpleChanges['datum']?.previousValue;
@@ -74,15 +96,33 @@ export class RoosterWeekHeaderComponent implements OnChanges {
             this.huidigeMaand = this.getMaand();
         }
 
-        this.weekRooster$ = this._roosterService.getRooster(this.dates[0].datum, this.dates[this.dates.length - 1].datum).pipe(
-            filter(isPresent),
-            startWith({
-                weekitems: [],
-                dagen: Array(this.dates.length).fill({
-                    datum: this.datum,
-                    dagitems: [],
-                    afspraken: []
+        this.weekRooster$ = this._roosterService
+            .getRooster(this.dates[0].datum, this.dates[this.dates.length - 1].datum, this.heeftMaatregelRechten() ?? false)
+            .pipe(
+                filter(isPresent),
+                startWith({
+                    weekitems: [],
+                    dagen: Array(this.dates.length).fill({
+                        datum: this.datum,
+                        dagitems: [],
+                        afspraken: [],
+                        maatregelen: []
+                    })
                 })
+            );
+
+        this.showStacks$ = this.weekRooster$.pipe(
+            map(
+                (rooster) =>
+                    rooster.weekitems.length !== 0 || rooster.dagen.some((dag) => dag.dagitems.length !== 0 || dag.maatregelen.length !== 0)
+            )
+        );
+        this.stacksRows$ = this.weekRooster$.pipe(
+            map((rooster) => {
+                const heeftTaken = rooster.dagen.some((dag) => dag.dagitems.length != 0) || rooster.weekitems.length != 0;
+                const heeftMaatregelen = rooster.dagen.some((dag) => dag.maatregelen.length != 0);
+
+                return `${heeftTaken ? '40px' : '0'} ${heeftMaatregelen ? '40px' : '0'}`;
             })
         );
     }
@@ -137,6 +177,7 @@ export class RoosterWeekHeaderComponent implements OnChanges {
     }
 
     public onNavigation(direction: DirectionOfVandaag): void {
+        if ((direction === 'next' && !this.volgendeWeekEnabled) || (direction === 'previous' && !this.vorigeWeekEnabled)) return;
         this.navigation.emit(direction);
     }
 }

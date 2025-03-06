@@ -7,7 +7,6 @@ import { BijlagenMapComponent } from '../bijlagen-map/bijlagen-map.component';
 
 @Component({
     selector: 'sl-leermiddelen',
-    standalone: true,
     imports: [CommonModule, BijlagenMapComponent, BijlageComponent],
     templateUrl: './leermiddelen.component.html',
     styleUrl: './leermiddelen.component.scss',

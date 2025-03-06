@@ -11,11 +11,12 @@ import {
 } from 'harmony-icons';
 import { split } from 'string-ts';
 import { match } from 'ts-pattern';
-import { CssVarPipe, toCssVar } from '../css-var-pipe/css-var.pipe';
+import { toCssVar } from '../css-var-pipe/css-var.pipe';
 import { IconDirective } from '../icon/icon.directive';
 import { BgColorToken, BorderColorToken, OnColorToken } from '../tokens/on-color-token';
 
 export type RegistratieCategorie =
+    | 'Afwezig'
     | 'Afwezig ongeoorloofd'
     | 'Afwezig geoorloofd'
     | 'Te laat'
@@ -25,8 +26,7 @@ export type RegistratieCategorie =
 
 @Component({
     selector: 'hmy-registratie-categorie',
-    standalone: true,
-    imports: [CommonModule, IconDirective, CssVarPipe],
+    imports: [CommonModule, IconDirective],
     templateUrl: './registratie-categorie.component.html',
     styleUrl: './registratie-categorie.component.scss',
     providers: [provideIcons(IconPersoonKruis, IconPersoonCheck, IconKlok, IconLeerlingVerwijderd, IconOOhulpmiddelen)],
@@ -48,7 +48,7 @@ export class RegistratieCategorieComponent {
     icon = computed(() =>
         match(this.categorie())
             .returnType<IconName>()
-            .with('Afwezig ongeoorloofd', () => 'persoonKruis')
+            .with('Afwezig', 'Afwezig ongeoorloofd', () => 'persoonKruis')
             .with('Afwezig geoorloofd', () => 'persoonCheck')
             .with('Te laat', () => 'klok')
             .with('Verwijderd uit les', () => 'leerlingVerwijderd')
@@ -60,7 +60,7 @@ export class RegistratieCategorieComponent {
     bgColor = computed(
         () =>
             match(this.categorie())
-                .with('Afwezig ongeoorloofd', () => 'bg-primary-weak' as const)
+                .with('Afwezig', 'Afwezig ongeoorloofd', () => 'bg-primary-weak' as const)
                 .with('Afwezig geoorloofd', () => 'bg-positive-weak' as const)
                 .with('Te laat', () => 'bg-accent-weak' as const)
                 .with('Verwijderd uit les', () => 'bg-warning-weak' as const)

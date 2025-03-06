@@ -22,7 +22,7 @@ export const sortLocaleNested = <T, U>(
             const aValueToSort = get(nestedA, sortVeld);
             const bValueToSort = get(nestedB, sortVeld);
 
-            if (typeof aValueToSort === 'string') {
+            if (typeof aValueToSort === 'string' && typeof bValueToSort === 'string') {
                 sortedValue = aValueToSort.toString().toLowerCase().localeCompare(bValueToSort.toString().toLowerCase());
             } else {
                 if (aValueToSort > bValueToSort) sortedValue = 1;

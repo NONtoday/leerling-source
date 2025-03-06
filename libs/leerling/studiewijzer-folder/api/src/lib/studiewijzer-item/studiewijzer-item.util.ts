@@ -1,3 +1,4 @@
+import { isAfter } from 'date-fns/isAfter';
 import { HuiswerkType, SStudiewijzerItem } from 'leerling/store';
 
 export type TitelType = 'vakOfLesgroepnaam' | 'onderwerp';
@@ -20,6 +21,11 @@ export function getVakOfLesgroepNaam(item: SStudiewijzerItem): string | undefine
 export function getTitel(item: SStudiewijzerItem, titelType: TitelType): string {
     const titel = titelType === 'vakOfLesgroepnaam' ? getVakOfLesgroepNaam(item) : item.onderwerp;
     return titel ?? item.onderwerp ?? '-';
+}
+
+export function getOmschrijving(item: SStudiewijzerItem, titelType: TitelType): string {
+    const omschrijving = titelType === 'vakOfLesgroepnaam' ? item.onderwerp : item.omschrijving;
+    return omschrijving ?? item.omschrijving ?? '-';
 }
 
 function sorteerInleverOpdracht(lhs: SStudiewijzerItem, rhs: SStudiewijzerItem) {
@@ -51,4 +57,19 @@ function sorteerTitel(lhs: SStudiewijzerItem, rhs: SStudiewijzerItem) {
 
 export function getSimpleTitel(item: SStudiewijzerItem) {
     return item.vak?.naam ?? item.onderwerp ?? '-';
+}
+
+export function isDeadlineVerstreken(item: SStudiewijzerItem) {
+    if (!item.isInleveropdracht) return;
+
+    const { inlevermoment, datumTijd, laatsteInleveringDatum } = item;
+
+    const eind = inlevermoment?.eind ?? datumTijd;
+    const isVandaagNaEinddatum = isAfter(new Date(), eind);
+
+    if (!laatsteInleveringDatum) return isVandaagNaEinddatum;
+
+    const isDatumVanLaatsteInleveringNaEindDatum = isAfter(laatsteInleveringDatum, eind);
+
+    return isDatumVanLaatsteInleveringNaEindDatum ?? isVandaagNaEinddatum;
 }

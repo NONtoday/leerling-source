@@ -13,19 +13,11 @@ import {
     signal
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { AvatarComponent, CssVarPipe, DeviceService, IconDirective } from 'harmony';
+import { AvatarComponent, DeviceService } from 'harmony';
 import { IconSchool, IconSluiten, IconVakantie, provideIcons } from 'harmony-icons';
 import { AccountModalDetailsComponent, AccountModalHeaderComponent, HeaderAction } from 'leerling-account-modal';
 import { Affiliation, AuthenticationService, SomtodayLeerling } from 'leerling-authentication';
-import {
-    AccessibilityService,
-    ISwipable,
-    ModalComponent,
-    ModalScrollableElementsProvider,
-    ModalService,
-    SwipeInfo,
-    SwipeManager
-} from 'leerling-util';
+import { AccessibilityService, ISwipable, ModalScrollableElementsProvider, ModalService, SwipeInfo, SwipeManager } from 'leerling-util';
 import { BehaviorSubject, Observable, Subject, takeUntil } from 'rxjs';
 import { SchoolgegevensComponent } from '../schoolgegevens/schoolgegevens.component';
 import { SchoolinformatieModalTabComponent } from '../schoolinformatie-modal-tab/schoolinformatie-modal-tab.component';
@@ -34,15 +26,11 @@ import { SchoolinformatieModalTab, SchoolinformatieModalTabTitel, tabs } from '.
 
 @Component({
     selector: 'sl-schoolinformatie-modal',
-    standalone: true,
     imports: [
         CommonModule,
-        ModalComponent,
         AccountModalHeaderComponent,
         SchoolinformatieModalTabComponent,
         AccountModalDetailsComponent,
-        IconDirective,
-        CssVarPipe,
         VakantiesComponent,
         SchoolgegevensComponent,
         AvatarComponent,
@@ -82,7 +70,10 @@ export class SchoolinformatieModalComponent implements OnInit, OnDestroy, ISwipa
         );
 
         if (this._deviceService.isTabletOrDesktop()) {
-            this.selectTab(tabs.find((tab) => tab.titel === 'Schoolgegevens'));
+            this.selectTab(
+                tabs.find((tab) => tab.titel === 'Schoolgegevens'),
+                false
+            );
         }
 
         setTimeout(() => {
@@ -99,14 +90,16 @@ export class SchoolinformatieModalComponent implements OnInit, OnDestroy, ISwipa
         return leerling?.nn?.substring(0, 1)?.toUpperCase() ?? '--';
     }
 
-    selectTab(item: SchoolinformatieModalTab | undefined) {
+    selectTab(item: SchoolinformatieModalTab | undefined, focusOnDetails = true) {
         this.selectedTab.set(item?.titel);
         this.accountModalDetailsComponent.contentRef.nativeElement.scrollTop = 0;
-        setTimeout(() => {
-            if (this._accessibilityService.isAccessedByKeyboard()) {
-                this.accountModalDetailsComponent.accountModalHeader?.titleRef?.nativeElement.focus();
-            }
-        }, 250); // wacht animatie af, anders door de focus wordt de animatie afgekapt
+        if (focusOnDetails) {
+            setTimeout(() => {
+                if (this._accessibilityService.isAccessedByKeyboard()) {
+                    this.accountModalDetailsComponent.accountModalHeader?.titleRef?.nativeElement.focus();
+                }
+            }, 250); // wacht animatie af, anders door de focus wordt de animatie afgekapt
+        }
     }
 
     onHeaderActionClicked(action: HeaderAction) {

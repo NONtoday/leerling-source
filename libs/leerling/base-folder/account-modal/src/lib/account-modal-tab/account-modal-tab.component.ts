@@ -6,7 +6,6 @@ import { AccountModalTab } from '../account-modal/account-modal.component';
 
 @Component({
     selector: 'sl-account-modal-tab',
-    standalone: true,
     imports: [CommonModule, IconDirective, CssVarPipe],
     templateUrl: './account-modal-tab.component.html',
     styleUrls: ['./account-modal-tab.component.scss'],

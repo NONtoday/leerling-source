@@ -1,17 +1,29 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ElementRef, computed, effect, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal } from '@angular/core';
 import { Store } from '@ngxs/store';
-import { addDays, differenceInDays, endOfDay, getISOWeek, startOfISOWeek } from 'date-fns';
-import { CheckboxComponent, IconDirective, PillComponent, TagComponent } from 'harmony';
+import { collapseOnLeaveAnimation, expandOnEnterAnimation } from 'angular-animations';
+import { differenceInDays, endOfDay, getISOWeek } from 'date-fns';
 import {
+    ButtonComponent,
+    CheckboxComponent,
+    IconDirective,
+    IconPillComponent,
+    PillComponent,
+    SpinnerComponent,
+    TagComponent
+} from 'harmony';
+import {
+    IconCheck,
     IconChevronLinks,
     IconHuiswerk,
+    IconInbox,
     IconInleveropdracht,
     IconKalenderDag,
     IconKlok,
     IconLesstof,
     IconPijlLinks,
     IconSluiten,
+    IconTijd,
     IconToets,
     IconToetsGroot,
     provideIcons
@@ -20,36 +32,47 @@ import { AuthenticationService } from 'leerling-authentication';
 import { BijlageComponent, HtmlContentComponent } from 'leerling-base';
 import { ConnectGebruikService } from 'leerling-connect';
 import {
+    createModalSettings,
+    createSidebarSettings,
     FULL_SCREEN_MET_MARGIN,
     ModalSettings,
     SidebarService,
     SidebarSettings,
     SlDatePipe,
-    createModalSettings,
-    createSidebarSettings
+    SlTwoDatePipe
 } from 'leerling-util';
 import { SExternmateriaal, SStudiewijzerItem, ToggleAfgevinkt } from 'leerling/store';
 import { isEmpty } from 'lodash-es';
+import { InleveropdrachtCategorieIconColorPipe } from '../inleveropdracht/pipes/inleveropdracht-categorie-icon-color.pipe';
+import { InleveropdrachtCategorieIconNamePipe } from '../inleveropdracht/pipes/inleveropdracht-categorie-icon-name.pipe';
+import { InleveropdrachtCategorieToStringPipe } from '../inleveropdracht/pipes/inleveropdracht-categorie-to-string.pipe';
 import { StudiewijzerItemIconColorPipe } from '../pipes/studiewijzer-item-icon-color.pipe';
 import { StudiewijzerItemIconPipe } from '../pipes/studiewijzer-item-icon.pipe';
+import { isDeadlineVerstreken } from '../studiewijzer-item/studiewijzer-item.util';
+
+const ANIMATIONS = [expandOnEnterAnimation(), collapseOnLeaveAnimation()];
 
 @Component({
     selector: 'sl-studiewijzer-item-instructie',
-    standalone: true,
     imports: [
         CommonModule,
         IconDirective,
         CheckboxComponent,
         HtmlContentComponent,
         StudiewijzerItemIconPipe,
-        StudiewijzerItemIconColorPipe,
         BijlageComponent,
         TagComponent,
         PillComponent,
-        SlDatePipe
+        ButtonComponent,
+        IconPillComponent,
+        InleveropdrachtCategorieIconColorPipe,
+        InleveropdrachtCategorieIconNamePipe,
+        InleveropdrachtCategorieToStringPipe,
+        SpinnerComponent
     ],
     templateUrl: './studiewijzer-item-instructie.component.html',
     styleUrl: './studiewijzer-item-instructie.component.scss',
+    animations: ANIMATIONS,
     providers: [
         provideIcons(
             IconChevronLinks,
@@ -61,38 +84,47 @@ import { StudiewijzerItemIconPipe } from '../pipes/studiewijzer-item-icon.pipe';
             IconLesstof,
             IconPijlLinks,
             IconKlok,
-            IconKalenderDag
+            IconKalenderDag,
+            IconTijd,
+            IconCheck,
+            IconInbox
         )
     ],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    host: {
+        '[style.--icon-color]': 'iconColorCss()'
+    }
 })
 export class StudiewijzerItemInstructieComponent {
     private _sidebarService = inject(SidebarService);
     private _connectGerbruikService = inject(ConnectGebruikService);
-    private _elementRef = inject(ElementRef);
     private _store = inject(Store);
     private _authenticationService = inject(AuthenticationService);
 
     private _datePipe = new SlDatePipe();
+    private _twoDatePipe = new SlTwoDatePipe();
 
     public item = input.required<SStudiewijzerItem>();
+    public toonInleverenKnop = input.required<boolean>();
 
-    public afgevinkt = signal(false);
-    public afvinkenToegestaan = computed(
-        () => !this._authenticationService.isCurrentContextOuderVerzorger && this.item().huiswerkType !== 'LESSTOF'
-    );
+    public bestandenInleveren = output();
+
+    // Na afvinken wordt deze via de store vanuit de parent bijgewerkt.
+    public afgevinkt = computed(() => this.item().gemaakt);
+    public trottleTimeout = 500;
+
+    public isLeerlingContext = this._authenticationService.isCurrentContextLeerling;
+    public afvinkenToegestaan = computed(() => this.isLeerlingContext && this.item().huiswerkType !== 'LESSTOF');
 
     private _iconColorPipe = new StudiewijzerItemIconColorPipe();
     public iconColor = computed(() => {
         return this._iconColorPipe.transform(this.item(), this.afgevinkt());
     });
+    public iconColorCss = computed(() => `var(--${this.iconColor()})`);
 
-    constructor() {
-        effect(() => this.afgevinkt.set(this.item().gemaakt), {
-            allowSignalWrites: true
-        });
-        effect(() => this._elementRef.nativeElement.style.setProperty('--icon-color', `var(--${this.iconColor()}`));
-    }
+    public toonProjectgroepLeerlingen = signal(false);
+
+    public state = computed(() => ({ saving: signal(false) }));
 
     public typeOmschrijving = computed(() => {
         if (this.item().isInleveropdracht) return 'Inleveropdracht';
@@ -124,14 +156,12 @@ export class StudiewijzerItemInstructieComponent {
         const item = this.item();
 
         if (item.inlevermoment) {
-            return `${this._datePipe.transform(item.inlevermoment.start, 'dag_kort_dagnummer_maand_kort')} - ${this._datePipe.transform(item.inlevermoment.eind, 'dag_kort_dagnummer_maand_kort')}`;
+            return this._twoDatePipe.transform(item.inlevermoment.start, item.inlevermoment.eind, true);
         }
 
         if (item.swiToekenningType === 'WEEK') {
             const week = getISOWeek(item.datumTijd);
-            const maandag = startOfISOWeek(item.datumTijd);
-            const vrijdag = addDays(maandag, 4);
-            return `Week ${week}, ${this._datePipe.transform(maandag, 'dagnummer')} t/m ${this._datePipe.transform(vrijdag, 'dagnummer_maand_kort')}`;
+            return `Week ${week}, ${this._datePipe.transform(item.datumTijd, 'week_begin_dag_tm_eind_dag_maand_kort')}`;
         }
         return this._datePipe.transform(item.datumTijd, 'dag_uitgeschreven_dagnummer_maand');
     });
@@ -147,10 +177,16 @@ export class StudiewijzerItemInstructieComponent {
     });
 
     public toggleAfgevinkt() {
-        if (!this.afvinkenToegestaan()) return;
+        if (!this.afvinkenToegestaan() || this.state().saving()) return;
+        this.state().saving.set(true);
+        this._store.dispatch(new ToggleAfgevinkt(this.item())).subscribe(() => {
+            this.state().saving.set(false);
+        });
+    }
 
-        this.afgevinkt.set(!this.afgevinkt());
-        this._store.dispatch(new ToggleAfgevinkt(this.item()));
+    public toggleAfgevinktCheckbox(event: Event) {
+        event.stopPropagation();
+        this.toggleAfgevinkt();
     }
 
     public registreerTekstLink(url: string) {
@@ -181,7 +217,11 @@ export class StudiewijzerItemInstructieComponent {
     public static getSidebarSettings(huiswerk: SStudiewijzerItem): SidebarSettings {
         return createSidebarSettings({
             title: huiswerk.vak?.naam ?? 'Details',
-            headerType: 'none'
+            headerDevice: 'none'
         });
     }
+
+    public teLaat = computed(() => {
+        return isDeadlineVerstreken(this.item());
+    });
 }

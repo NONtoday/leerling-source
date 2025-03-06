@@ -6,7 +6,6 @@ import { SchoolinformatieModalTab } from '../schoolinformatie-modal/schoolinform
 
 @Component({
     selector: 'sl-schoolinformatie-modal-tab',
-    standalone: true,
     imports: [CommonModule, IconDirective, CssVarPipe],
     templateUrl: './schoolinformatie-modal-tab.component.html',
     styleUrls: ['./schoolinformatie-modal-tab.component.scss'],

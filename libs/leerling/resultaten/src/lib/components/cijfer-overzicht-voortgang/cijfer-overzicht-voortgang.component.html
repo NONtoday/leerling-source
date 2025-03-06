@@ -1,0 +1,282 @@
+@if (overzicht()) {
+    <div class="host">
+        <table>
+            <thead>
+                <tr class="header-row">
+                    <th class="empty-header sticky-left"></th>
+                    @for (periode of periodeData(); track periode) {
+                        @let periodeOpen = periodeState().open().get(periode.nummer) ?? false;
+                        @let periodenaam = periodeNamen().get(periode.nummer) ?? periode.nummer + '';
+                        <th
+                            class="periode-header"
+                            [class.first-periode]="$index === 0"
+                            [class.last-periode]="$index === periodeData().length - 1"
+                            [class.open]="periodeOpen"
+                            [style.--aantal-items]="periodeOpen ? periode.aantalToetsen + aantalGemiddelden() : 1"
+                            [attr.aria-expanded]="periodeOpen"
+                            [attr.aria-label]="'Periode: ' + periodenaam"
+                            (click)="togglePeriode(periode.nummer)"
+                            tabindex="0"
+                            role="button">
+                            <span class="periode-naam" [hmyTooltip]="periodenaam" [showIfEllipsed]="true">
+                                {{ periodenaam }}
+                            </span>
+                            <i
+                                class="periode-icon"
+                                [class.open]="periodeOpen"
+                                [hmyIcon]="periodeOpen ? 'uitklappenLinks' : 'uitklappenRechts'"></i>
+                        </th>
+                        @if (!$last) {
+                            <div class="periode-seperator" tabindex="-1" aria-hidden="true"></div>
+                        }
+                    }
+                </tr>
+
+                <tr class="vak-gemiddelde-header">
+                    <th class="sticky-left vakken" scope="col" tabindex="0">Vakken</th>
+                    @for (periode of periodeData(); track periode) {
+                        @let periodenaam = periodeNamen().get(periode.nummer) ?? periode.nummer;
+                        @if (periodeState().open().get(periode.nummer)) {
+                            @for (number of [].constructor(periode.aantalToetsen); track $index) {
+                                <th tabindex="-1" aria-hidden="true"></th>
+                            }
+
+                            @if (metPeriodegemiddelde()) {
+                                <th
+                                    class="gemiddelde"
+                                    [class.last]="!metRapportcijfer() && !metRapportgemiddelde()"
+                                    [attr.aria-label]="'Periodegemiddelde voor periode ' + periodenaam"
+                                    scope="col"
+                                    tabindex="0">
+                                    Periode gem.
+                                </th>
+                            }
+                            @if (metRapportgemiddelde()) {
+                                <th
+                                    class="gemiddelde"
+                                    [class.last]="!metRapportcijfer()"
+                                    [attr.aria-label]="'Rapportgemiddelde voor periode ' + periodenaam"
+                                    scope="col"
+                                    tabindex="0">
+                                    Rapport gem.
+                                </th>
+                            }
+                            @if (metRapportcijfer()) {
+                                <th
+                                    class="gemiddelde last"
+                                    [attr.aria-label]="'Rapportcijfer voor periode ' + periodenaam"
+                                    scope="col"
+                                    tabindex="0">
+                                    Rapportcijfer
+                                </th>
+                            }
+                            @if (geenGemiddelden()) {
+                                <th class="gemiddelde last" tabindex="-1"></th>
+                            }
+                        } @else {
+                            <th
+                                class="gemiddelde last"
+                                [tabindex]="periodeCijferType() ? 0 : -1"
+                                [attr.aria-label]="periodeCijferAriaLabel() + ' voor periode ' + periodenaam"
+                                scope="col">
+                                {{ periodeCijferType() ?? '' }}
+                            </th>
+                        }
+                        @if (!$last) {
+                            <div class="periode-seperator" tabindex="-1" aria-hidden="true"></div>
+                        }
+                    }
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (vakResultaten(); as vakResultaten) {
+                    @for (resultaten of vakResultaten; track $index) {
+                        <ng-container
+                            [ngTemplateOutlet]="vakRow"
+                            [ngTemplateOutletContext]="{
+                                vakResultatenParam: resultaten,
+                                standaardNormering: true
+                            }" />
+
+                        @if (resultaten.meervoudigeToetsnormering) {
+                            <ng-container
+                                [ngTemplateOutlet]="vakRow"
+                                [ngTemplateOutletContext]="{
+                                    vakResultatenParam: resultaten,
+                                    standaardNormering: false
+                                }" />
+                        }
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+} @else {
+    <hmy-spinner />
+}
+
+<!-- Let op: template let's zijn altijd van het type any en daarmee foutgevoeliger -->
+<ng-template #vakRow let-vakResultatenParam="vakResultatenParam" let-standaardNormering="standaardNormering">
+    @let vakResultaten = asVakresulaten(vakResultatenParam);
+    <tr class="vak-row">
+        <td class="vak sticky-left" (click)="openVakDetail(vakResultaten.vakkeuze, standaardNormering)" tabindex="0" role="link">
+            @let vaknaam = vakResultaten.vakkeuze.vak.naam;
+            <hmy-vak-icon [vaknaam]="vaknaam" /> <span class="naam" [hmyTooltip]="vaknaam" [showIfEllipsed]="true">{{ vaknaam }}</span>
+            @if (vakResultaten.anderNiveau) {
+                <hmy-icon-pill
+                    class="ander-niveau-pill"
+                    [text]="vakResultaten.anderNiveau"
+                    [onTouchAllowed]="true"
+                    [hmyTooltip]="'Volgt vak op ander niveau • ' + vakResultaten.anderNiveau"
+                    [attr.aria-label]="'Volgt vak op ander niveau ' + vakResultaten.anderNiveau"
+                    position="bottom"
+                    icon="hogerNiveau"
+                    color="warning" />
+            }
+            @if (vakResultaten.meervoudigeToetsnormering) {
+                @let normering = standaardNormering ? vakResultaten.standaardNormering : vakResultaten.alternatieveNormering;
+                <span class="normering" [class.alternatief]="!standaardNormering" [hmyTooltip]="normering" [showIfEllipsed]="true">{{
+                    normering
+                }}</span>
+            }
+        </td>
+        @for (periode of periodeData(); track periode.nummer) {
+            @let vakPeriode = vakResultaten.perioden | findVakPeriode: periode.nummer;
+            @let periodenaam = periodeNamen().get(periode.nummer) ?? periode.nummer;
+            @if (periodeState().open().get(periode.nummer)) {
+                @for (_ of [].constructor(periode.aantalToetsen); track $index) {
+                    @if (vakPeriode?.resultaten?.[$index]; as resultaat) {
+                        @let cijfer = standaardNormering ? resultaat.formattedResultaat : resultaat.formattedResultaatAlternatief;
+                        <td
+                            class="cijfer"
+                            [hmyTooltip]="resultaat | overzichtResultaatTooltip: standaardNormering"
+                            [attr.aria-label]="(resultaat | overzichtResultaatAriaLabel: standaardNormering) + ' in periode ' + periodenaam"
+                            [class.onvoldoende]="
+                                standaardNormering ? resultaat.isVoldoende === false : resultaat.isVoldoendeAlternatief === false
+                            "
+                            [class.neutraal]="
+                                standaardNormering ? resultaat.isVoldoende === undefined : resultaat.isVoldoendeAlternatief === undefined
+                            "
+                            [attr.periode]="periode.nummer"
+                            tabindex="0">
+                            {{ cijfer }}
+                        </td>
+                    } @else {
+                        <td class="cijfer" tabindex="-1" hmyTooltip="Geen cijfer"></td>
+                    }
+                }
+                @if (metPeriodegemiddelde()) {
+                    <ng-template-outlet
+                        [ngTemplateOutlet]="gemiddelde"
+                        [ngTemplateOutletContext]="{
+                            resultaatParam: vakPeriode?.periodeGemiddelde,
+                            standaardNormering: standaardNormering,
+                            isGemiddelde: metRapportgemiddelde() || metRapportcijfer(),
+                            isLast: !metRapportcijfer() && !metRapportgemiddelde(),
+                            periodenaam: periodenaam,
+                            gemiddeldeType: 'periodegemiddelde'
+                        }" />
+                }
+                @if (metRapportgemiddelde()) {
+                    <ng-template-outlet
+                        [ngTemplateOutlet]="gemiddelde"
+                        [ngTemplateOutletContext]="{
+                            resultaatParam: vakPeriode?.rapportGemiddelde,
+                            standaardNormering: standaardNormering,
+                            isGemiddelde: metRapportcijfer(),
+                            isLast: !metRapportcijfer(),
+                            periodenaam: periodenaam,
+                            gemiddeldeType: 'rapportgemiddelde'
+                        }" />
+                }
+                @if (metRapportcijfer()) {
+                    <ng-template-outlet
+                        [ngTemplateOutlet]="gemiddelde"
+                        [ngTemplateOutletContext]="{
+                            resultaatParam: vakPeriode?.rapportCijfer,
+                            standaardNormering: standaardNormering,
+                            isGemiddelde: true,
+                            isLast: true,
+                            periodenaam: periodenaam,
+                            gemiddeldeType: 'rapportcijfer'
+                        }" />
+                }
+                @if (geenGemiddelden()) {
+                    <td class="cijfer gemiddelde last" type="geen-gemiddelde" tabindex="-1"></td>
+                }
+            } @else {
+                @if (metRapportcijfer()) {
+                    <ng-template-outlet
+                        [ngTemplateOutlet]="gemiddelde"
+                        [ngTemplateOutletContext]="{
+                            resultaatParam: vakPeriode?.rapportCijfer,
+                            standaardNormering: standaardNormering,
+                            isGemiddelde: true,
+                            isLast: true,
+                            periodenaam: periodenaam,
+                            gemiddeldeType: 'rapportcijfer'
+                        }" />
+                } @else if (metRapportgemiddelde()) {
+                    <ng-template-outlet
+                        [ngTemplateOutlet]="gemiddelde"
+                        [ngTemplateOutletContext]="{
+                            resultaatParam: vakPeriode?.rapportGemiddelde,
+                            standaardNormering: standaardNormering,
+                            isGemiddelde: true,
+                            isLast: true,
+                            periodenaam: periodenaam,
+                            gemiddeldeType: 'rapportgemiddelde'
+                        }" />
+                } @else if (metPeriodegemiddelde()) {
+                    <ng-template-outlet
+                        [ngTemplateOutlet]="gemiddelde"
+                        [ngTemplateOutletContext]="{
+                            resultaatParam: vakPeriode?.periodeGemiddelde,
+                            standaardNormering: standaardNormering,
+                            isGemiddelde: true,
+                            isLast: true,
+                            periodenaam: periodenaam,
+                            gemiddeldeType: 'periodegemiddelde'
+                        }" />
+                } @else {
+                    <td class="cijfer gemiddelde last" type="geen-gemiddelde" tabindex="-1"></td>
+                }
+            }
+            @if (!$last) {
+                <div class="periode-seperator" tabindex="-1" aria-hidden="true"></div>
+            }
+        }
+    </tr>
+</ng-template>
+
+<ng-template
+    #gemiddelde
+    let-resultaatParam="resultaatParam"
+    let-standaardNormering="standaardNormering"
+    let-isGemiddelde="isGemiddelde"
+    let-isLast="isLast"
+    let-gemiddeldeType="gemiddeldeType"
+    let-periodenaam="periodenaam">
+    @let resultaat = asResultaat(resultaatParam);
+    @let cijfer = standaardNormering ? resultaat?.formattedResultaat : resultaat?.formattedResultaatAlternatief;
+    <td
+        class="cijfer"
+        [class.gemiddelde]="isGemiddelde"
+        [class.last]="isLast"
+        [attr.aria-label]="resultaat | overzichtGemiddeldeAriaLabel: standaardNormering : gemiddeldeType : periodenaam"
+        [class.onvoldoende]="standaardNormering ? resultaat?.isVoldoende === false : resultaat?.isVoldoendeAlternatief === false"
+        [attr.type]="gemiddeldeType"
+        tabindex="0">
+        {{ cijfer ?? '-' }}
+
+        @if (resultaat?.bijzonderheid === 'NietGemaakt') {
+            <i
+                class="waarschuwing"
+                hmyIcon="waarschuwing"
+                size="smallest"
+                color="action-accent-normal"
+                hmyTooltip="Er zijn gemiste toetsen"></i>
+        }
+    </td>
+</ng-template>

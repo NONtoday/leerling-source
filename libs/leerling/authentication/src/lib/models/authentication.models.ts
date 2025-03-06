@@ -10,7 +10,8 @@ export enum AuthenticationEventType {
     ACCOUNT_SWITCHED,
     CONTEXT_NOT_FOUND,
     MEDEWERKER_UNSUPPORTED,
-    TOKEN_RECEIVED
+    TOKEN_RECEIVED,
+    ACCOUNT_REPLACED
 }
 
 export enum Affiliation {
@@ -31,6 +32,12 @@ export class AuthenticationAccountRemovedEvent extends AuthenticationEvent {
 export class AuthenticationContextNotFoundEvent extends AuthenticationEvent {
     constructor() {
         super(AuthenticationEventType.CONTEXT_NOT_FOUND);
+    }
+}
+
+export class AuthenticationContextReplacedEvent extends AuthenticationEvent {
+    constructor() {
+        super(AuthenticationEventType.ACCOUNT_REPLACED);
     }
 }
 

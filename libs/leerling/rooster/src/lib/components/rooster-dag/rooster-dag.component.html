@@ -1,6 +1,6 @@
 @if (items(); as items) {
     @for (label of labels; track label) {
-        <div class="uur" [class.last]="$last" [attr.aria-label]="label.ariaLabel" role="text"></div>
+        <div class="uur" [class.last]="$last" aria-hidden="true"></div>
     }
     @if (huidigeTijdlijnTop(); as top) {
         <div class="tijdlijn" [style.top]="top"></div>
@@ -13,6 +13,7 @@
             [style.width.px]="item.positie.width"
             [style.height.px]="item.positie.height"
             [tabindex]="customTabindex()"
+            [attr.aria-hidden]="customTabindex() === -1"
             role="button" />
     }
 } @else {

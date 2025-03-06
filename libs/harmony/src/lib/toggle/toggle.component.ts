@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 
 /* eslint-disable @typescript-eslint/no-empty-function */
-/* eslint-disable no-unused-vars */
+
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, forwardRef, HostBinding, HostListener, Input } from '@angular/core';
@@ -10,7 +10,6 @@ import { Optional } from '../optional/optional';
 
 @Component({
     selector: 'hmy-toggle',
-    standalone: true,
     imports: [CommonModule, FormsModule],
     templateUrl: './toggle.component.html',
     styleUrls: ['./toggle.component.scss'],

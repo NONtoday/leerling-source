@@ -16,7 +16,7 @@ import {
     signal
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ButtonComponent, SpinnerComponent } from 'harmony';
+import { ButtonComponent } from 'harmony';
 import {
     AccessibilityService,
     FULL_SCREEN_MET_MARGIN,
@@ -36,8 +36,7 @@ import { GROTETOETSFILTER, HUISWERKFILTER, HuiswerkFilterType, INLEVEROPDRACHTFI
 
 @Component({
     selector: 'sl-studiewijzer-filter-dropdown',
-    standalone: true,
-    imports: [CommonModule, StudiewijzerFilterDropdownItemComponent, ButtonComponent, SpinnerComponent],
+    imports: [CommonModule, StudiewijzerFilterDropdownItemComponent, ButtonComponent],
     templateUrl: './studiewijzer-filter-dropdown.component.html',
     styleUrl: './studiewijzer-filter-dropdown.component.scss',
     changeDetection: ChangeDetectionStrategy.OnPush

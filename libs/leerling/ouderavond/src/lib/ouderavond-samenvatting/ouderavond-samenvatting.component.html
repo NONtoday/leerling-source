@@ -1,0 +1,98 @@
+<div class="title-container" tabindex="0">
+    <div class="title-wrapper">
+        <h2 class="title">{{ title() }}</h2>
+        <div class="ondertitel-icon">
+            <i class="icon" hmyIcon="kalenderDag" color="action-neutral-normal" size="small"></i>{{ titleSubtext() }}
+        </div>
+        @if (showStappen()) {
+            <div class="ondertitel">Kloppen onderstaande gegevens?</div>
+        }
+    </div>
+</div>
+
+@if (magAanvragen() && (!showStappen() || verzendStatus() === 'Succeeded')) {
+    <hmy-message-bar id="succesMessage" [message]="verzendMessage()" messageType="success" tabindex="0" />
+} @else if (verzendStatus() === 'Error') {
+    <hmy-message-bar id="errorMessage" [message]="verzendMessage()" messageType="error" tabindex="0" />
+}
+
+@if (magAanvragen() || ouderavondInfo().inschrijfStatus !== 'GEEN_GESPREK') {
+    @if (data().wilGeenGesprek) {
+        <div class="blok geen-gesprek" [class.no-hover]="!showStappen()" tabindex="0">
+            <span>Ik wil geen gesprek</span>
+            @if (showStappen()) {
+                <i
+                    class="bewerken"
+                    [class.disabled]="verzendStatus() === 'In progress'"
+                    (click)="edit.emit({ stapNaam: 'Inschrijven' })"
+                    hmyIcon="bewerken"
+                    size="medium"
+                    role="button"
+                    aria-label="Wijzigen"
+                    tabindex="0"></i>
+            }
+        </div>
+    } @else {
+        @if (toastInfo(); as toastInfo) {
+            <hmy-message-bar [message]="toastInfo.message" [messageType]="toastInfo.messageType" tabindex="0" />
+        }
+        <div class="keuze-container">
+            @for (keuze of data().keuzes; track keuze) {
+                <div class="blok" [class.no-hover]="!showStappen()" tabindex="0">
+                    <div class="keuze-titel">
+                        <sl-ouderavond-vak-docent [vak]="keuze.vak" [docent]="keuze.docenten" />
+                        @if (showStappen()) {
+                            <i
+                                class="bewerken"
+                                [class.disabled]="verzendStatus() === 'In progress'"
+                                (click)="edit.emit({ stapNaam: 'Informatie', keuzeId: keuze.id })"
+                                hmyIcon="bewerken"
+                                size="medium"
+                                role="button"
+                                aria-label="Wijzigen"
+                                tabindex="0"></i>
+                        }
+                    </div>
+                    @if (vakOpmerkingToegestaan() && keuze.opmerkingVoorDocenten?.length) {
+                        <div class="opmerking">
+                            {{ keuze.opmerkingVoorDocenten }}
+                        </div>
+                    }
+
+                    @if (extraLangGesprekToegestaan() && keuze.extraGesprekstijd) {
+                        <hmy-icon-pill
+                            [hoverable]="false"
+                            icon="reactieToevoegen"
+                            text="Extra gesprekstijd"
+                            color="primary"
+                            type="darker"
+                            iconSize="smallest" />
+                    }
+                </div>
+            }
+            @if (roostermakerOpmerkingToegestaan() && data().opmerkingVoorRoostermaker?.length) {
+                <div class="blok roostermaker-opmerking" [class.no-hover]="!showStappen()" tabindex="0">
+                    <div class="opmerking-titel">
+                        <span> Opmerking voor roostermaker </span>
+                        @if (showStappen()) {
+                            <i
+                                class="bewerken"
+                                [class.disabled]="verzendStatus() === 'In progress'"
+                                (click)="edit.emit({ stapNaam: 'Informatie', roosterMaker: true })"
+                                hmyIcon="bewerken"
+                                size="medium"
+                                role="button"
+                                aria-label="Wijzigen"
+                                tabindex="0"></i>
+                        }
+                    </div>
+                    <span class="opmerking">{{ data().opmerkingVoorRoostermaker }}</span>
+                </div>
+            }
+        </div>
+    }
+} @else {
+    @if (toastInfo(); as toastInfo) {
+        <hmy-message-bar [message]="toastInfo.message" [messageType]="toastInfo.messageType" tabindex="0" />
+    }
+}

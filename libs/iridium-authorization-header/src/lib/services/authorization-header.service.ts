@@ -1,7 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { OAuthService } from 'angular-oauth2-oidc';
-import { Observable, Subject, catchError, delay, from, map, of, take, tap } from 'rxjs';
+import { Observable, Subject, catchError, delay, from, map, of, switchMap, take, tap } from 'rxjs';
 
+export const TOKEN_KON_NIET_VERVERST_WORDEN = 'Token kon niet ververst worden!';
 @Injectable({
     providedIn: 'root'
 })
@@ -16,10 +17,10 @@ export class AuthorizationHeaderService {
      * @param accessTokenValidity default value op 3_600_000 (één uur)
      */
     public getValidAuthorizationHeader(accessTokenValidity = 3_600_000): Observable<string> {
+        if (!this.isRefreshable()) this.oauthService.authorizationHeader();
         if (this.isRefreshing) {
             return this.authHeaderSubject.pipe(take(1));
         }
-
         const expiresAt = this.oauthService.getAccessTokenExpiration();
         const clockSkewInMs = (this.oauthService.clockSkewInSec ?? 0) * 1000;
         const margin = accessTokenValidity * 0.1;
@@ -27,8 +28,6 @@ export class AuthorizationHeaderService {
         if (isAccessTokenValid) {
             return of(this.oauthService.authorizationHeader());
         }
-
-        this.isRefreshing = true;
         return this.refreshToken(true);
     }
 
@@ -36,7 +35,9 @@ export class AuthorizationHeaderService {
         return !!this.oauthService.getRefreshToken();
     }
 
-    private refreshToken(withRetry: boolean): Observable<string> {
+    public refreshToken(withRetry: boolean): Observable<string> {
+        if (this.isRefreshing) return this.authHeaderSubject.pipe(take(1));
+        this.isRefreshing = true;
         return from(this.oauthService.refreshToken()).pipe(
             delay(withRetry ? 0 : 100),
             catchError((response) => {
@@ -58,22 +59,44 @@ export class AuthorizationHeaderService {
         );
     }
 
-    private handleError(response: any): Observable<string> {
+    public singleRefreshFailFast() {
+        if (this.isRefreshing) return of();
+        this.isRefreshing = true;
+        return from(this.oauthService.refreshToken()).pipe(
+            catchError((response) => {
+                return this.handleError(response, false);
+            }),
+            take(1),
+            map(() => this.oauthService.authorizationHeader()),
+            tap((authorizationHeader) => {
+                this.isRefreshing = false;
+                this.authHeaderSubject.next(authorizationHeader);
+            }),
+            switchMap(() => of())
+        );
+    }
+
+    private handleError(response: any, checkForAcccessToken = true): Observable<string> {
         this.isRefreshing = false;
-        if (this.oauthService.hasValidAccessToken()) {
+        if (this.oauthService.hasValidAccessToken() && checkForAcccessToken) {
             const authHeader = this.oauthService.authorizationHeader();
             this.authHeaderSubject.next(authHeader);
             return of(authHeader);
         } else {
             if (response.status !== 0 && response.status < 500) {
-                this.authHeaderSubject.error('Token kon niet ververst worden!');
                 this.refreshErrorSubject.next();
+                this.authHeaderSubject.error(TOKEN_KON_NIET_VERVERST_WORDEN);
+                this.authHeaderSubject = new Subject<string>();
             }
-            throw new Error('Token kon niet ververst worden!');
+            throw new Error(TOKEN_KON_NIET_VERVERST_WORDEN);
         }
     }
 
     public get refreshError$(): Observable<void> {
         return this.refreshErrorSubject.asObservable();
+    }
+
+    public featureDisabledRefreshError(): void {
+        this.refreshErrorSubject.next();
     }
 }

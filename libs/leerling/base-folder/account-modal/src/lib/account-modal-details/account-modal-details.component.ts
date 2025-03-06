@@ -4,7 +4,6 @@ import { AccountModalHeaderComponent, HeaderAction } from '../account-modal-head
 
 @Component({
     selector: 'sl-account-modal-details',
-    standalone: true,
     imports: [CommonModule, AccountModalHeaderComponent],
     templateUrl: './account-modal-details.component.html',
     styleUrls: ['./account-modal-details.component.scss'],

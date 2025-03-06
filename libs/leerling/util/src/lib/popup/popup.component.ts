@@ -11,6 +11,7 @@ import {
     Input,
     OnDestroy,
     OnInit,
+    Renderer2,
     ViewContainerRef,
     inject
 } from '@angular/core';
@@ -50,7 +51,6 @@ const POPUP_SELECTOR = 'sl-popup';
 
 @Component({
     selector: POPUP_SELECTOR,
-    standalone: true,
     imports: [CommonModule],
     templateUrl: './popup.component.html',
     styleUrls: ['./popup.component.scss'],
@@ -64,6 +64,7 @@ export class PopupComponent implements OnInit, AfterContentChecked, AfterViewIni
     private _router = inject(Router);
     private _accessibilityService = inject(AccessibilityService);
     private _keyPressedService = inject(KeyPressedService);
+    private _renderer = inject(Renderer2);
 
     public viewContainerRef = inject(ViewContainerRef);
 
@@ -121,7 +122,8 @@ export class PopupComponent implements OnInit, AfterContentChecked, AfterViewIni
         nativeElement.style.setProperty('--max-height', this.settings.maxHeight);
 
         // Zorg ervoor dat klikken op het connectedElement de popup niet opnieuw opent, wordt gereset in de ngOnDestroy.
-        this.connectedElement.element.nativeElement.style.pointerEvents = 'none';
+
+        this._renderer.setStyle(this.connectedElement.element.nativeElement, 'pointer-events', 'none');
 
         this.setupAnimation();
     }
@@ -133,11 +135,12 @@ export class PopupComponent implements OnInit, AfterContentChecked, AfterViewIni
     ngAfterViewInit(): void {
         setTimeout(() => {
             this.setupListeners();
+            this.viewContainerRef.element.nativeElement.scrollTo({ top: 0, behavior: 'smooth' });
         });
     }
 
     ngOnDestroy(): void {
-        this.connectedElement.element.nativeElement.style.pointerEvents = 'auto';
+        this._renderer.removeStyle(this.connectedElement.element.nativeElement, 'pointer-events');
         this._destroy$.next();
         this._destroy$.complete();
     }

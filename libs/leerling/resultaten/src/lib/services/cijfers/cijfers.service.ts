@@ -8,6 +8,7 @@ const CIJFERS = 'Cijfers';
 export class CijfersService {
     private _scrollableTitle: WritableSignal<string | undefined> = signal<string | undefined>('');
     private _toonTabs: WritableSignal<boolean> = signal<boolean>(false);
+    private _toonLegeResultaatKolommen: WritableSignal<boolean> = signal<boolean>(false);
 
     public setCijfersMetTabs() {
         this._scrollableTitle.set(CIJFERS);
@@ -27,11 +28,19 @@ export class CijfersService {
         this._toonTabs.set(toonTabs);
     }
 
+    public setToonLegeResultaatKolommen(toonLegeResultaatKolommen: boolean) {
+        this._toonLegeResultaatKolommen.set(toonLegeResultaatKolommen);
+    }
+
     public get scrollableTitle(): WritableSignal<string | undefined> {
         return this._scrollableTitle;
     }
 
     public get toonTabs() {
         return this._toonTabs;
+    }
+
+    public get toonLegeResultaatKolommen() {
+        return this._toonLegeResultaatKolommen;
     }
 }

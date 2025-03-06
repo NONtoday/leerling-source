@@ -10,16 +10,15 @@ const MARGIN_TOP = 16;
 
 export interface RoosterTijdlijnLabel {
     label: string;
-    ariaLabel: string;
 }
 
 export const ROOSTER_TIJDLIJN_LABELS: RoosterTijdlijnLabel[] = [
-    { label: '', ariaLabel: '' },
-    { label: 'Eerder', ariaLabel: 'Eerder' },
+    { label: '' },
+    { label: 'Eerder' },
     ...range(BEGIN_UUR_TIJDLIJN + 2, EIND_UUR_TIJDLIJN + 1).map((uur) => {
-        return { label: `${uur}:00`, ariaLabel: `${uur} uur` };
+        return { label: `${uur}:00` };
     }),
-    { label: 'Later', ariaLabel: 'Later' }
+    { label: 'Later' }
 ];
 
 export const MAX_AANTAL_BLOKKEN = ROOSTER_TIJDLIJN_LABELS.length;

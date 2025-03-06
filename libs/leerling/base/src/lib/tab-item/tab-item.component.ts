@@ -1,19 +1,27 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ElementRef, HostBinding, HostListener, Input, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ClassOnClickDirective, DeviceService, IconDirective, NotificationCounterComponent } from 'harmony';
-import { IconBericht, IconHuiswerk, IconName, IconResultaten, IconRooster, IconVandaag, provideIcons } from 'harmony-icons';
+import { DeviceService, IconDirective, NotificationCounterComponent } from 'harmony';
+import {
+    IconBericht,
+    IconHuiswerk,
+    IconName,
+    IconPersoonKruisBlock,
+    IconResultaten,
+    IconRooster,
+    IconVandaag,
+    provideIcons
+} from 'harmony-icons';
 import { AccessibilityService } from 'leerling-util';
 import { TabItem } from './tab-item';
 
 @Component({
     selector: 'sl-tab-item',
-    standalone: true,
-    imports: [CommonModule, IconDirective, ClassOnClickDirective, NotificationCounterComponent],
+    imports: [CommonModule, IconDirective, NotificationCounterComponent],
     templateUrl: './tab-item.component.html',
     styleUrls: ['./tab-item.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [provideIcons(IconVandaag, IconRooster, IconHuiswerk, IconResultaten, IconBericht)]
+    providers: [provideIcons(IconVandaag, IconRooster, IconHuiswerk, IconResultaten, IconBericht, IconPersoonKruisBlock)]
 })
 export class TabItemComponent {
     private _elementRef = inject(ElementRef);

@@ -22,6 +22,10 @@ export class LaatsteResultatenService {
         return this._store.select(LaatsteResultatenSelectors.getLaatsteResultaten());
     }
 
+    public getLaatsteResultaatItem(id: number): Observable<LaatsteResultaat | undefined> {
+        return this._store.select(LaatsteResultatenSelectors.getLaatsteResultaatItem(id));
+    }
+
     public getSamengesteldeToetsDetails(
         dossierType: DossierType,
         deeltoetsKolomId: number,

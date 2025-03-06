@@ -1,21 +1,22 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input, OnChanges, WritableSignal, inject, signal } from '@angular/core';
-import { DeviceService, IconDirective, StripHTMLPipe, TooltipDirective } from 'harmony';
+import { ChangeDetectionStrategy, Component, WritableSignal, computed, inject, input, signal } from '@angular/core';
+import { DeviceService, IconDirective, TooltipDirective } from 'harmony';
 import { IconReacties, provideIcons } from 'harmony-icons';
 import { AccessibilityService, ModalService } from 'leerling-util';
 import { SGeldendVoortgangsdossierResultaat } from 'leerling/store';
+import { CijfersService } from '../../../services/cijfers/cijfers.service';
 import { ToetsResultaat, VoortgangsNiveau } from '../../../services/vakresultaten/vakresultaten-model';
 import { ResultaatItemDetailComponent } from '../../resultaat-item/resultaat-item-detail/resultaat-item-detail.component';
 import { ResultaatItem } from '../../resultaat-item/resultaat-item-model';
 import { ResultaatItemAriaLabelPipe } from '../../resultaat-item/resultaat-item/resultaat-item-aria-label.pipe';
-import { ResultaatItemComponent } from '../../resultaat-item/resultaat-item/resultaat-item.component';
+
 import { ToResultaatItemPipe } from '../to-resultaat-item.pipe';
 import { VAKRESULTAAT_ITEM_DETAIL_COMPONENT_SELECTOR, VakresultaatItemComponent } from '../vakresultaat-item/vakresultaat-item.component';
-import { RapportCijferAriaLabelPipe } from './rapportCijferTooltip.pipe';
+import { PeriodeNaamPipe } from './periode-naam.pipe';
+import { RapportCijferAriaLabelPipe } from './rapportCijferAriaLabel.pipe';
 
 @Component({
     selector: 'sl-voortgangsresultaten',
-    standalone: true,
     templateUrl: './voortgangsresultaten.component.html',
     styleUrls: ['./voortgangsresultaten.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -23,34 +24,32 @@ import { RapportCijferAriaLabelPipe } from './rapportCijferTooltip.pipe';
     imports: [
         CommonModule,
         TooltipDirective,
-        ResultaatItemComponent,
         ToResultaatItemPipe,
         VakresultaatItemComponent,
         IconDirective,
-        ResultaatItemDetailComponent,
         ResultaatItemAriaLabelPipe,
         ToResultaatItemPipe,
-        StripHTMLPipe,
-        RapportCijferAriaLabelPipe
+        RapportCijferAriaLabelPipe,
+        PeriodeNaamPipe
     ]
 })
-export class VoortgangsresultatenComponent implements OnChanges {
+export class VoortgangsresultatenComponent {
     private _deviceService = inject(DeviceService);
     private _modalService = inject(ModalService);
     private _accessibilityService = inject(AccessibilityService);
+    private _cijfersService = inject(CijfersService);
 
-    @Input({ required: true }) public voortgangsdossier: VoortgangsNiveau;
-    @Input({ required: true }) public isAlternatiefNiveau: boolean;
+    public voortgangsdossier = input.required<VoortgangsNiveau>();
+    public isAlternatiefNiveau = input.required<boolean>();
+    public toonKolommen = this._cijfersService.toonLegeResultaatKolommen;
 
-    public periodeNummers: number[];
+    public periodes = computed(() => this.voortgangsdossier().perioden.sort((lhs, rhs) => rhs.periode - lhs.periode));
 
     public selectedResultaat: WritableSignal<ToetsResultaat<SGeldendVoortgangsdossierResultaat> | undefined> = signal(undefined);
 
-    ngOnChanges(): void {
-        if (this.voortgangsdossier) {
-            this.periodeNummers = (Object.keys(this.voortgangsdossier.perioden) as unknown as number[]).sort((a, b) => b - a);
-        }
-    }
+    public emptyPeriodeMessage = computed(() =>
+        this.toonKolommen() ? 'Geen toetsen in deze periode.' : 'Geen behaalde cijfers in deze periode.'
+    );
 
     public toonDetails(resultaatItem: ResultaatItem | undefined, toetsResultaat: ToetsResultaat<SGeldendVoortgangsdossierResultaat>) {
         if (resultaatItem === undefined) {
@@ -71,7 +70,8 @@ export class VoortgangsresultatenComponent implements OnChanges {
                     resultaatItem: resultaatItem,
                     toonVakCijferlijstKnop: false,
                     toonTitel: true,
-                    toonVakIcon: false
+                    toonVakIcon: false,
+                    toonKolommen: this.toonKolommen()
                 },
                 ResultaatItemDetailComponent.getModalSettings()
             );

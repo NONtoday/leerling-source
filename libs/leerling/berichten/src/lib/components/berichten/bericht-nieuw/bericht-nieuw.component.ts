@@ -2,34 +2,22 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, TemplateRef, ViewContainerRef, inject, input, output, viewChild } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import {
-    ButtonComponent,
-    DeviceService,
-    IconDirective,
-    NotifyPopupModalComponent,
-    OverlayService,
-    createModalSettings,
-    createPopupSettings
-} from 'harmony';
+import { ButtonComponent, DeviceService, NotifyPopupModalComponent, OverlayService } from 'harmony';
 import { IconVerzenden, provideIcons } from 'harmony-icons';
-import { HeaderActionButtonComponent, HeaderComponent, ScrollableTitleComponent, injectHeaderConfig } from 'leerling-header';
+import { HeaderActionButtonComponent, injectHeaderConfig } from 'leerling-header';
 import { NieuwBerichtInput, SMedewerker } from 'leerling/store';
 import { BerichtService } from '../../../services/bericht.service';
 import { BerichtOntvangerSelectieComponent } from '../bericht-ontvanger-selectie/bericht-ontvanger-selectie.component';
 
 @Component({
     selector: 'sl-bericht-nieuw',
-    standalone: true,
     imports: [
         CommonModule,
         ButtonComponent,
         FormsModule,
         ReactiveFormsModule,
         BerichtOntvangerSelectieComponent,
-        HeaderComponent,
-        HeaderActionButtonComponent,
-        ScrollableTitleComponent,
-        IconDirective
+        HeaderActionButtonComponent
     ],
     templateUrl: './bericht-nieuw.component.html',
     styleUrl: './bericht-nieuw.component.scss',
@@ -52,9 +40,6 @@ export class BerichtNieuwComponent {
     headerActions = viewChild('headerActions', { read: TemplateRef });
 
     isOnline = input.required<boolean>();
-
-    // verhoog tabindex met "1" zodat ontvangers geselecteerd kunnen worden
-    tabindexNieuwBerichtVanafOnderwerp = TABINDEX_NIEUW_BERICHT + 1;
 
     form = new FormGroup({
         ontvangers: new FormControl(new Array<SMedewerker>(), Validators.required),
@@ -84,17 +69,16 @@ export class BerichtNieuwComponent {
                 onderwerp: formValue.onderwerp
             });
         } else if (errorMessage) {
-            this._overlayService.popupOrModal(
-                NotifyPopupModalComponent,
-                this._viewContainerRef,
-                {
+            this._overlayService.popupOrModal({
+                component: NotifyPopupModalComponent,
+                element: this._viewContainerRef,
+                inputs: {
                     text: errorMessage.foutmelding,
                     buttonLabel: 'Sluiten',
                     sluitenClick: () => this._overlayService.close(this._viewContainerRef)
                 },
-                createPopupSettings(),
-                createModalSettings({ title: errorMessage.titel })
-            );
+                modalSettings: { title: errorMessage.titel }
+            });
         }
     }
 
@@ -108,6 +92,7 @@ export class BerichtNieuwComponent {
 
     resetForm() {
         this.form.reset();
+        this.form.markAsPristine();
     }
 
     clickVerzenden() {
@@ -121,7 +106,6 @@ export class BerichtNieuwComponent {
         const onderwerpVerplicht = this.form.controls.onderwerp.errors?.['required'];
         const onderwerpTeLang = this.form.controls.onderwerp.errors?.['maxlength'];
 
-        //TODO: Is ontvangers juiste taal voor de eindgebruiker?
         if (ontvangersVerplicht && onderwerpVerplicht) {
             return {
                 titel: 'Ontvangers en onderwerp ontbreken',
@@ -149,8 +133,6 @@ export class BerichtNieuwComponent {
         return null;
     }
 }
-
-export const TABINDEX_NIEUW_BERICHT = 200;
 
 type ValidatieFout = {
     titel: string;

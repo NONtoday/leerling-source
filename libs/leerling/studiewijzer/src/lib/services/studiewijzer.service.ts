@@ -1,8 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { Preferences } from '@capacitor/preferences';
 import { Store } from '@ngxs/store';
-import { addDays, getISOWeek, isFirstDayOfMonth, isToday, isWeekend, startOfWeek } from 'date-fns';
+import { addDays, getISOWeek, getISOWeekYear, isFirstDayOfMonth, isToday, isWeekend, startOfWeek, subDays } from 'date-fns';
 import { AuthenticationService } from 'leerling-authentication';
+import { RouterService } from 'leerling-base';
 import {
     HuiswerkSelectors,
     RefreshHuiswerk,
@@ -17,17 +18,64 @@ import { StudiewijzerDag, StudiewijzerWeek } from './studiewijzer-model';
 
 export const TOON_WEEKEND_KEY = 'studiewijzer-toon-weekend';
 
+export function vulWeken(datum: Date): StudiewijzerWeek[] {
+    const startDatumSchooljaar = getStartDatumSchooljaar(datum);
+    const eindDatumSchooljaar = getEindDatumSchooljaar(datum);
+    const weken: StudiewijzerWeek[] = [];
+    let currentDate = startDatumSchooljaar;
+
+    while (currentDate <= eindDatumSchooljaar) {
+        const weeknummer = getISOWeek(currentDate);
+        const jaar = getISOWeekYear(currentDate);
+        const dagen: StudiewijzerDag[] = [];
+
+        for (let i = 0; i < 7; i++) {
+            dagen.push({
+                datum: currentDate,
+                isEersteDag: isFirstDayOfMonth(currentDate),
+                isVandaag: isToday(currentDate),
+                isWeekendDag: isWeekend(currentDate)
+            });
+            currentDate = addDays(currentDate, 1);
+        }
+        weken.push({ jaar, weeknummer, dagen });
+    }
+    return weken;
+}
 @Injectable({
     providedIn: 'root'
 })
 export class StudiewijzerService {
     private _store = inject(Store);
     private _authenticationService = inject(AuthenticationService);
+    private _routerService = inject(RouterService);
 
     private _scrollableTitleSubject = new BehaviorSubject<string | undefined>('');
 
     public set scrollableTitle(title: string | undefined) {
         this._scrollableTitleSubject.next(title);
+    }
+
+    openSidebarMetStudiewijzerItem(studiewijzerItem?: SStudiewijzerItem) {
+        if (!studiewijzerItem) return;
+
+        this._routerService.routeToStudiewijzer(studiewijzerItem.id, studiewijzerItem.datumTijd);
+    }
+
+    public isStudiewijzerLoaded(peilDatum: Date): Observable<boolean> {
+        const jaarweek = getJaarWeek(peilDatum);
+        return this._store.select(HuiswerkSelectors.heeftHuiswerkWeek(jaarweek));
+    }
+
+    /**
+     * Geeft het totaal aantal items dit schooljaar wat voor de peilweek valt.
+     */
+    public getAantalItemsTotPeilweek(peilDatum: Date): Observable<number> {
+        return this._store.select(HuiswerkSelectors.getAantalItemsTotPeilweek(peilDatum));
+    }
+
+    public getAantalItemsTotPeilweekSnapshot(peilDatum: Date): number {
+        return this._store.selectSnapshot(HuiswerkSelectors.getAantalItemsTotPeilweek(peilDatum));
     }
 
     public get scrollableTitle$() {
@@ -36,6 +84,10 @@ export class StudiewijzerService {
 
     public getStudiewijzerItems(peilDatum: Date): Observable<SStudiewijzerItem[] | undefined> {
         return this._store.select(HuiswerkSelectors.getStudiewijzerDagItems(peilDatum));
+    }
+
+    public getStudiewijzerItem(jaarWeek: string, id: number): Observable<SStudiewijzerItem | undefined> {
+        return this._store.select(HuiswerkSelectors.getStudiewijzerItem(jaarWeek, id));
     }
 
     public getWeekItems(peilDatum: Date): Observable<SStudiewijzerItem[] | undefined> {
@@ -54,13 +106,27 @@ export class StudiewijzerService {
         );
     }
 
-    public refreshStudiewijzer(beginDatum: Date): void {
-        const jaarWeek = getJaarWeek(beginDatum);
-        this._refreshStudiewijzer(jaarWeek);
+    public refreshStudiewijzer(datum: Date): void {
+        const jaarWeek = getJaarWeek(datum);
+        const heeftStudiewijzerWeek = this._hasStudiewijzer(jaarWeek);
+        const needsRefresh = this._needsRefresh(jaarWeek);
+        if (!heeftStudiewijzerWeek || needsRefresh) {
+            this._store.dispatch(new RefreshHuiswerk(jaarWeek));
+        }
     }
 
-    private _refreshStudiewijzer(jaarWeek: string): void {
-        this._store.dispatch(new RefreshHuiswerk(jaarWeek));
+    private _hasStudiewijzer(jaarWeek: string): boolean {
+        return this._store.selectSnapshot(HuiswerkSelectors.heeftHuiswerkWeek(jaarWeek));
+    }
+
+    private _needsRefresh(jaarWeek: string): boolean {
+        const uuid = this._authenticationService.currentSessionIdentifier?.UUID || 'no-session';
+        const lastRefreshed = localStorage.getItem('huiswerk-refresh-' + uuid + '-' + jaarWeek);
+        const needsRefresh = !lastRefreshed || Number(lastRefreshed) + 30000 < new Date().getTime();
+        if (needsRefresh) {
+            localStorage.setItem('huiswerk-refresh-' + uuid + '-' + jaarWeek, new Date().getTime().toString());
+        }
+        return needsRefresh;
     }
 
     public updateToonWeekendPreference(toonWeekend: boolean): void {
@@ -81,48 +147,17 @@ export class StudiewijzerService {
         };
     }
 
-    public vulDagen(peildatum: Date): StudiewijzerDag[] {
-        return [-1, 0, 1].map((index) => {
-            const currentDatum = addDays(peildatum, index);
-
-            return {
-                datum: currentDatum,
-                isEersteDag: isFirstDayOfMonth(currentDatum),
-                isVandaag: isToday(currentDatum),
-                isWeekendDag: isWeekend(currentDatum)
-            };
-        });
-    }
-
-    public vulWeken(datum: Date): StudiewijzerWeek[] {
-        const startDatumSchooljaar = getStartDatumSchooljaar(datum);
-        const eindDatumSchooljaar = getEindDatumSchooljaar(datum);
-        const weken: StudiewijzerWeek[] = [];
-        let currentDate = startDatumSchooljaar;
-
-        while (currentDate <= eindDatumSchooljaar) {
-            const weeknummer = getISOWeek(currentDate);
-            const dagen: StudiewijzerDag[] = [];
-
-            for (let i = 0; i < 7; i++) {
-                dagen.push({
-                    datum: currentDate,
-                    isEersteDag: isFirstDayOfMonth(currentDate),
-                    isVandaag: isToday(currentDate),
-                    isWeekendDag: isWeekend(currentDate)
-                });
-                currentDate = addDays(currentDate, 1);
-            }
-            weken.push({ weeknummer, dagen });
-        }
-        return weken;
-    }
-
     public isAfvinkenToegestaan() {
         return !this._authenticationService.isCurrentContextOuderVerzorger;
     }
 
     public toggleAfgevinkt(item: SStudiewijzerItem) {
-        return this._store.dispatch(new ToggleAfgevinkt(item));
+        this._store.dispatch(new ToggleAfgevinkt(item));
+    }
+
+    public refreshStudiewijzerEnOmliggendeWeken(date: Date): void {
+        this.refreshStudiewijzer(subDays(date, 7));
+        this.refreshStudiewijzer(date);
+        this.refreshStudiewijzer(addDays(date, 7));
     }
 }

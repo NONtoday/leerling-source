@@ -1,4 +1,22 @@
-<p class="onderwerp" tabindex="0" role="text">{{ item().onderwerp }}</p>
+<div class="onderwerp">
+    <p tabindex="0" role="text">{{ item().onderwerp }}</p>
+    @if (item().isInleveropdracht && item().inleveropdrachtCategorie; as status) {
+        <div class="statussen">
+            @if (status === 'AANKOMEND') {
+                <hmy-pill [text]="status | inleveropdrachtCategorieToString" [color]="status | inleveropdrachtCategorieIconColor" />
+            } @else {
+                <hmy-icon-pill
+                    [text]="status | inleveropdrachtCategorieToString"
+                    [icon]="status | inleveropdrachtCategorieIconName"
+                    [color]="status | inleveropdrachtCategorieIconColor"
+                    [iconSize]="'small'" />
+            }
+            @if (teLaat()) {
+                <hmy-pill [text]="'Te laat'" color="negative" />
+            }
+        </div>
+    }
+</div>
 
 <section class="informatie">
     <div
@@ -6,19 +24,18 @@
         [class.afvinkbaar]="afvinkenToegestaan()"
         [class.afgevinkt]="afgevinkt()"
         [attr.aria-checked]="afgevinkt()"
-        (click)="toggleAfgevinkt()"
+        (click)="toggleAfgevinktCheckbox($event)"
         tabindex="0"
         role="button">
         <i class="type-icon" [hmyIcon]="item() | studiewijzerItemIcon" size="medium"> </i>
         <span class="omschrijving">{{ typeOmschrijving() }}</span>
         @if (afvinkenToegestaan()) {
-            <span class="afvinken">{{ afgevinkt() ? 'Afgevinkt' : 'Afvinken' }}</span>
-            <hmy-checkbox
-                [checked]="afgevinkt()"
-                [customTabIndex]="-1"
-                (click)="$event.stopPropagation()"
-                (valueChanged)="toggleAfgevinkt()"
-                color="positive" />
+            @if (state().saving()) {
+                <hmy-spinner />
+            } @else {
+                <span class="afvinken">{{ afgevinkt() ? 'Afgevinkt' : 'Afvinken' }}</span>
+                <hmy-checkbox [checked]="afgevinkt()" [customTabIndex]="-1" (click)="toggleAfgevinktCheckbox($event)" color="positive" />
+            }
         }
     </div>
     <div class="row datum" tabindex="0" role="text">
@@ -34,12 +51,36 @@
             <span>{{ item().tijdsindicatie }}</span>
         </div>
     }
+    @if (toonInleverenKnop()) {
+        <div
+            class="row bestanden-inleveren"
+            (click)="bestandenInleveren.emit()"
+            tabindex="0"
+            role="button"
+            aria-label="Bestanden inleveren">
+            <span>Bestanden inleveren</span>
+            <i class="chevron" hmyIcon="chevronRechts"></i>
+        </div>
+    }
 </section>
 
 @if (item().projectgroep; as projectgroep) {
-    <div class="projectgroep" tabindex="0" role="text">
-        @for (leerling of projectgroep.leerlingen; track leerling) {
-            <hmy-tag [label]="leerling" icon="none" />
+    <div class="projectgroep">
+        <div
+            class="naam"
+            [attr.aria-label]="toonProjectgroepLeerlingen() ? 'Verberg leerlingen van projectgroep' : 'Toon leerlingen van projectgroep'"
+            (click)="toonProjectgroepLeerlingen.set(!toonProjectgroepLeerlingen())"
+            tabindex="0"
+            role="button">
+            <i class="chevron" [class.open]="toonProjectgroepLeerlingen()" hmyIcon="chevronRechts" size="small"></i>
+            <span>{{ projectgroep.naam }}</span>
+        </div>
+        @if (toonProjectgroepLeerlingen()) {
+            <div class="leerlingen" [@collapseOnLeave] [@expandOnEnter] tabindex="0" role="text">
+                @for (leerling of projectgroep.leerlingen; track leerling) {
+                    <hmy-tag [label]="leerling" icon="none" />
+                }
+            </div>
         }
     </div>
 }
@@ -79,4 +120,10 @@
             </div>
         }
     </section>
+}
+
+@if (toonInleverenKnop()) {
+    <div class="footer-buttons">
+        <hmy-button (click)="bestandenInleveren.emit()" label="Bestanden inleveren" mode="primary" />
+    </div>
 }

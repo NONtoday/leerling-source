@@ -9,15 +9,23 @@
         tabindex="10" /> -->
     <sl-header-action-button
         [hideWhenOffline]="false"
-        (click)="updatePeildatumVandaag()"
-        iconName="kalenderDag"
-        label="vandaag"
+        (click)="openInleveropdrachten()"
+        iconName="inleveropdracht"
+        label="Inleveropdrachten"
         tabindex="10" />
     <sl-header-action-button
+        [disabled]="!vorigeWeekNavigatieMogelijk()"
         [hideWhenOffline]="false"
-        (click)="openStudiemateriaalVakselectie()"
-        iconName="boek"
-        label="studiemateriaal"
+        (click)="vorigeWeekNavigatieMogelijk() && dagenHeader?.previous()"
+        iconName="chevronLinks"
+        label="Navigeer naar vorige week"
+        tabindex="10" />
+    <sl-header-action-button
+        [disabled]="!volgendeWeekNavigatieMogelijk()"
+        [hideWhenOffline]="false"
+        (click)="volgendeWeekNavigatieMogelijk() && dagenHeader?.next()"
+        iconName="chevronRechts"
+        label="Navigeer naar volgende week"
         tabindex="10" />
 </sl-header>
 
@@ -31,8 +39,9 @@
                 [maandnummer]="maandnummer()"
                 [vakkeuzes]="vakkeuze"
                 (weekend)="toggleWeekendBekijken($event)"
-                (naarVandaag)="scrollNaarVandaag(true)"
+                (naarVandaag)="scrollNaarBepaaldeWeek($event, true)"
                 (naarHuidigeWeek)="focusHuidigeWeek()"
+                (naarBepaaldeWeek)="scrollNaarBepaaldeWeek($event)"
                 (activeFilters)="activeFilters.set($event)" />
         }
 
@@ -46,25 +55,40 @@
             (terugNaarBoven)="focusOnHeader()" />
     } @else {
         @if (scrollableTitle$ | async; as title) {
-            <sl-scrollable-title [title]="title" />
+            @if (studiewijzerModus() === 'dagview') {
+                <sl-scrollable-title [title]="title" />
+            }
         }
         <sl-dagen-header
             [peildatum]="peildatum()"
             [allowKeyEvents]="false"
             [huiswerkItems]="weekEnDagItems()"
             [showSwipeIndicator]="false"
-            (dateChange)="updatePeildatum($event)"
-            (peildatumChange)="updatePeildatum($event)" />
+            (dateChange)="updatePeildatum($event, 'DagenHeader')"
+            (peildatumChange)="updatePeildatum($event, 'DagenHeader')" />
 
-        <sl-studiewijzer-dag
-            class="dag"
-            [dag]="studiewijzerDag()"
-            [showLoadingSpinner]="true"
-            [activeFilters]="activeFilters()"
-            (peildatumChange)="updatePeildatum($event)"
-            (horizontalNext)="onSwipe(true)"
-            (horizontalPrevious)="onSwipe(false)"
-            slHorizontalSwipe />
+        @if (studiewijzerModus() === 'dagview') {
+            <sl-studiewijzer-dag
+                class="dag"
+                [dag]="studiewijzerDag()"
+                [showLoadingSpinner]="true"
+                [activeFilters]="activeFilters()"
+                (peildatumChange)="updatePeildatum($event, 'StudiewijzerDag')"
+                (horizontalNext)="onSwipe(true)"
+                (horizontalPrevious)="onSwipe(false)"
+                slHorizontalSwipe />
+        } @else if (!renderLijstview()) {
+            <div class="lijstview-spinner">
+                <hmy-spinner />
+            </div>
+        } @else {
+            <sl-studiewijzer-lijst
+                [datum]="peildatum()"
+                [peildatumTrigger]="peildatumTrigger()"
+                [toonWeekend]="false"
+                (refreshStudiewijzer)="refreshStudiewijzer($event)"
+                (peildatumChange)="updatePeildatum($event, 'StudiewijzerLijst')" />
+        }
     }
 </div>
 

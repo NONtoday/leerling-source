@@ -7,7 +7,6 @@ type FilterType = 'vak' | 'type';
 
 @Component({
     selector: 'sl-studiewijzer-filter-dropdown-item',
-    standalone: true,
     imports: [CommonModule, CheckboxComponent, IconDirective, VakIconComponent],
     templateUrl: './studiewijzer-filter-dropdown-item.component.html',
     styleUrl: './studiewijzer-filter-dropdown-item.component.scss',
@@ -35,7 +34,8 @@ export class StudiewijzerFilterDropdownItemComponent {
         return this.afgevinkt();
     }
 
-    public onAfvinken() {
+    public onAfvinken(event?: Event) {
+        event?.stopPropagation();
         this.afgevinkt.set(!this.afgevinkt());
         if (this.afgevinkt()) {
             this.addOrSubstractToCounter.emit(1);

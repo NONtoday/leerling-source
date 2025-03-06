@@ -4,7 +4,7 @@
         [tab]="tab"
         [tabMode]="tabMode"
         [active]="activeTabLabel === tab.label"
-        (click)="setActiveTab(tab.label)"
+        (click)="!tab.disabled && setActiveTab(tab.label)"
         tabindex="0"
         role="button"></hmy-tab>
 </div>

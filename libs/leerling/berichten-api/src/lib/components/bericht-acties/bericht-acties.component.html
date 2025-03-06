@@ -1,0 +1,21 @@
+<div class="markeer-ongelezen-actie" (click)="markeerOngelezen.emit()" tabindex="0">
+    <i
+        class="markeer-ongelezen-icon"
+        hmyTooltip="Markeer ongelezen"
+        role="button"
+        aria-label="Markeer ongelezen"
+        hmyIcon="markerenOngelezen"
+        size="medium"></i>
+    <span>Markeer als ongelezen</span>
+</div>
+<div class="verwijder-actie" (click)="openVerwijderConfirm()" tabindex="0">
+    <i
+        class="action-verwijderen"
+        #verwijderActie
+        hmyTooltip="Verwijder conversatie"
+        role="button"
+        aria-label="Verwijder conversatie"
+        hmyIcon="verwijderen"
+        size="medium"></i>
+    <span>Verwijderen</span>
+</div>

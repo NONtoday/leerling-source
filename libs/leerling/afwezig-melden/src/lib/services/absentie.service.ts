@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { AbsentieState, RefreshAbsentieRedenen, SAbsentieMeldingInvoer, VerstuurAbsentieMelding } from 'leerling/store';
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class AbsentieService {
     private store = inject(Store);
 

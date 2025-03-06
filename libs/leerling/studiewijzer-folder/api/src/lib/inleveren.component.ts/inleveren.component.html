@@ -1,0 +1,92 @@
+<div class="content">
+    <span class="geselecteerde-bestanden" tabindex="0">Geselecteerde bestanden</span>
+
+    @if (geenInleveringen()) {
+        <span class="empty" tabindex="0">Nog geen bestanden geselecteerd.</span>
+    }
+
+    @for (inlevering of inleveringen(); track inlevering) {
+        <shared-bijlage
+            [omschrijving]="inlevering.omschrijving"
+            [ondertitel]="inlevering.toelichting"
+            [extensie]="inlevering.extensie"
+            [url]="inlevering.url"
+            [toonVerwijderKnop]="true"
+            (click)="openUrl(inlevering.url)"
+            (onVerwijder)="verwijderInlevering(inlevering)" />
+    }
+
+    @for (file of uploadingFiles(); track file) {
+        <shared-upload-file
+            [file]="file"
+            (validationError)="validationError(file, $event)"
+            (stillProcessing)="uploadedFile(file, $event, false)"
+            (doneUploading)="uploadedFile(file, $event, true)"
+            (cancelled)="uploadCancelled(file)" />
+    }
+
+    @if (isUrlToevoegen()) {
+        <ng-container *ngTemplateOutlet="urlToevoegen"></ng-container>
+    } @else {
+        <div class="inlever-buttons">
+            <hmy-button
+                (click)="selecteerBestanden()"
+                label="Bestand toevoegen"
+                mode="tertiary"
+                iconLeft="document"
+                justifyContent="space-between" />
+            <hmy-button
+                (click)="linkToevoegen()"
+                label="Link toevoegen"
+                mode="tertiary"
+                iconLeft="koppelen"
+                justifyContent="space-between" />
+        </div>
+    }
+
+    <input #fileInput (change)="bestandenGeselecteerd()" hidden type="file" multiple aria-hidden="true" />
+</div>
+<div class="footer">
+    <hmy-button (click)="onResult.emit('Annuleren')" label="Annuleren" mode="tertiary" />
+    <hmy-button
+        [disabled]="geenInleveringen() || uploading() || isUrlToevoegen()"
+        [showSpinner]="isSaving()"
+        (click)="onSubmit()"
+        label="Inleveren"
+        mode="primary"
+        iconLeft="uploaden"
+        justifyContent="space-between" />
+
+    <ng-template #guard>
+        <sl-interactive-guard
+            [foutmelding]="eulaFoutmelding()"
+            [loading]="loading()"
+            [url]="turnitInEulaUrl()"
+            [shouldCloseAfterConfirm]="shouldCloseAfterConfirm()"
+            (confirm)="accepteerEULA()"
+            (onClose)="resetFoutmelding()"
+            text="Om in te kunnen leveren dien je akkoord te gaan met de EULA van Turnitin."
+            annulerenButtonText="Annuleren"
+            bevestigenButtonText="Akkoord"
+            bevestigenButtonMode="primary" />
+    </ng-template>
+</div>
+
+<ng-template #urlToevoegen>
+    @if (inModal()) {
+        <span class="url-toevoegen-header" tabindex="0">Opdracht inleveren</span>
+    }
+
+    <input #urlInput type="url" placeholder="https://www.voorbeeld.nl" hmyAutoFocus autocapitalize="none" />
+    @if (ongeldigeUrl()) {
+        <span class="error" tabindex="0">De ingevulde url is ongeldig.</span>
+    }
+    <div class="inlever-buttons">
+        @if (inModal()) {
+            <hmy-button (click)="voegUrlToe(urlInput.value)" label="Link toevoegen" mode="primary" iconLeft="toevoegen" />
+        } @else {
+            <hmy-button (click)="isUrlToevoegen.set(false)" label="Annuleren" mode="tertiary" />
+            <hmy-button (click)="voegUrlToe(urlInput.value)" label="Toevoegen" mode="add" iconLeft="toevoegen" />
+        }
+    </div>
+</ng-template>

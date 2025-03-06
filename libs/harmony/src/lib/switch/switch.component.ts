@@ -6,7 +6,6 @@ import { Optional } from '../optional/optional';
 
 @Component({
     selector: 'hmy-switch',
-    standalone: true,
     imports: [CommonModule, IconDirective],
     templateUrl: './switch.component.html',
     styleUrls: ['./switch.component.scss'],

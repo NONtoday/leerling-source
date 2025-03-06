@@ -10,7 +10,6 @@ import { TabBarService } from './service/tab-bar.service';
 
 @Component({
     selector: 'sl-tab-bar',
-    standalone: true,
     imports: [CommonModule, TabItemComponent, RouterModule, ClassOnClickDirective, HeeftRechtDirective],
     templateUrl: './tab-bar.component.html',
     styleUrls: ['./tab-bar.component.scss'],

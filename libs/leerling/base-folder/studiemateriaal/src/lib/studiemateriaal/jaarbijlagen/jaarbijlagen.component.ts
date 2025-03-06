@@ -8,7 +8,6 @@ import { BijlagenMapComponent } from '../bijlagen-map/bijlagen-map.component';
 
 @Component({
     selector: 'sl-jaarbijlagen',
-    standalone: true,
     imports: [CommonModule, BijlageComponent, BijlagenMapComponent],
     templateUrl: './jaarbijlagen.component.html',
     styleUrl: './jaarbijlagen.component.scss',

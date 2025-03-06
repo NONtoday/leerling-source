@@ -8,7 +8,6 @@ export type HeaderAction = 'terug' | 'sluiten';
 
 @Component({
     selector: 'sl-account-modal-header',
-    standalone: true,
     imports: [CommonModule, IconDirective],
     templateUrl: './account-modal-header.component.html',
     styleUrls: ['./account-modal-header.component.scss'],

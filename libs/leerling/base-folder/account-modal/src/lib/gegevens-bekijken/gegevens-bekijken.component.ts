@@ -10,7 +10,6 @@ import { AccountModel } from '../gegevens/service/gegevens.service';
 
 @Component({
     selector: 'sl-gegevens-bekijken',
-    standalone: true,
     imports: [CommonModule, StackedAvatarComponent, IconDirective, HeeftRechtDirective],
     templateUrl: './gegevens-bekijken.component.html',
     styleUrls: ['./gegevens-bekijken.component.scss'],

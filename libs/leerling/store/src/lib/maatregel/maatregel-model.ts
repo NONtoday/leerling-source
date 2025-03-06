@@ -1,7 +1,7 @@
-import { parseISO } from 'date-fns';
 import { RMaatregel, RMaatregelToekenning } from 'leerling-codegen';
 import { SAbsentieMelding, mapAbsentieMelding } from '../absentie/absentie-model';
 import { assertIsDefined } from '../util/asserts';
+import { toLocalDateTime } from '../util/date-util';
 import { SEntiteit, getEntiteitId } from '../util/entiteit-model';
 
 export function mapMaatregelToekenning(toekenning: RMaatregelToekenning): SMaatregelToekenning {
@@ -10,7 +10,7 @@ export function mapMaatregelToekenning(toekenning: RMaatregelToekenning): SMaatr
 
     return {
         id: getEntiteitId(toekenning),
-        maatregelDatum: parseISO(toekenning.maatregelDatum),
+        maatregelDatum: toLocalDateTime(toekenning.maatregelDatum),
         opmerkingen: toekenning.opmerkingen,
         nagekomen: Boolean(toekenning.nagekomen),
         automatischToegekend: Boolean(toekenning.automatischToegekend),

@@ -100,6 +100,13 @@ export class LaatsteResultatenSelectors {
         );
     }
 
+    public static getLaatsteResultaatItem(id: number) {
+        return createSelector([this.getLaatsteResultaten()], (laatsteResultaten: LaatsteResultaat[]) => {
+            if (!laatsteResultaten) return undefined;
+            return laatsteResultaten.find((resultaat) => resultaat.resultaatkolom === id);
+        });
+    }
+
     private static compareLaatsteResultaat(a: LaatsteResultaat, b: LaatsteResultaat): number {
         const timeA = this.getTime(a.datum);
         const timeB = this.getTime(b.datum);

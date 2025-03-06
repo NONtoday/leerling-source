@@ -1,16 +1,19 @@
-import { Injectable, inject, untracked } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import Bugsnag from '@bugsnag/js';
 import { Store } from '@ngxs/store';
+import { isPresent } from 'harmony';
 import { AuthenticationService } from 'leerling-authentication';
 import { LesstofModel } from 'leerling-lesstof';
+import { sortLocale } from 'leerling-util';
 import {
+    NO_VAK_UUID_AVAILABLE,
     RefreshEduRoutePortalProducts,
     RefreshStudiemateriaal,
     RefreshVakkenMetStudiemateriaal,
     SVak,
     StudiemateriaalSelectors
 } from 'leerling/store';
-import { Observable, of } from 'rxjs';
+import { Observable, filter, map, of } from 'rxjs';
 import { JaarbijlagenModel, Leermiddel, LeermiddelModel, Studiemateriaal } from './studiemateriaal-frontend-model';
 import { StudiemateriaalFrontendSelectors } from './studiemateriaal-frontend-selectors';
 
@@ -34,7 +37,10 @@ export class StudiemateriaalService {
 
     public getVakkenMetStudiemateriaal(): Observable<SVak[] | undefined> {
         this._refreshVakkenMetStudiemateriaal();
-        return this._store.select(StudiemateriaalSelectors.getVakkenMetStudiemateriaal());
+        return this._store.select(StudiemateriaalSelectors.getVakkenMetStudiemateriaal()).pipe(
+            filter(isPresent),
+            map((items) => sortLocale(items, ['naam']))
+        );
     }
 
     public getStudiemateriaal(
@@ -43,8 +49,11 @@ export class StudiemateriaalService {
         aantalLesstofItems: number
     ): Observable<Studiemateriaal | undefined> {
         const uuid = vakUuid ?? lesgroepUuid;
-        if (!uuid) {
-            Bugsnag.notify(new Error('Studiemateriaal wordt opgevraagd zonder vak of lesgroep'));
+        if (!uuid || uuid === NO_VAK_UUID_AVAILABLE) {
+            if (!uuid) {
+                // Dit zou niet voor moeten kunnen komen, dus als het wel gebeurd hebben we ergens een bug.
+                Bugsnag.notify(new Error('Studiemateriaal wordt opgevraagd zonder vak of lesgroep, zou niet voor moeten kunnen komen.'));
+            }
             return of({
                 lesstof: undefined,
                 leermiddelen: undefined,
@@ -62,14 +71,12 @@ export class StudiemateriaalService {
     }
 
     private refreshStudiemateriaal(vakUuid: string | undefined, lesgroepUuid: string | undefined) {
-        // TODO: untracked eruit schrijven? -> SLL-1780
-        untracked(() => this._store.dispatch(new RefreshStudiemateriaal(vakUuid, lesgroepUuid)));
+        this._store.dispatch(new RefreshStudiemateriaal(vakUuid, lesgroepUuid));
         this.refreshEduroutePortalProducts();
     }
 
     private refreshEduroutePortalProducts() {
-        // TODO: untracked eruit schrijven? -> SLL-1780
-        untracked(() => this._store.dispatch(new RefreshEduRoutePortalProducts(this._authenticationService.isCurrentContextLeerling)));
+        this._store.dispatch(new RefreshEduRoutePortalProducts(this._authenticationService.isCurrentContextLeerling));
     }
 
     private _refreshVakkenMetStudiemateriaal() {

@@ -13,7 +13,6 @@ import { DropdownItem } from '../dropdown.model';
         '[attr.aria-selected]': 'selected()',
         '[attr.aria-disabled]': 'item().disabled'
     },
-    standalone: true,
     imports: [CommonModule, IconDirective],
     providers: [provideIcons(IconCheck)],
     templateUrl: './dropdown-item.component.html',

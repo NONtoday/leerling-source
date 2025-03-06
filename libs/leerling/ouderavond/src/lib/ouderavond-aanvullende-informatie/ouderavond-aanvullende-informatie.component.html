@@ -1,0 +1,46 @@
+<div class="title-container">
+    <div class="title-wrapper">
+        <h2 class="title" tabindex="0">Aanvullende informatie</h2>
+        <span class="subtext"
+            ><i class="icon" hmyIcon="kalenderDag" color="action-neutral-normal" size="small"></i>{{ titleSubtext() }}</span
+        >
+    </div>
+</div>
+
+<div class="aanvullend-container">
+    @for (keuze of data().keuzes; track $index) {
+        <div class="aanvullend" [attr.id]="'keuze-' + keuze.id">
+            <sl-ouderavond-vak-docent [vak]="keuze.vak" [docent]="keuze.docenten" tabindex="0" />
+
+            @if (ouderavondInfo().ouderavond.extraLangGesprekToegestaan) {
+                <hmy-toggle [(ngModel)]="keuze.extraGesprekstijd" label="Extra gesprekstijd" tabindex="0" />
+            }
+
+            @if (ouderavondInfo().ouderavond.opmerkingDocentToegestaan) {
+                <textarea
+                    [(ngModel)]="keuze.opmerkingVoorDocenten"
+                    [attr.aria-label]="keuze.opmerkingVoorDocenten?.length ? keuze.opmerkingVoorDocenten : 'Typ hier je vraag of opmerking'"
+                    placeholder="Typ hier je vraag of opmerking"></textarea>
+            }
+        </div>
+    }
+
+    @if (ouderavondInfo().isOpmerkingVoorRoostermakerToegestaan) {
+        <div class="aanvullend" id="roostermaker">
+            <span tabindex="0">Opmerking voor roostermaker</span>
+
+            @if (ouderavondInfo().heeftMeerdereLeerlingUitnodigingenVoorDezeOuderavond) {
+                <hmy-message-bar
+                    message="U heeft uitnodigingen ontvangen voor meerdere leerlingen. De opmerking die u hieronder maakt, geldt voor alle leerlingen. Het is niet mogelijk om per leerling een aparte opmerking te maken."
+                    messageType="info" />
+            }
+
+            <textarea
+                [(ngModel)]="data().opmerkingVoorRoostermaker"
+                [attr.aria-label]="
+                    data().opmerkingVoorRoostermaker?.length ? data().opmerkingVoorRoostermaker : 'Typ hier je vraag of opmerking'
+                "
+                placeholder="Typ hier je vraag of opmerking"></textarea>
+        </div>
+    }
+</div>

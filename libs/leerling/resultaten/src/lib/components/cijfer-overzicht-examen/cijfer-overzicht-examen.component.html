@@ -1,0 +1,201 @@
+@if (overzicht(); as overzicht) {
+    <div class="host">
+        <table>
+            <thead>
+                <tr class="header-row">
+                    <th class="empty-header sticky-left"></th>
+                    <th
+                        class="periode-header first-periode"
+                        [class.open]="cijfersOpen()"
+                        [style.--aantal-items]="cijfersOpen() ? overzicht.maxAantalToetsen : 1"
+                        [attr.aria-expanded]="cijfersOpen()"
+                        (click)="toggleCijfers()"
+                        aria-label="Cijfers"
+                        tabindex="0"
+                        role="button">
+                        <span class="periode-naam" [showIfEllipsed]="true" hmyTooltip="Cijfers"> Cijfers </span>
+                        <i
+                            class="periode-icon"
+                            [class.open]="cijfersOpen()"
+                            [hmyIcon]="cijfersOpen() ? 'uitklappenLinks' : 'uitklappenRechts'"></i>
+                    </th>
+                    @if (overzicht.toonSEKolom && overzicht.toetssoortgemiddelden.length === 0) {
+                        <div class="periode-seperator" tabindex="-1" aria-hidden="true"></div>
+                        <th class="periode-header last-periode" style="--aantal-items: 1" aria-label="Gemiddelde" tabindex="0">
+                            <span class="periode-naam" hmyTooltip="Gemiddelde">Gem.</span>
+                        </th>
+                    } @else if (overzicht.toetssoortgemiddelden.length > 0) {
+                        <div class="periode-seperator" tabindex="-1" aria-hidden="true"></div>
+                        <th
+                            class="periode-header"
+                            [class.last-periode]="!gemiddeldenOpen()"
+                            [class.open]="gemiddeldenOpen()"
+                            [style.--aantal-items]="
+                                gemiddeldenOpen() ? overzicht.toetssoortgemiddelden.length + (overzicht.toonSEKolom ? 1 : 0) : 1
+                            "
+                            [attr.aria-expanded]="gemiddeldenOpen()"
+                            (click)="toggleGemiddelden()"
+                            aria-label="Gemiddelden"
+                            tabindex="0"
+                            role="button">
+                            <span class="periode-naam" [showIfEllipsed]="true" hmyTooltip="Gemiddelden">
+                                {{ gemiddeldenOpen() ? 'Gemiddelden' : 'Gem.' }}
+                            </span>
+                            <i
+                                class="periode-icon"
+                                [class.open]="gemiddeldenOpen()"
+                                [hmyIcon]="gemiddeldenOpen() ? 'uitklappenLinks' : 'uitklappenRechts'"></i>
+                        </th>
+                    }
+                </tr>
+
+                <tr class="vak-gemiddelde-header">
+                    <th class="sticky-left vakken" scope="col" tabindex="0">Vakken</th>
+                    @if (cijfersOpen()) {
+                        @for (number of [].constructor(overzicht.maxAantalToetsen); track $index) {
+                            <th [class.last]="$last" tabindex="-1" aria-hidden="true"></th>
+                        }
+                    } @else {
+                        <th class="gemiddelde last" tabindex="-1" scope="col"></th>
+                    }
+                    @if (overzicht.toonSEKolom || overzicht.toetssoortgemiddelden.length > 0) {
+                        <div class="periode-seperator" tabindex="-1" aria-hidden="true"></div>
+                        @if (gemiddeldenOpen()) {
+                            @for (toetssoortGemiddelde of overzicht.toetssoortgemiddelden; track $index) {
+                                <th
+                                    class="toetssoort-gemiddelde"
+                                    [class.last]="!overzicht.toonSEKolom && $last"
+                                    [attr.aria-label]="toetssoortGemiddelde.naam"
+                                    [hmyTooltip]="toetssoortGemiddelde.naam"
+                                    scope="col"
+                                    tabindex="0">
+                                    {{ toetssoortGemiddelde.afkorting }}
+                                </th>
+                            }
+                        }
+                        @if (overzicht.toonSEKolom) {
+                            <th class="gemiddelde last" tabindex="0" scope="col" aria-label="Schoolexamen" hmyTooltip="Schoolexamen">SE</th>
+                        } @else if (!gemiddeldenOpen()) {
+                            <th class="gemiddelde last" tabindex="-1"></th>
+                        }
+                    }
+                </tr>
+            </thead>
+
+            <tbody>
+                @for (resultaten of overzicht.vakResultaten; track $index) {
+                    <tr class="vak-row">
+                        <td class="vak sticky-left" (click)="openVakDetail(resultaten.vakkeuze)" tabindex="0" role="link">
+                            @let vaknaam = resultaten.vakkeuze.vak.naam;
+                            <hmy-vak-icon [vaknaam]="vaknaam" />
+                            <span class="naam" [hmyTooltip]="vaknaam" [showIfEllipsed]="true">{{ vaknaam }}</span>
+                            @if (resultaten.afwijkendEindjaar && resultaten.afwijkendeOnderwijssoort) {
+                                <hmy-icon-pill
+                                    class="ander-niveau-pill"
+                                    [text]="resultaten.afwijkendeOnderwijssoort + ' ' + resultaten.afwijkendEindjaar"
+                                    [onTouchAllowed]="true"
+                                    [hmyTooltip]="
+                                        'Volgt vak op ander niveau • ' +
+                                        resultaten.afwijkendeOnderwijssoort +
+                                        ' ' +
+                                        resultaten.afwijkendEindjaar
+                                    "
+                                    [attr.aria-label]="
+                                        'Volgt vak op ander niveau ' +
+                                        resultaten.afwijkendeOnderwijssoort +
+                                        ' ' +
+                                        resultaten.afwijkendEindjaar
+                                    "
+                                    position="bottom"
+                                    icon="hogerNiveau"
+                                    color="warning" />
+                            } @else if (resultaten.afwijkendEindjaar) {
+                                <hmy-icon-pill
+                                    class="ander-niveau-pill"
+                                    [text]="'' + resultaten.afwijkendEindjaar"
+                                    [onTouchAllowed]="true"
+                                    [hmyTooltip]="'Rondt vak af in ' + resultaten.afwijkendEindjaar"
+                                    [attr.aria-label]="'Rond vak af in ' + resultaten.afwijkendEindjaar"
+                                    position="bottom"
+                                    icon="hogerNiveau"
+                                    color="warning" />
+                            } @else if (resultaten.afwijkendeOnderwijssoort) {
+                                <hmy-icon-pill
+                                    class="ander-niveau-pill"
+                                    [text]="resultaten.afwijkendeOnderwijssoort"
+                                    [onTouchAllowed]="true"
+                                    [hmyTooltip]="'Volgt vak op ander niveau • ' + resultaten.afwijkendeOnderwijssoort"
+                                    [attr.aria-label]="'Volgt vak op ander niveau ' + resultaten.afwijkendeOnderwijssoort"
+                                    position="bottom"
+                                    icon="hogerNiveau"
+                                    color="warning" />
+                            }
+                        </td>
+                        @if (cijfersOpen()) {
+                            @for (_ of [].constructor(overzicht.maxAantalToetsen); track $index) {
+                                @if (resultaten.resultaten[$index]; as resultaat) {
+                                    <td
+                                        class="cijfer"
+                                        [hmyTooltip]="resultaat | overzichtResultaatTooltip"
+                                        [attr.aria-label]="resultaat | overzichtResultaatAriaLabel"
+                                        [class.onvoldoende]="resultaat.isVoldoende === false"
+                                        [class.neutraal]="resultaat.isVoldoende === undefined"
+                                        [class.last]="$last"
+                                        tabindex="0">
+                                        {{ resultaat.formattedResultaat ?? '' }}
+                                    </td>
+                                } @else {
+                                    <td class="cijfer geen-toets" [class.last]="$last" tabindex="-1" hmyTooltip="Geen cijfer"></td>
+                                }
+                            }
+                        } @else {
+                            <td class="cijfer geen-toets cijfersdicht last" tabindex="-1" hmyTooltip="Geen cijfer"></td>
+                        }
+                        @if (overzicht.toonSEKolom || overzicht.toetssoortgemiddelden.length > 0) {
+                            <div class="periode-seperator" tabindex="-1" aria-hidden="true"></div>
+                            @if (gemiddeldenOpen()) {
+                                @for (toetssoortGemiddelde of overzicht.toetssoortgemiddelden; track $index) {
+                                    @if (
+                                        resultaten.toetssoortGemiddelden | findToetssoortgemiddelde: toetssoortGemiddelde.afkorting;
+                                        as resultaat
+                                    ) {
+                                        <td
+                                            class="toetssoort-gemiddelde cijfer"
+                                            [hmyTooltip]="'Gemiddelde voor ' + toetssoortGemiddelde.naam"
+                                            [attr.aria-label]="resultaat | examenGemiddeldeAriaLabel"
+                                            [class.onvoldoende]="resultaat.isVoldoende === false"
+                                            [class.neutraal]="resultaat.isVoldoende === undefined"
+                                            [class.last]="$last && !overzicht.toonSEKolom"
+                                            tabindex="0">
+                                            {{ resultaat.formattedResultaat ?? '' }}
+                                        </td>
+                                    } @else {
+                                        <td
+                                            class="toetssoort-gemiddelde geen-toets"
+                                            [class.last]="$last && !overzicht.toonSEKolom"
+                                            [hmyTooltip]="'Geen cijfer voor ' + toetssoortGemiddelde.naam"
+                                            tabindex="-1"></td>
+                                    }
+                                }
+                            }
+                            @if (resultaten.seResultaat && overzicht.toonSEKolom) {
+                                <td
+                                    class="cijfer gemiddelde last"
+                                    [attr.aria-label]="resultaten.seResultaat | examenGemiddeldeAriaLabel"
+                                    [hmyTooltip]="resultaten.seResultaat | examenGemiddeldeTooltip"
+                                    scope="col"
+                                    tabindex="0">
+                                    {{ resultaten.seResultaat.formattedResultaat }}
+                                </td>
+                            } @else if (overzicht.toonSEKolom || !gemiddeldenOpen()) {
+                                <td class="gemiddelde last" tabindex="-1" hmyTooltip="Schoolexamen"></td>
+                            }
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+} @else {
+    <hmy-spinner />
+}

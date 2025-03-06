@@ -5,7 +5,6 @@ import { AppStatusService } from 'leerling-app-status';
 
 @Component({
     selector: 'sl-header-action-button',
-    standalone: true,
     imports: [IconDirective],
     templateUrl: './header-action-button.component.html',
     styleUrl: './header-action-button.component.scss',
@@ -24,4 +23,5 @@ export class HeaderActionButtonComponent {
     isOnline = inject(AppStatusService).isOnlineSignal();
 
     hidden = computed(() => this.hideWhenOffline() && !this.isOnline());
+    disabled = input<boolean>(false);
 }

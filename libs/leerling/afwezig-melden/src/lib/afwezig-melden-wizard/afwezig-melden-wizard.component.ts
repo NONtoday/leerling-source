@@ -1,32 +1,68 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, ElementRef, computed, effect, inject, input, model, output, signal } from '@angular/core';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { FormsModule } from '@angular/forms';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    DestroyRef,
+    ElementRef,
+    computed,
+    effect,
+    inject,
+    input,
+    model,
+    output,
+    signal
+} from '@angular/core';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { isSameDay, isSameYear, setHours, setMilliseconds, setMinutes, setSeconds } from 'date-fns';
-import { ButtonComponent, IconDirective, SignalInputs, isPresent } from 'harmony';
-import { IconBewerken, IconKalenderToevoegen, IconNoRadio, IconYesRadio, provideIcons } from 'harmony-icons';
-import { SchoolContactgegevensComponent } from 'leerling-account-modal';
+import { ButtonComponent, IconDirective, SignalInputs, SpinnerComponent, ToggleComponent, isPresent } from 'harmony';
+import {
+    IconBewerken,
+    IconChevronRechts,
+    IconKalenderToevoegen,
+    IconNoRadio,
+    IconTelefoon,
+    IconYesRadio,
+    provideIcons
+} from 'harmony-icons';
+import { GegevensService } from 'leerling-account-modal';
 import { SomtodayLeerling } from 'leerling-authentication';
-import { AccessibilityService, SidebarService, SidebarSettings, capitalize, createSidebarSettings, formatNL } from 'leerling-util';
-import { SAbsentieMeldingInvoer, SAbsentieReden } from 'leerling/store';
-import { catchError, filter, of, pairwise } from 'rxjs';
+import { AFWEZIGHEID } from 'leerling-base';
+import { RegistratiesService } from 'leerling-registraties-data-access';
+import { SRegistratieCategorieNaam, getSlugifiedCategorieNaam } from 'leerling-registraties-models';
+import {
+    AccessibilityService,
+    SidebarService,
+    SidebarSettings,
+    Wizard,
+    capitalize,
+    createSidebarSettings,
+    formatNL,
+    windowOpen
+} from 'leerling-util';
+import { RechtenService, SAbsentieMeldingInvoer, SAbsentieReden, SLeerlingSchoolgegevens } from 'leerling/store';
+import { catchError, distinctUntilChanged, filter, of, pairwise, startWith, switchMap } from 'rxjs';
 import { AbsentieService } from '../services/absentie.service';
-import { DagOptie, TijdOptie } from './afwezig-melden-model';
+import { DagOptie, TijdOptieMinuten, TijdOptieUren } from './afwezig-melden-model';
 import { DatumSelectieComponent } from './datum-selectie/datum-selectie.component';
 
 @Component({
     selector: 'sl-afwezig-melden-wizard',
-    standalone: true,
-    imports: [SchoolContactgegevensComponent, ButtonComponent, DatumSelectieComponent, FormsModule, IconDirective],
-    providers: [provideIcons(IconYesRadio, IconNoRadio, IconBewerken, IconKalenderToevoegen)],
+    imports: [ButtonComponent, DatumSelectieComponent, FormsModule, IconDirective, SpinnerComponent, ReactiveFormsModule, ToggleComponent],
+    providers: [provideIcons(IconYesRadio, IconNoRadio, IconBewerken, IconKalenderToevoegen, IconTelefoon, IconChevronRechts)],
     templateUrl: './afwezig-melden-wizard.component.html',
     styleUrl: './afwezig-melden-wizard.component.scss',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AfwezigMeldenWizardComponent {
+export class AfwezigMeldenWizardComponent implements Wizard {
     private absentieService = inject(AbsentieService);
     private accessibilityService = inject(AccessibilityService);
     private elementRef = inject(ElementRef);
+    private _gegevensService = inject(GegevensService);
+    private _destroyRef = inject(DestroyRef);
+    private _router = inject(Router);
+    private _rechtenService = inject(RechtenService);
 
     // inputs
     absentieRedenen = input.required<SAbsentieReden[]>();
@@ -38,20 +74,27 @@ export class AfwezigMeldenWizardComponent {
     // de waardes die geselecteerd / ingevoerd worden door de gebruiker
     absentieReden = model<SAbsentieReden>();
     beginDag = model<DagOptie>();
-    beginTijd = model<TijdOptie>();
+    beginTijdMinuten = model<TijdOptieMinuten>();
+    beginTijdUren = model<TijdOptieUren>();
     eindDag = model<DagOptie>();
-    eindTijd = model<TijdOptie>();
+    eindTijdMinuten = model<TijdOptieMinuten>();
+    eindTijdUren = model<TijdOptieUren>();
     opmerkingText = model<string>();
+    geenEindDatum = model<boolean>(false);
+    geenEindDatumLabel = 'Weet ik niet';
 
     // wizard flow state
+    eindDatumVerplicht = computed<boolean>(
+        () => !!this.absentieReden()?.verzorgerEinddatumVerplicht || !!this.absentieReden()?.standaardAfgehandeld
+    );
     huidigeStapNaam = signal<StapNaam>('Reden');
     huidigeStapIndex = computed(() => StapNamen.indexOf(this.huidigeStapNaam()));
-    isEersteStap = computed(() => this.huidigeStapIndex() === 0);
-    isVersturenStap = computed(() => this.huidigeStapNaam() === 'Samenvatting');
     leerlingNaam = computed(() => this.leerling()?.nn || '');
     progressBarCompletedSteps = computed(() => StapNamen.map((_, stapIndex) => stapIndex <= this.huidigeStapIndex()));
     versturenError = signal<string | undefined>(undefined);
     versturenInProgress = signal(false);
+    schoolgegevens = signal<SLeerlingSchoolgegevens | undefined>(undefined);
+    laatstGemeldeRegistratieGeoorloofd = signal(false);
 
     isHuidigeStapValid = computed<boolean>(() => {
         switch (this.huidigeStapNaam()) {
@@ -74,21 +117,29 @@ export class AfwezigMeldenWizardComponent {
         if (this.huidigeStapNaam() === 'Klaar') {
             return;
         }
+        const isVersturenStap = this.huidigeStapNaam() === 'Samenvatting';
         return {
             disabled: !this.isHuidigeStapValid() || this.versturenInProgress(),
-            label: this.isHuidigeStapValid() ? (this.isVersturenStap() ? 'Versturen' : 'Volgende') : 'Maak een keuze'
+            label: this.isHuidigeStapValid() ? (isVersturenStap ? 'Versturen' : 'Volgende') : 'Maak een keuze'
         };
     });
 
     vorigeKnop = computed<NavigatieKnop | undefined>(() => {
-        if (this.huidigeStapNaam() === 'Reden' || this.huidigeStapNaam() === 'Klaar') {
+        if (this.huidigeStapNaam() === 'Klaar' || (this.huidigeStapNaam() === 'Reden' && !this.meldingenBekijkenToegestaan())) {
             return;
         }
+
         return {
             disabled: this.versturenInProgress(),
-            label: 'Vorige'
+            label: this.huidigeStapNaam() === 'Reden' ? 'Annuleren' : 'Vorige'
         };
     });
+
+    meldingenBekijkenToegestaan = toSignal(
+        this._rechtenService
+            .heeftRecht('absentieMeldingBekijkenAan')
+            .pipe(distinctUntilChanged(), startWith(this._rechtenService.heeftRechtSnapshot('absentieMeldingBekijkenAan')))
+    );
 
     constructor() {
         toObservable(this.absentieReden)
@@ -99,29 +150,40 @@ export class AfwezigMeldenWizardComponent {
                 takeUntilDestroyed()
             )
             .subscribe(([, absentieReden]) => {
-                // reset de volledige state (behalve absentiereden), omdat andere opties daarvan afhankelijk zijn
-                this.resetState();
-                this.absentieReden.set(absentieReden);
+                // reset begin- en eindtijd als die niet gekozen mogen worden voor de nieuwe absentiereden
+                if (!absentieReden?.verzorgerMagTijdstipKiezen) {
+                    this.beginTijdMinuten.set(undefined);
+                    this.beginTijdUren.set(undefined);
+                    this.eindTijdMinuten.set(undefined);
+                    this.eindTijdUren.set(undefined);
+                }
 
                 // absentiereden is de eerste stap in de flow, dus zodra die gekozen is zijn we vies
                 this.isDirty.emit(!!absentieReden);
             });
 
-        effect(
-            () => {
-                // triggert als leerling en/of absentieredenen inputs zijn veranderd, bijv. na context switch
-                if (this.leerling() && this.absentieRedenen()) {
-                    this.resetState();
-                    this.gaNaarEersteStap();
+        effect(() => {
+            // triggert als leerling en/of absentieredenen inputs zijn veranderd, bijv. na context switch
+            if (this.leerling() && this.absentieRedenen()) {
+                this.resetState();
+                this.gaNaarEersteStap();
 
-                    // als er maar 1 reden is, selecteer deze dan automatisch
-                    if (this.absentieRedenen().length === 1) {
-                        this.absentieReden.set(this.absentieRedenen()[0]);
-                    }
+                // als er maar 1 reden is, selecteer deze dan automatisch
+                if (this.absentieRedenen().length === 1) {
+                    this.absentieReden.set(this.absentieRedenen()[0]);
                 }
-            },
-            { allowSignalWrites: true }
-        );
+            }
+        });
+    }
+    isAtFirstStep(): boolean {
+        return this.huidigeStapIndex() === 0;
+    }
+    goToPreviousStep(): void {
+        this.vorige();
+    }
+
+    markAsPristine(): void {
+        this.isDirty.emit(false);
     }
 
     gaNaarStap(stapNaam: StapNaam) {
@@ -135,45 +197,48 @@ export class AfwezigMeldenWizardComponent {
 
     getSamenvattingWanneerText(): string {
         const beginDag = this.beginDag();
-        const beginTijd = this.beginTijd();
+        const beginTijdMinuten = this.beginTijdMinuten();
+        const beginTijdUren = this.beginTijdUren();
         const eindDag = this.eindDag();
-        const eindTijd = this.eindTijd();
+        const eindTijdMinuten = this.eindTijdMinuten();
+        const eindTijdUren = this.eindTijdUren();
 
         if (!beginDag) {
             throw new Error(`Begindatum ontbreekt`);
         }
 
         const formatDag = (date: Date) => formatNL(date, isSameYear(date, new Date()) ? 'EEEE d MMMM' : 'EEEE d MMMM yyyy');
-        const formatTijd = (tijdOptie?: TijdOptie) => `${tijdOptie?.text} uur`;
+
+        const formatTijd = (uren?: TijdOptieUren, minuten?: TijdOptieMinuten) => {
+            if (uren && minuten) {
+                return `${uren.text}:${minuten.text} uur`;
+            }
+            return `hele dag`;
+        };
 
         let text = capitalize(formatDag(beginDag.date));
 
         if (eindDag) {
             // speciale notatie voor zelfde dag
             if (isSameDay(beginDag.date, eindDag.date)) {
-                if (beginDag.heleDag && eindDag.heleDag) {
-                    // begin hele dag, eind hele dag: "woensdag 17 juni, hele dag"
-                    text += `, hele dag`;
-                } else if (beginDag.heleDag && !eindDag.heleDag) {
-                    // begin hele dag, eind tijd: "woensdag 17 juni t/m 15:00 uur"
-                    text += ` t/m ${formatTijd(eindTijd)}`;
-                } else if (!beginDag.heleDag && eindDag.heleDag) {
-                    // begin tijd, eind hele dag: "woensdag 17 juni, 15:00 uur tot einde dag"
-                    text += `, ${formatTijd(beginTijd)} tot einde dag`;
-                } else {
+                if (beginTijdMinuten && beginTijdUren && eindTijdMinuten && eindTijdUren) {
                     // begin tijd, eind tijd: "woensdag 17 juni, 15:00 uur t/m 15:30 uur"
-                    text += `, ${formatTijd(beginTijd)} t/m ${formatTijd(eindTijd)}`;
+                    text += `, ${formatTijd(beginTijdUren, beginTijdMinuten)}`;
+                    text += ` t/m ${formatTijd(eindTijdUren, eindTijdMinuten)}`;
+                } else {
+                    // "woensdag 17 juni, hele dag"
+                    text += `, hele dag`;
                 }
             } else {
-                // bijv: "woensdag 17 juni, 15:00 uur t/m donderdag 18 juni, hele dag"
-                text += `, ${beginDag.heleDag ? 'hele dag' : `${formatTijd(beginTijd)}`}`;
+                // "woensdag 17 juni, 15:00 uur t/m donderdag 18 juni, 15:30 uur"
+                text += `, ${formatTijd(beginTijdUren, beginTijdMinuten)}`;
                 text += ` t/m ${formatDag(eindDag.date)}`;
-                text += `, ${eindDag.heleDag ? 'hele dag' : `${formatTijd(eindTijd)}`}`;
+                text += `, ${formatTijd(eindTijdUren, eindTijdMinuten)}`;
             }
         } else {
             // geen einddatum: "vanaf woensdag 17 juni, 15:00 uur"
             text = `Vanaf ${formatDag(beginDag.date)}`;
-            text += `, ${beginDag.heleDag ? 'hele dag' : `${formatTijd(beginTijd)}`}`;
+            text += `, ${formatTijd(beginTijdUren, beginTijdMinuten)}`;
         }
 
         return text;
@@ -204,6 +269,8 @@ export class AfwezigMeldenWizardComponent {
         const actie = this.vorigeKnop()?.label;
         if (actie === 'Vorige') {
             this.gaNaarStap(StapNamen[this.huidigeStapIndex() - 1]);
+        } else if (actie === 'Annuleren') {
+            this._router.navigate([AFWEZIGHEID]);
         }
     }
 
@@ -211,23 +278,30 @@ export class AfwezigMeldenWizardComponent {
         this.gaNaarEersteStap();
     }
 
+    openUrl(url: string) {
+        windowOpen(url);
+    }
+
     private isEinddatumIngevuld(eindDag: DagOptie | undefined, absentieReden: SAbsentieReden | undefined): boolean {
         if (eindDag) return true;
 
         // einddatum hoeft niet ingevuld te worden als die niet verplicht is of standaard wordt afgehandeld
-        return !absentieReden?.verzorgerEinddatumVerplicht && !absentieReden?.standaardAfgehandeld;
+        return !absentieReden?.verzorgerEinddatumVerplicht && !absentieReden?.standaardAfgehandeld && this.geenEindDatum();
     }
 
     private gaNaarEersteStap() {
+        this.laatstGemeldeRegistratieGeoorloofd.set(false);
         this.gaNaarStap(StapNamen[0]);
     }
 
     private resetState() {
         this.absentieReden.set(undefined);
         this.beginDag.set(undefined);
-        this.beginTijd.set(undefined);
+        this.beginTijdMinuten.set(undefined);
+        this.beginTijdUren.set(undefined);
         this.eindDag.set(undefined);
-        this.eindTijd.set(undefined);
+        this.eindTijdMinuten.set(undefined);
+        this.eindTijdUren.set(undefined);
         this.opmerkingText.set(undefined);
     }
 
@@ -239,9 +313,11 @@ export class AfwezigMeldenWizardComponent {
         const leerling = this.leerling();
         const absentieReden = this.absentieReden();
         const beginDag = this.beginDag();
-        const beginTijd = this.beginTijd();
+        const beginTijdMinuten = this.beginTijdMinuten();
+        const beginTijdUren = this.beginTijdUren();
         const eindDag = this.eindDag();
-        const eindTijd = this.eindTijd();
+        const eindTijdMinuten = this.eindTijdMinuten();
+        const eindTijdUren = this.eindTijdUren();
         const opmerkingen = this.opmerkingText();
 
         if (!leerling || !absentieReden || !beginDag) {
@@ -253,24 +329,33 @@ export class AfwezigMeldenWizardComponent {
         const invoer: SAbsentieMeldingInvoer = {
             absentieReden,
             leerling: { leerlingnummer: leerling.nr },
-            beginDatumTijd: this.createDatumTijdFromOpties(beginDag, beginTijd),
+            beginDatumTijd: this.createDatumTijdFromOpties(beginDag, beginTijdUren, beginTijdMinuten),
             datumTijdInvoer: new Date(),
-            isHeleDagBeginDatum: beginDag.heleDag,
+            isHeleDagBeginDatum: !absentieReden.verzorgerMagTijdstipKiezen,
             opmerkingen
         };
 
         if (eindDag) {
-            invoer.eindDatumTijd = this.createDatumTijdFromOpties(eindDag, eindTijd);
-            invoer.isHeleDagEindDatum = eindDag.heleDag;
+            invoer.eindDatumTijd = this.createDatumTijdFromOpties(eindDag, eindTijdUren, eindTijdMinuten);
+            invoer.isHeleDagEindDatum = !absentieReden.verzorgerMagTijdstipKiezen;
         }
 
         this.absentieService
             .verstuurAbsentieMelding(invoer)
-            .pipe(catchError((error) => of(error)))
+            .pipe(
+                catchError((error) => of(error)),
+                switchMap((result) =>
+                    result instanceof HttpErrorResponse ? of(result) : this._registratiesService.refreshRegistraties(true)
+                )
+            )
             .subscribe((result) => {
                 this.versturenInProgress.set(false);
 
                 if (result instanceof HttpErrorResponse) {
+                    this._gegevensService
+                        .getSchoolgegevens$()
+                        .pipe(takeUntilDestroyed(this._destroyRef))
+                        .subscribe((schoolgegevens) => this.schoolgegevens.set(schoolgegevens));
                     const errorMessage = result.error?.message;
                     if (errorMessage) {
                         this.onVersturenError(errorMessage);
@@ -278,7 +363,7 @@ export class AfwezigMeldenWizardComponent {
                         this.onVersturenError();
                     }
                 } else {
-                    this.onVersturenSuccess();
+                    this.onVersturenSuccess(invoer.absentieReden.geoorloofd);
                 }
             });
     }
@@ -293,19 +378,24 @@ export class AfwezigMeldenWizardComponent {
         this.focusOnElementById(VersturenErrorId);
     }
 
-    private onVersturenSuccess(): void {
+    private onVersturenSuccess(geoorloofd: boolean): void {
+        this.laatstGemeldeRegistratieGeoorloofd.set(geoorloofd);
         this.gaNaarStap('Klaar');
         this.resetState();
     }
 
-    private createDatumTijdFromOpties(dagOptie: DagOptie, tijdOptie?: TijdOptie): Date {
+    private createDatumTijdFromOpties(dagOptie: DagOptie, tijdOptieUren?: TijdOptieUren, tijdOptieMinuten?: TijdOptieMinuten): Date {
         let datumTijd = dagOptie.date;
-        if (!dagOptie.heleDag && tijdOptie) {
-            datumTijd = setHours(datumTijd, tijdOptie.hours);
-            datumTijd = setMinutes(datumTijd, tijdOptie.minutes);
-            datumTijd = setSeconds(datumTijd, 0);
-            datumTijd = setMilliseconds(datumTijd, 0);
+        datumTijd = setHours(datumTijd, 0);
+        datumTijd = setMinutes(datumTijd, 0);
+        if (tijdOptieUren) {
+            datumTijd = setHours(datumTijd, tijdOptieUren.uren);
         }
+        if (tijdOptieMinuten) {
+            datumTijd = setMinutes(datumTijd, tijdOptieMinuten.minuten);
+        }
+        datumTijd = setSeconds(datumTijd, 0);
+        datumTijd = setMilliseconds(datumTijd, 0);
         return datumTijd;
     }
 
@@ -317,6 +407,31 @@ export class AfwezigMeldenWizardComponent {
                 console.error(`Element not found by id: '#${elementIdWithoutHash}'`);
             } else {
                 element.focus();
+            }
+        });
+    }
+
+    toggleEindDatum() {
+        this.eindDag.set(undefined);
+        this.eindTijdMinuten.set(undefined);
+        this.eindTijdUren.set(undefined);
+        this.geenEindDatum.set(!this.geenEindDatum());
+    }
+
+    private _registratiesService = inject(RegistratiesService);
+
+    gaNaarMelding(event: Event) {
+        event.stopPropagation();
+        if (!this._rechtenService.heeftRecht('absentieMeldingBekijkenAan')) {
+            return;
+        }
+
+        // Push afwezigheid naar de state zodat het sluiten van de sidebar niet de wizard weer opent.
+        window.history.pushState(null, 'Afwezigheid', '/afwezigheid');
+        const detail: SRegistratieCategorieNaam = this.laatstGemeldeRegistratieGeoorloofd() ? 'Afwezig geoorloofd' : 'Afwezig ongeoorloofd';
+        this._router.navigate([AFWEZIGHEID], {
+            queryParams: {
+                detail: getSlugifiedCategorieNaam(detail)
             }
         });
     }
@@ -332,7 +447,7 @@ export function createAfwezigMeldenWizardSidebarSettings(sidebarService: Sidebar
     });
 }
 
-type NavigatieKnopLabel = 'Maak een keuze' | 'Versturen' | 'Volgende' | 'Vorige';
+type NavigatieKnopLabel = 'Maak een keuze' | 'Versturen' | 'Volgende' | 'Vorige' | 'Annuleren';
 type NavigatieKnop = Pick<SignalInputs<ButtonComponent>, 'label' | 'disabled'> & { label: NavigatieKnopLabel };
 
 const StapNamen = ['Reden', 'Begindatum', 'Einddatum', 'Opmerking', 'Samenvatting', 'Klaar'] as const;

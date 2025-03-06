@@ -1,0 +1,33 @@
+<div class="map" [attr.aria-label]="mapStatus()" [attr.aria-expanded]="isOpen()" (click)="toggleOpen()" tabindex="0" role="button">
+    @if (mapStatus() === 'AANKOMEND') {
+        <hmy-pill [text]="mapStatus() | inleveropdrachtCategorieToString" [color]="mapStatus() | inleveropdrachtCategorieIconColor" />
+    } @else {
+        <hmy-icon-pill
+            [text]="mapStatus() | inleveropdrachtCategorieToString"
+            [icon]="mapStatus() | inleveropdrachtCategorieIconName"
+            [color]="mapStatus() | inleveropdrachtCategorieIconColor"
+            [iconSize]="'small'"
+            [withCounter]="inleveropdrachtenVoorStatus().length >= 0"
+            [count]="inleveropdrachtenVoorStatus().length" />
+    }
+    <i class="chevron" [ngClass]="{ open: isOpen() }" [hmyIcon]="isOpen() ? 'chevronOnder' : 'chevronLinks'" size="smallest"></i>
+</div>
+
+@if (isOpen()) {
+    @if (inleveropdrachtenVoorStatus(); as inleverOpdrachten) {
+        @for (inleverOpdracht of inleverOpdrachten; track inleverOpdracht.id) {
+            <sl-inlevering-item
+                [@collapseOnLeave]
+                [@expandOnEnter]
+                [inleverOpdracht]="inleverOpdracht"
+                (click)="inleverOpdrachtClick.emit(inleverOpdracht)"
+                tabindex="0" />
+        }
+
+        @if (inleverOpdrachten.length === 0) {
+            <div class="empty-state" tabindex="0">
+                <p>{{ mapStatus() | inleveropdrachtCategorieEmptyState }}</p>
+            </div>
+        }
+    }
+}

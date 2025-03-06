@@ -33,7 +33,7 @@ export interface CloseSidebarUtil {
     /**
      * Immediately close the sidebar, after any guards have been confirmed and animations have completed.
      */
-    finalizeClose(usingOnClose: boolean): void;
+    finalizeClose(usingOnClose: boolean, trigger: SidebarCloseTrigger): void;
 
     /**
      * Request for the sidebar to be closed. If a guard is registered, it will be presented to the user.

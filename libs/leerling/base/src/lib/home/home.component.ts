@@ -3,76 +3,48 @@ import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/cor
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterOutlet } from '@angular/router';
 import { Store } from '@ngxs/store';
-import { info } from 'debugger';
-import { DeviceService, SpinnerComponent } from 'harmony';
+import { ButtonComponent, DeviceService, ModalService, SpinnerComponent } from 'harmony';
+import { APP_SPINNER, AuthenticationEventType, AuthenticationService, PushNotificationService } from 'leerling-authentication';
+import { DeploymentConfiguration, environment } from 'leerling-environment';
 import {
-    APP_SPINNER,
-    AuthenticationEventType,
-    AuthenticationService,
-    PushNotificationService,
-    SomtodayLeerlingIngelogdAccount
-} from 'leerling-authentication';
-import { InfoMessageService } from 'leerling-util';
-import { SwitchContext } from 'leerling/store';
-import { isEqual } from 'lodash-es';
-import { combineLatest } from 'rxjs';
-import { TabBarComponent } from '../tab-bar/tab-bar.component';
+    AccessibilityService,
+    IHasActiveChild,
+    InfoMessageService,
+    isWeb,
+    LandelijkeMededelingenService,
+    RefreshService
+} from 'leerling-util';
+import { SharedSelectors } from 'leerling/store';
+import { ToastrService } from 'ngx-toastr';
+import { ONBOARDING_LOCALSTORAGE_KEY, ONBOARDING_MODAL_SETTINGS, OnboardingSplashComponent } from 'onboarding-splash';
+import { combineLatest, filter } from 'rxjs';
 
-const HEADER_HEIGHT = 96;
+const HEADER_HEIGHT = 64;
 const TAB_BAR_HEIGHT = 56;
 
 @Component({
     selector: 'sl-home',
-    standalone: true,
-    imports: [CommonModule, TabBarComponent, RouterOutlet, SpinnerComponent],
+    imports: [CommonModule, RouterOutlet, SpinnerComponent, ButtonComponent],
     templateUrl: './home.component.html',
     styleUrls: ['./home.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, IHasActiveChild {
     // services injects
     private _authenticationService = inject(AuthenticationService);
     private _deviceService = inject(DeviceService);
     private _store = inject(Store);
     private _infomessageService = inject(InfoMessageService);
     private _pushNotificationService = inject(PushNotificationService);
-
-    private previousAccountLeerling: SomtodayLeerlingIngelogdAccount = {};
+    private _refreshService = inject(RefreshService);
+    private _modalService = inject(ModalService);
+    private _toastr = inject(ToastrService);
+    private _accessibilityService = inject(AccessibilityService);
+    private _landelijkeMededelingenService = inject(LandelijkeMededelingenService);
+    private _activeChildComponent: any;
     public appSpinner = inject(APP_SPINNER);
 
     constructor() {
-        combineLatest([this._authenticationService.currentAccountLeerling$, this._authenticationService.isAuthenticationReady$])
-            .pipe(takeUntilDestroyed())
-            .subscribe(([currentAccountLeerling, ready]) => {
-                info(
-                    'SWITCHING:' +
-                        ready +
-                        this._formatAccountLeerling(this.previousAccountLeerling) +
-                        ' - cur: ' +
-                        this._formatAccountLeerling(currentAccountLeerling)
-                );
-                if (!ready) {
-                    return;
-                }
-
-                if (
-                    !isEqual(this.previousAccountLeerling.sessionIdentifier, currentAccountLeerling.sessionIdentifier) ||
-                    this.previousAccountLeerling.leerling?.id !== currentAccountLeerling.leerling?.id ||
-                    this.previousAccountLeerling.accountUUID !== currentAccountLeerling.accountUUID
-                ) {
-                    this.previousAccountLeerling = currentAccountLeerling;
-                    info(
-                        `CurrentLeerling? ${currentAccountLeerling.leerling?.id}, AccountUUID: ${currentAccountLeerling.accountUUID}, AuthenticationContext: ${currentAccountLeerling.sessionIdentifier?.UUID}`
-                    );
-                    this._store.dispatch(
-                        new SwitchContext(
-                            currentAccountLeerling.sessionIdentifier?.UUID ?? 'UNKNOWN',
-                            currentAccountLeerling.accountUUID,
-                            currentAccountLeerling.leerling?.id
-                        )
-                    );
-                }
-            });
         this._authenticationService.events$.pipe(takeUntilDestroyed()).subscribe((next) => {
             switch (next.type) {
                 case AuthenticationEventType.ACCOUNT_REMOVED:
@@ -89,18 +61,48 @@ export class HomeComponent implements OnInit {
                     break;
             }
         });
-
+        combineLatest([this._authenticationService.authenticationState$, this._store.select(SharedSelectors.getConnectionStatus())])
+            .pipe(
+                takeUntilDestroyed(),
+                filter(([status, next]) => next.isOnline && 'READY' === status)
+            )
+            .subscribe(() => {
+                this._refreshService.resuming();
+            });
         this._deviceService.onDeviceChange$.pipe(takeUntilDestroyed()).subscribe(() => this.updateCssMinContentVh());
-    }
-
-    private _formatAccountLeerling(accountLeerling: SomtodayLeerlingIngelogdAccount): string {
-        return (
-            ' (' + accountLeerling.sessionIdentifier?.UUID + ' - ' + accountLeerling.leerling?.id + ' ' + accountLeerling.leerling?.nn + ')'
-        );
+        this._landelijkeMededelingenService.refreshLandelijkeMededelingen();
     }
 
     ngOnInit() {
         this.updateCssMinContentVh();
+        this.showOnboardingSplash();
+
+        if (
+            isWeb() &&
+            environment.config in
+                [
+                    DeploymentConfiguration.nightly,
+                    DeploymentConfiguration.acceptatie,
+                    DeploymentConfiguration.test,
+                    DeploymentConfiguration.productie
+                ]
+        ) {
+            this._toastr.info(
+                `Je bekijkt de bètaversie van Somtoday. <a href="${environment.idpIssuer}" tabindex="-1">Klik hier voor de stabiele versie</a>`,
+                undefined,
+                {
+                    disableTimeOut: true
+                }
+            );
+        }
+    }
+
+    onRouterActivate(childComponent: any) {
+        this._activeChildComponent = childComponent;
+    }
+
+    public getChildComponent(): any {
+        return this._activeChildComponent;
     }
 
     private updateCssMinContentVh() {
@@ -110,5 +112,22 @@ export class HomeComponent implements OnInit {
                 this._deviceService.isDesktop() ? HEADER_HEIGHT : HEADER_HEIGHT + TAB_BAR_HEIGHT
             }px - var(--safe-area-inset-top) - var(--safe-area-inset-bottom))`
         );
+    }
+
+    private showOnboardingSplash() {
+        if (!isWeb() && this._deviceService.isPhoneOrTabletPortrait() && !localStorage[ONBOARDING_LOCALSTORAGE_KEY]) {
+            this._modalService.modal({
+                component: OnboardingSplashComponent,
+                inputs: {
+                    isVerzorger: this._authenticationService.isCurrentContextOuderVerzorger
+                },
+                settings: ONBOARDING_MODAL_SETTINGS
+            });
+        }
+    }
+
+    goToContent() {
+        document.getElementById('mainContent')?.focus();
+        this._accessibilityService.goToContent();
     }
 }

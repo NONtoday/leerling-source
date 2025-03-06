@@ -16,7 +16,7 @@ export interface LaatsteResultaat {
     herkansing: Poging;
 
     resultaat: string;
-
+    isLeegResultaat: boolean;
     isVoldoende: IsVoldoendeType;
     omschrijving: string;
     vakNaam: string;
@@ -40,7 +40,7 @@ export function mapToLaatsteResultaat(geldendResultaat: SGeldendResultaat): Laat
     const laatsteResultaten: LaatsteResultaat[] = [];
 
     const eerstePoging = formatResultaat(geldendResultaat.formattedEerstePoging, geldendResultaat.bijzonderheid);
-    if (eerstePoging) {
+    if (eerstePoging || geldendResultaat.opmerkingenEerstePoging) {
         laatsteResultaten.push(
             createLaatsteResultaatStandaard(
                 geldendResultaat,
@@ -52,7 +52,7 @@ export function mapToLaatsteResultaat(geldendResultaat: SGeldendResultaat): Laat
         );
     }
 
-    if (geldendResultaat.formattedHerkansing1) {
+    if (geldendResultaat.formattedHerkansing1 || geldendResultaat.opmerkingenHerkansing1) {
         laatsteResultaten.push(
             createLaatsteResultaatStandaard(
                 geldendResultaat,
@@ -65,7 +65,7 @@ export function mapToLaatsteResultaat(geldendResultaat: SGeldendResultaat): Laat
         );
     }
 
-    if (geldendResultaat.formattedHerkansing2) {
+    if (geldendResultaat.formattedHerkansing2 || geldendResultaat.opmerkingenHerkansing2) {
         laatsteResultaten.push(
             createLaatsteResultaatStandaard(
                 geldendResultaat,
@@ -164,7 +164,7 @@ function isGemiddelde(geldendResultaat: SGeldendResultaat): boolean {
 
 function createLaatsteResultaatStandaard(
     geldendResultaat: SGeldendVoortgangsdossierResultaat,
-    resultaat: string,
+    resultaat: string | undefined,
     opmerking: string | undefined,
     isVoldoende?: boolean,
     datum?: Date,
@@ -199,7 +199,7 @@ function createLaatsteResultaatStandaard(
 
 function createLaatsteResultaatAlternatief(
     geldendResultaat: SGeldendVoortgangsdossierResultaat,
-    resultaat: string,
+    resultaat: string | undefined,
     opmerking: string | undefined,
     isVoldoende?: boolean,
     naamAlternatiefNiveau?: string,
@@ -245,7 +245,7 @@ function getPoging(herkansingsnummer?: number): Poging {
 
 function createLaatsteResultaat(
     geldendResultaat: SGeldendResultaat,
-    resultaat: string,
+    resultaat: string | undefined,
     teltMee: boolean,
     isVoldoende: IsVoldoendeType,
     isAlternatief: boolean,
@@ -259,7 +259,8 @@ function createLaatsteResultaat(
     return {
         geldendResultaten: [geldendResultaat],
         herkansing: herkansing,
-        resultaat: resultaat,
+        resultaat: resultaat ?? '-',
+        isLeegResultaat: resultaat === undefined,
         isVoldoende: isVoldoende,
         teltPogingMee: teltMee,
         weging: geldendResultaat.weging + 'x',

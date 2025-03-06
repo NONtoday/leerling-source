@@ -15,7 +15,14 @@ export class PushActionState {
 
     @Action(IncomingPushAction)
     incomingPushAction(ctx: StateContext<SPushAction | undefined>, action: IncomingPushAction) {
-        ctx.setState({ type: action.type, leerlingId: action.leerlingId, entityId: action.entityId, triggered: action.triggered });
+        ctx.setState({
+            type: action.type,
+            leerlingId: action.leerlingId,
+            accountUUID: action.accountUUID,
+            entityId: action.entityId,
+            datum: action.datum,
+            triggered: action.triggered
+        });
         if (this._latestTimer) {
             clearTimeout(this._latestTimer);
         }

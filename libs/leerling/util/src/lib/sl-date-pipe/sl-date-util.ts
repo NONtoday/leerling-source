@@ -1,4 +1,4 @@
-import { format, getDay, isDate, isSameDay, isSameYear, parseISO } from 'date-fns';
+import { format, getDay, isDate, isFriday, isMonday, isSameDay, isSameYear, nextFriday, parseISO, previousMonday } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { DateFormat } from './sl-date.pipe';
 
@@ -61,6 +61,9 @@ export const formatDateNL = (date: Date, format: DateFormat) => {
                 removePeriod(formatNL(date, isSameYear(date, new Date()) ? 'eeeeee d MMM, HH:mm' : 'eeeeee d MMM, yyyy, HH:mm'))
             );
         }
+        case 'dag_kort_dagnummer_maand_kort_tijd_zonder_komma': {
+            return capitalize(removePeriod(formatNL(date, 'eeeeee d MMM HH:mm')));
+        }
         case 'dag_kort_dagnummer_maand_kort_tijd_lowercase': {
             if (isSameDay(date, new Date())) {
                 return `vandaag ${removePeriod(formatNL(date, 'd MMM, HH:mm'))}`;
@@ -72,6 +75,22 @@ export const formatDateNL = (date: Date, format: DateFormat) => {
                 return `Vandaag ${formatNL(date, 'd MMMM, HH:mm')}`;
             }
             return capitalize(formatNL(date, isSameYear(date, new Date()) ? 'EEEE d MMMM, HH:mm' : 'EEEE d MMMM, yyyy, HH:mm'));
+        }
+        case 'week_begin_dag_tm_eind_dag_maand_kort': {
+            const monday = isMonday(date) ? date : previousMonday(date);
+            const friday = isFriday(date) ? date : nextFriday(date);
+            if (monday.getMonth() === friday.getMonth()) {
+                return `${formatNL(monday, 'd')} t/m ${removePeriod(formatNL(friday, 'd MMM'))}`;
+            }
+            return `${removePeriod(formatNL(monday, 'd MMM'))} t/m ${removePeriod(formatNL(friday, 'd MMM'))}`;
+        }
+        case 'week_begin_dag_totenmet_eind_dag_maand_lang': {
+            const monday = isMonday(date) ? date : previousMonday(date);
+            const friday = isFriday(date) ? date : nextFriday(date);
+            if (monday.getMonth() === friday.getMonth()) {
+                return `${formatNL(monday, 'd')} tot en met ${removePeriod(formatNL(friday, 'd MMMM'))}`;
+            }
+            return `${removePeriod(formatNL(monday, 'd MMMM'))} tot en met ${removePeriod(formatNL(friday, 'd MMMM'))}`;
         }
         case 'maand_uitgeschreven':
             return formatNL(date, 'MMMM');

@@ -13,6 +13,7 @@ import {
 } from '@angular/core';
 import { ButtonComponent, SpinnerComponent } from 'harmony';
 import { sorteerStudiewijzerItems } from 'leerling-studiewijzer-api';
+import { SlDatePipe } from 'leerling-util';
 import { derivedAsync } from 'ngxtension/derived-async';
 import { StudiewijzerWeek } from '../../services/studiewijzer-model';
 import { StudiewijzerService } from '../../services/studiewijzer.service';
@@ -22,7 +23,6 @@ import { StudiewijzerItemsComponent } from '../studiewijzer-items/studiewijzer-i
 
 @Component({
     selector: 'sl-studiewijzer-week',
-    standalone: true,
     imports: [CommonModule, StudiewijzerDagComponent, SpinnerComponent, StudiewijzerItemsComponent, ButtonComponent],
     templateUrl: './studiewijzer-week.component.html',
     styleUrl: './studiewijzer-week.component.scss',
@@ -31,6 +31,7 @@ import { StudiewijzerItemsComponent } from '../studiewijzer-items/studiewijzer-i
 export class StudiewijzerWeekComponent {
     private _studiewijzerService = inject(StudiewijzerService);
     public elementRef = inject(ElementRef);
+    private _datePipe = new SlDatePipe();
 
     @ViewChild('weekHeader', { read: ElementRef, static: true }) weekHeader: ElementRef;
     @ViewChildren(StudiewijzerDagComponent) dagenComponents: QueryList<StudiewijzerDagComponent>;
@@ -41,6 +42,14 @@ export class StudiewijzerWeekComponent {
 
     public toonSpinner = computed(() => (this._weekitems() === undefined ? true : false));
     public dagen = computed(() => (this.toonWeekend() ? this.week().dagen : this.week().dagen.filter((dag) => !dag.isWeekendDag)));
+    public startDagEindDagTekst = computed(() => {
+        const datum = this.week().dagen.filter((dag) => !dag.isWeekendDag)[0];
+        return datum ? this._datePipe.transform(datum.datum, 'week_begin_dag_tm_eind_dag_maand_kort') : '';
+    });
+    public weekTakenAriaLabel = computed(() => {
+        const datum = this.week().dagen.filter((dag) => !dag.isWeekendDag)[0];
+        return datum ? `Weektaken: ${this._datePipe.transform(datum.datum, 'week_begin_dag_totenmet_eind_dag_maand_lang')}` : '';
+    });
 
     public toonAfvinkKnop = this._studiewijzerService.isAfvinkenToegestaan();
 

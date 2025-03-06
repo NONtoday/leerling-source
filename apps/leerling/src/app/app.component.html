@@ -1,14 +1,5 @@
-@if (offline | async) {
+@if (!isOnline()) {
     <div class="offline-line"></div>
 }
-<div class="beta">
-    <span>
-        @if (isWeb) {
-            Je bekijkt de bètaversie van Somtoday. <a [href]="idpUrl" tabindex="-1">Klik hier voor de stabiele versie</a>
-        } @else {
-            Je bekijkt de bètaversie van Somtoday
-        }
-    </span>
-</div>
 <div class="default-focus" #defaultfocus tabindex="-2" aria-hidden="true"></div>
-<router-outlet></router-outlet>
+<router-outlet (activate)="onRouterActivate($event)"></router-outlet>

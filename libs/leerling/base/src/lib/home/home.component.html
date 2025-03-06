@@ -1,4 +1,12 @@
-<router-outlet />
+<hmy-button
+    class="go-to-content"
+    (click)="goToContent()"
+    label="Ga direct naar inhoud"
+    mode="primary"
+    tabindex="1"
+    customTabindex="-1"></hmy-button>
+
+<router-outlet (activate)="onRouterActivate($event)" />
 @if (appSpinner()) {
     <div class="spinner-container" (click)="$event.preventDefault()">
         <div class="spinner">

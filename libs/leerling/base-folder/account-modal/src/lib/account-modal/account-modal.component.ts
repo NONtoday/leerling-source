@@ -1,8 +1,19 @@
 import { A11yModule } from '@angular/cdk/a11y';
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, OnInit, Renderer2, ViewChild, inject, signal } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    DestroyRef,
+    ElementRef,
+    OnInit,
+    Renderer2,
+    ViewChild,
+    inject,
+    input,
+    signal
+} from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { AutoFocusDirective, BgColorToken, CssVarPipe, DeviceService, IconDirective, OnColorToken, shareReplayLastValue } from 'harmony';
+import { AutoFocusDirective, BgColorToken, DeviceService, OnColorToken, shareReplayLastValue } from 'harmony';
 import {
     IconKalenderDag,
     IconName,
@@ -18,15 +29,7 @@ import {
 import { AppStatusService } from 'leerling-app-status';
 import { Affiliation, AuthenticationService } from 'leerling-authentication';
 import { DeploymentConfiguration, environment } from 'leerling-environment';
-import {
-    AccessibilityService,
-    ISwipable,
-    ModalComponent,
-    ModalScrollableElementsProvider,
-    ModalService,
-    SwipeInfo,
-    SwipeManager
-} from 'leerling-util';
+import { AccessibilityService, ISwipable, ModalScrollableElementsProvider, ModalService, SwipeInfo, SwipeManager } from 'leerling-util';
 import { AccountRecht, HeeftRechtDirective, RechtenService } from 'leerling/store';
 import { BehaviorSubject, Observable, combineLatest, map, take, tap } from 'rxjs';
 import { match } from 'ts-pattern';
@@ -42,15 +45,11 @@ import { WeergaveComponent } from '../weergave/weergave.component';
 
 @Component({
     selector: 'sl-account-modal',
-    standalone: true,
     imports: [
         CommonModule,
-        ModalComponent,
         AccountModalHeaderComponent,
         AccountModalTabComponent,
         AccountModalDetailsComponent,
-        IconDirective,
-        CssVarPipe,
         GegevensComponent,
         WeergaveComponent,
         AgendaComponent,
@@ -97,11 +96,14 @@ export class AccountModalComponent implements OnInit, ISwipable, ModalScrollable
     public selectedTab = signal<AccountModalTabTitel | undefined>(undefined);
     public version$: Observable<string>;
     public isOnline = this._appStatus.isOnlineSignal();
+    public isTabletOrDesktop = this._deviceService.isTabletOrDesktopSignal;
 
     private _scrollElement = new BehaviorSubject<ElementRef[]>([]);
 
     public isCurrentContextOuderVerzorger = this._authenticationService.isCurrentContextOuderVerzorger;
     public toestemmingen = toSignal(this._toestemmingService.getToestemmingen(), { initialValue: [] });
+
+    public initeleTab = input<AccountModalTabTitel>();
 
     ngOnInit() {
         this.tabs$ = combineLatest([
@@ -111,6 +113,7 @@ export class AccountModalComponent implements OnInit, ISwipable, ModalScrollable
         ]).pipe(
             tap(([isOnline]) => {
                 if (!isOnline) this.selectedTab.set('Weergave');
+                else if (this.initeleTab()) this.selectedTab.set(this.initeleTab());
             }),
             map(([isOnline, affiliation, toestemmingen]) => {
                 const heeftToestemmingen =
@@ -126,12 +129,14 @@ export class AccountModalComponent implements OnInit, ISwipable, ModalScrollable
                         .filter((tab) => (tab.titel === 'Toestemmingen' && !heeftToestemmingen ? false : true))
                         // filter offline tabs
                         .filter((tab) => (isOnline ? true : tab.offlineAvailable))
+                        // verberg notificaties op tablet + desktop
+                        .filter((tab) => (tab.titel === 'Notificaties' && this.isTabletOrDesktop() ? false : true))
                 );
             }),
             shareReplayLastValue()
         );
 
-        if (this._deviceService.isTabletOrDesktop()) {
+        if (this.isTabletOrDesktop()) {
             combineLatest([this.tabs$, this._rechtenService.getCurrentAccountRechten()])
                 .pipe(take(1))
                 .subscribe(([tabs, rechten]) => {
@@ -156,16 +161,21 @@ export class AccountModalComponent implements OnInit, ISwipable, ModalScrollable
         this.selectedTab.set(item?.titel);
         this.accountModalDetailsComponent.contentRef.nativeElement.scrollTop = 0;
         if (focusOnDetails) {
-            setTimeout(() => {
-                if (this._accessibilityService.isAccessedByKeyboard()) {
-                    this.accountModalDetailsComponent.accountModalHeader?.titleRef?.nativeElement.focus();
-                }
-            }, 250); // wacht animatie af, anders is die janky
+            this.setFocusOnDetailsTitle();
         }
     }
 
-    changeTitle(title: string) {
+    setHeaderTitleWithFocus(title: string) {
         this.accountModalDetailsComponent.setTitle(title);
+        this.setFocusOnDetailsTitle();
+    }
+
+    setFocusOnDetailsTitle() {
+        setTimeout(() => {
+            if (this._accessibilityService.isAccessedByKeyboard()) {
+                this.accountModalDetailsComponent.accountModalHeader?.titleRef?.nativeElement.focus();
+            }
+        }, 250); // wacht animatie af, anders is die janky
     }
 
     forceUitloggen() {
@@ -189,18 +199,18 @@ export class AccountModalComponent implements OnInit, ISwipable, ModalScrollable
     }
 
     onTouchStart(evt: TouchEvent) {
-        if (this._deviceService.isTabletOrDesktop()) return;
+        if (this.isTabletOrDesktop()) return;
         this._swipeManager.onTouchStart(evt);
         this._renderer.setStyle(this.accountMenuRef.nativeElement, 'transform', `translateX(0%)`);
     }
 
     onTouchMove(evt: TouchEvent) {
-        if (this._deviceService.isTabletOrDesktop()) return;
+        if (this.isTabletOrDesktop()) return;
         this._swipeManager.onTouchMove(evt);
     }
 
     onTouchEnd(evt: TouchEvent) {
-        if (this._deviceService.isTabletOrDesktop()) return;
+        if (this.isTabletOrDesktop()) return;
         this._swipeManager.onTouchEnd(evt);
     }
 

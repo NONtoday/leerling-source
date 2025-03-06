@@ -18,7 +18,6 @@ export function mapAbsentieMelding(melding: RAbsentieMelding): SAbsentieMelding 
     assertIsDefined(melding.absentieReden);
     assertIsDefined(melding.datumTijdInvoer);
     assertIsDefined(melding.beginDatumTijd);
-    assertIsDefined(melding.eindDatumTijd);
     return {
         id: getEntiteitId(melding),
         leerling: mapLeerling(melding.leerling),
@@ -28,7 +27,7 @@ export function mapAbsentieMelding(melding: RAbsentieMelding): SAbsentieMelding 
         absentieReden: mapAbsentieReden(melding.absentieReden),
         datumTijdInvoer: parseISO(melding.datumTijdInvoer),
         beginDatumTijd: parseISO(melding.beginDatumTijd),
-        eindDatumTijd: parseISO(melding.eindDatumTijd)
+        eindDatumTijd: melding.eindDatumTijd ? parseISO(melding.eindDatumTijd) : undefined
     };
 }
 

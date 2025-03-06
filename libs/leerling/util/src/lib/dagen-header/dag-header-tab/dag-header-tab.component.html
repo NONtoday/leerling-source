@@ -1,10 +1,11 @@
 <div class="container">
-    <p class="weekdag">{{ datum.dayOfWeek }}</p>
+    <p class="weekdag" aria-hidden="true">{{ datum.dayOfWeek }}</p>
     <p
         class="dagnummer"
         [class.active]="datum.isActive && !datum.isToday"
         [class.today]="datum.isToday && !datum.isActive"
-        [class.active-today]="datum.isToday && datum.isActive">
+        [class.active-today]="datum.isToday && datum.isActive"
+        aria-hidden="true">
         {{ datum.numberOfMonth }}
     </p>
 </div>

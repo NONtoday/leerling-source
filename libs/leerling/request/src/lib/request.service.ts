@@ -10,6 +10,7 @@ import {
     HttpStatusCode
 } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
+import { SOMTODAY_API_CONFIG } from '@shared/utils/somtoday-api-token';
 import { isPresent } from 'harmony';
 import { Wrapper } from 'leerling-codegen';
 import { isEmpty } from 'lodash-es';
@@ -27,9 +28,12 @@ export const DEFAULT_REQUEST_INFORMATION: RequestInformation = {
     providedIn: 'root'
 })
 export class RequestService {
+    private _somtodayApiConfig = inject(SOMTODAY_API_CONFIG);
     private _httpClient = inject(HttpClient);
 
-    public rootUrl = 'https://api.somtoday.nl/rest/v1';
+    get httpClient(): HttpClient {
+        return this._httpClient;
+    }
 
     get<T>(urlPostfix: string, requestInfo: RequestInformation = DEFAULT_REQUEST_INFORMATION): Observable<T> {
         return this._addMapAndPresentCheck(this.getWithResponse(urlPostfix, requestInfo));
@@ -67,7 +71,8 @@ export class RequestService {
     }
 
     private _request<T>(method: string, urlPostfix: string, requestInfo: RequestInformation): Observable<HttpResponse<T>> {
-        const url = this.rootUrl.endsWith('/') ? this.rootUrl : `${this.rootUrl}/`;
+        const rootUrl = this._somtodayApiConfig.apiUrl;
+        const url = rootUrl.endsWith('/') ? rootUrl : `${rootUrl}/`;
         const postFix = urlPostfix.startsWith('/') ? urlPostfix.substring(1) : urlPostfix;
         const httpRequest = new HttpRequest(method, url + postFix, requestInfo.body, {
             headers: this._getHeaders(requestInfo),

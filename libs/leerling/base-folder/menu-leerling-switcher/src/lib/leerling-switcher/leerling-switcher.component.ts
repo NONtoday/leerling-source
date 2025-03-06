@@ -6,15 +6,14 @@ import { AvatarComponent, IconDirective, OverlayService } from 'harmony';
 import { IconPersoonToevoegen, IconSchool, IconSettings, IconYesRadio, provideIcons } from 'harmony-icons';
 import { AppStatusService } from 'leerling-app-status';
 import { AuthenticationService, SessionIdentifier, SomtodayLeerling } from 'leerling-authentication';
-import { PopupComponent, RefreshReason, onRefresh } from 'leerling-util';
+import { RefreshReason, onRefresh } from 'leerling-util';
 
 @Component({
     selector: 'sl-leerling-switcher',
-    standalone: true,
     templateUrl: './leerling-switcher.component.html',
     styleUrls: ['./leerling-switcher.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [CommonModule, PopupComponent, IconDirective, AvatarComponent, A11yModule],
+    imports: [CommonModule, IconDirective, AvatarComponent, A11yModule],
     providers: [provideIcons(IconYesRadio, IconPersoonToevoegen, IconSettings, IconSchool)]
 })
 export class LeerlingSwitcherComponent {
@@ -25,6 +24,7 @@ export class LeerlingSwitcherComponent {
     currentAccountLeerling = toSignal(this._authService.currentAccountLeerling$, { requireSync: true });
 
     isOnline = inject(AppStatusService).isOnlineSignal();
+    ouderIsImpersonated = toSignal(this._authService.isCurrentAccountImpersonated());
 
     constructor() {
         onRefresh((reason) => {
@@ -36,7 +36,7 @@ export class LeerlingSwitcherComponent {
     }
 
     switchLeerling(sessionIdentifier: SessionIdentifier, leerling: SomtodayLeerling) {
-        this._authService.requestSwitchToProfile(sessionIdentifier, leerling);
+        if (this.isOnline().valueOf()) this._authService.requestSwitchToProfile(sessionIdentifier, leerling);
     }
 
     addNewAccount() {

@@ -1,22 +1,31 @@
-@if (titel()) {
-    <div class="header">
-        <span class="header-titel">{{ titel() }}</span>
-    </div>
-}
+<div [cdkTrapFocusAutoCapture]="true" cdkTrapFocus>
+    @if (titel()) {
+        <div class="header">
+            <span class="header-titel">{{ titel() }}</span>
+        </div>
+    }
 
-<div class="container">
-    @if (weekItems().length > 0) {
-        <sl-rooster-huiswerk-dropdown-items
-            [items]="weekItems()"
-            [toekenningsType]="'WEEK'"
-            [baseTabIndex]="baseTabIndex()"
-            (itemSelected)="itemSelected.emit($event)" />
-    }
-    @if (dagItems().length > 0) {
-        <sl-rooster-huiswerk-dropdown-items
-            [items]="dagItems()"
-            [toekenningsType]="'DAG'"
-            [baseTabIndex]="baseTabIndex()"
-            (itemSelected)="itemSelected.emit($event)" />
-    }
+    <div class="container">
+        @if (weekItems().length > 0) {
+            <div class="title">
+                <p class="items-title weektaken-titel">Weektaken</p>
+                <p class="week-title">{{ weekDatumRange() }}</p>
+            </div>
+            <sl-rooster-huiswerk-dropdown-items
+                [items]="weekItems()"
+                [toekenningsType]="'WEEK'"
+                [baseTabIndex]="baseTabIndex()"
+                (itemSelected)="itemSelected.emit($event)" />
+        }
+        @if (dagItems().length > 0) {
+            <div class="title">
+                <p class="items-title dagtaken-titel">Dagtaken</p>
+            </div>
+            <sl-rooster-huiswerk-dropdown-items
+                [items]="dagItems()"
+                [toekenningsType]="'DAG'"
+                [baseTabIndex]="baseTabIndex()"
+                (itemSelected)="itemSelected.emit($event)" />
+        }
+    </div>
 </div>

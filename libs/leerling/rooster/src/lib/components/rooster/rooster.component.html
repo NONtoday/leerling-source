@@ -1,5 +1,18 @@
 <sl-header [hideBorderBottomMobile]="true">
-    <sl-header-action-button [hideWhenOffline]="false" (click)="updatePeildatumVandaag()" iconName="kalenderDag" label="vandaag" />
+    <sl-header-action-button
+        [hideWhenOffline]="false"
+        [disabled]="!vorigeWeekNavigatieMogelijk()"
+        (click)="vorigeWeekNavigatieMogelijk() && onNavigation('previous')"
+        iconName="chevronLinks"
+        label="Navigeer naar vorige week"
+        tabindex="10" />
+    <sl-header-action-button
+        [hideWhenOffline]="false"
+        [disabled]="!volgendeWeekNavigatieMogelijk()"
+        (click)="volgendeWeekNavigatieMogelijk() && onNavigation('next')"
+        iconName="chevronRechts"
+        label="Navigeer naar volgende week"
+        tabindex="10" />
 </sl-header>
 
 <div class="container">
@@ -8,6 +21,8 @@
             <sl-rooster-week-header
                 [datum]="peildatum()"
                 [toonWeekend]="toonWeekend()"
+                [vorigeWeekEnabled]="vorigeWeekNavigatieMogelijk()"
+                [volgendeWeekEnabled]="volgendeWeekNavigatieMogelijk()"
                 (weekend)="toggleWeekendBekijken($event)"
                 (navigation)="onNavigation($event)" />
             <sl-vakantie-header
@@ -28,23 +43,37 @@
         <sl-dagen-header
             [peildatum]="peildatum()"
             [allowKeyEvents]="false"
-            [ngClass]="{ hideborder: hideBorder$ | async }"
+            [ngClass]="{ hideborder: showStack() }"
+            [huiswerkItems]="huiswerkIndicaties()"
             (dateChange)="updatePeildatum($event)"
             (peildatumChange)="updatePeildatum($event)" />
-        @if (weekEnDagItems$ | async; as huiswerk) {
-            @if (huiswerk.weekitems.length > 0 || huiswerk.dagitems.length > 0) {
-                <div class="stack">
-                    <sl-rooster-huiswerk-stack
-                        [datum]="peildatum()"
-                        [weekItems]="huiswerk.weekitems"
-                        [dagItems]="huiswerk.dagitems"
-                        role="button"
-                        tabindex="900" />
-                </div>
-            }
+        @if (showStack()) {
+            <div class="stack">
+                @if (weekEnDagItems(); as huiswerk) {
+                    @if (huiswerk.weekitems.length > 0 || huiswerk.dagitems.length > 0) {
+                        <sl-rooster-huiswerk-stack
+                            [datum]="peildatum()"
+                            [weekItems]="huiswerk.weekitems"
+                            [dagItems]="huiswerk.dagitems"
+                            role="button"
+                            tabindex="900" />
+                    }
+                }
+                @if (dagMaatregelen(); as maatregelen) {
+                    @if (maatregelen.length > 0) {
+                        <sl-rooster-maatregelen [maatregelen]="maatregelen" tabindex="900" />
+                    }
+                }
+            </div>
         }
         <sl-vakantie-header class="dagvakantie" [beginDatum]="peildatum()" [eindDatum]="peildatum()" />
         <sl-rooster-dagen [peildatum]="peildatum()" (peildatumChange)="updatePeildatum($event)" />
+    }
+    @if (weekNotificationToShow(); as notification) {
+        <div class="status-notification">
+            <span>{{ notification.message }}</span>
+            <i (click)="discardWeek()" color="fg-on-neutral-weak" hmyIcon="sluiten" size="small"></i>
+        </div>
     }
 </div>
 

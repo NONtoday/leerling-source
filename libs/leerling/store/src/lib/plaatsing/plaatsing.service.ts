@@ -1,4 +1,4 @@
-import { Injectable, inject, untracked } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { Observable } from 'rxjs';
 import { RefreshPlaatsing, RefreshSchoolgegevens } from './plaatsing-actions';
@@ -29,12 +29,15 @@ export class PlaatsingService {
     }
 
     public getHuidigeVestiging(): Observable<SVestiging | undefined> {
-        // TODO: untracked eruit schrijven? -> SLL-1780
-        untracked(() => this._store.dispatch(new RefreshSchoolgegevens()));
+        this._store.dispatch(new RefreshSchoolgegevens());
         return this._store.select(PlaatsingSelectors.getHuidigeVestiging());
     }
 
     public refreshPlaatsingen(): void {
         this._store.dispatch(new RefreshPlaatsing());
     }
+}
+
+export function getPlaatsingOmschrijving(plaatsing: SPlaatsing): string {
+    return `Leerjaar ${plaatsing.leerjaar} - ${plaatsing.schooljaarnaam}`;
 }

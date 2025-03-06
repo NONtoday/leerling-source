@@ -10,7 +10,6 @@ import { NotificationIconSize, notificationIconDefaults } from './notification-i
 
 @Component({
     selector: 'hmy-notification-icon',
-    standalone: true,
     imports: [CommonModule, CssVarPipe, IconDirective],
     templateUrl: './notification-icon.component.html',
     styleUrls: ['../notification.scss'],

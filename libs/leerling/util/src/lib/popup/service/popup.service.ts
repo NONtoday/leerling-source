@@ -30,6 +30,7 @@ export class PopupService {
     private _rendererFactory = inject(RendererFactory2);
     private _renderer: Renderer2;
     private _openPopupsMap = new Map<string, ComponentRef<PopupComponent>>();
+    private _openPopupsList: string[] = [];
     private _inputEffectsMap = new Map<string, EffectRef>();
     private _openPopupsSubject: BehaviorSubject<ComponentRef<PopupComponent>[]> = new BehaviorSubject([]);
 
@@ -75,12 +76,28 @@ export class PopupService {
         disableBodyScrollWithTouchMove(popupElement);
 
         this._openPopupsMap.set(popupUuid, popupComponent);
+        this._openPopupsList.push(popupUuid);
         this._openPopupsSubject.next([...this._openPopupsMap.values()]);
 
         return {
             uuid: popupUuid,
             component: contentComponent.instance
         };
+    }
+
+    private getDomElement(connectedElement: ViewContainerRef, settings: PopupSettings) {
+        switch (settings.domPosition) {
+            case 'body': {
+                return document.body;
+            }
+            case 'sibling': {
+                const parent = connectedElement.element.nativeElement.parentNode;
+                return parent ?? document.body;
+            }
+            default: {
+                return document.body;
+            }
+        }
     }
 
     private setInputs<T>(componentRef: ComponentRef<T>, inputs: SignalInputs<T>) {
@@ -124,6 +141,15 @@ export class PopupService {
         }
     }
 
+    public isPopupOpen(): boolean {
+        return this._openPopupsList.length > 0;
+    }
+
+    public closeLastOpenedPopup() {
+        const lastUuid = this._openPopupsList[this._openPopupsList.length - 1];
+        this.close(lastUuid);
+    }
+
     public close(uuid: string) {
         const component = this._openPopupsMap.get(uuid);
         if (component) {
@@ -134,6 +160,7 @@ export class PopupService {
         this._inputEffectsMap.get(uuid)?.destroy();
         this._inputEffectsMap.delete(uuid);
         this._openPopupsMap.delete(uuid);
+        this._openPopupsList = this._openPopupsList.filter((popupUuid) => popupUuid !== uuid);
         this._openPopupsSubject.next([...this._openPopupsMap.values()]);
     }
 }

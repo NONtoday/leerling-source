@@ -22,6 +22,8 @@ import { AccessibilityService } from '../../accessibility/accessibility.service'
 import { getHTMLElement } from '../../component-ref.util';
 import { KeyPressedService } from '../../keypressed/keypressed.service';
 import { SidebarPageComponent } from '../../sidebar-page/sidebar-page.component';
+import { Tabbable } from '../../tabbable.interface';
+import { isCurrentUrlInitialUrl } from '../../url-util';
 import { CloseSidebarUtil, SidebarCloseGuard, SidebarCloseTrigger, SidebarCloseTriggers } from '../sidebar-model';
 import { SidebarSettings } from '../sidebar-settings';
 import { SidebarComponent } from '../sidebar.component';
@@ -32,10 +34,12 @@ export interface SidebarPageInformation {
         triggers: ReadonlyArray<SidebarCloseTrigger>;
     };
     contentComponentType: Type<unknown>;
+    contentComponent: ComponentRef<any>;
     pageRef: ComponentRef<SidebarPageComponent>;
     sidebarRef: ComponentRef<SidebarComponent>;
     settings: SidebarSettings;
     effectRef?: EffectRef;
+    afterClose?: (closeTrigger: SidebarCloseTrigger) => void;
 }
 
 export type PointerEventType = 'auto' | 'none';
@@ -44,12 +48,12 @@ export type PointerEventType = 'auto' | 'none';
     providedIn: 'root'
 })
 export class SidebarService {
-    private _destroyRef = inject(DestroyRef);
     private _keyPressedService = inject(KeyPressedService);
     private _accessibilityService = inject(AccessibilityService);
     private _rendererFactory = inject(RendererFactory2);
     private _renderer: Renderer2;
     private _sidebarRef: ComponentRef<SidebarComponent> | undefined;
+    private _destroyRef = inject(DestroyRef);
 
     private _pages: SidebarPageInformation[] = [];
     private _pageWithActiveCloseGuard?: SidebarPageInformation;
@@ -65,7 +69,12 @@ export class SidebarService {
     // Dit is handig als je bv een actie aan het uitvoeren bent die (door traag internet) lang duurt.
     public closingBlocked = false;
 
-    push<T>(componentType: Type<T>, inputs: SignalInputs<T> | Signal<SignalInputs<T>>, settings: SidebarSettings): T {
+    push<T>(
+        componentType: Type<T>,
+        inputs: SignalInputs<T> | Signal<SignalInputs<T>>,
+        settings: SidebarSettings,
+        afterClose?: (closeTrigger: SidebarCloseTrigger) => void
+    ): T {
         const viewContainerRef = this._appRef.components[0].instance['_viewContainerRef'] as ViewContainerRef;
 
         this._accessibilityService.disableHomeComponentTabIndex();
@@ -79,9 +88,11 @@ export class SidebarService {
         sidebarPageComponent.setInput('title', settings.title);
         sidebarPageComponent.setInput('showBackButton', this._pages.length > 0);
         sidebarPageComponent.setInput('hideMobileBackButton', settings.hideMobileBackButton ?? false);
+        sidebarPageComponent.setInput('headerDevice', settings.headerDevice);
         sidebarPageComponent.setInput('headerType', settings.headerType);
         sidebarPageComponent.setInput('iconLeft', settings.iconLeft);
         sidebarPageComponent.setInput('iconsRight', settings.iconsRight);
+        sidebarPageComponent.setInput('titleIcon', settings.titleIcon);
         sidebarPageComponent.setInput('vakIcon', settings.vakIcon);
         const sidebarPageElement = getHTMLElement(sidebarPageComponent);
         // Voeg z-index toe dat de pages altijd over elkaarn heen liggen
@@ -112,16 +123,18 @@ export class SidebarService {
 
         const page: SidebarPageInformation = {
             contentComponentType: componentType,
+            contentComponent: contentComponent,
             sidebarRef: sidebarComponent,
             settings,
             pageRef: sidebarPageComponent,
-            effectRef: inputsRef
+            effectRef: inputsRef,
+            afterClose: afterClose
         };
 
         this._pages.push(page);
 
         const closeSidebarUtil: CloseSidebarUtil = {
-            finalizeClose: (usingOnClose) => this.finalizeClose(page, usingOnClose),
+            finalizeClose: (usingOnClose, trigger) => this.finalizeClose(page, usingOnClose, trigger),
             requestClose: (trigger) => this.requestClose(page, trigger),
             finalizeBack: () => this.finalizeBack(),
             requestBack: (trigger) => this.requestBack(page, trigger)
@@ -156,6 +169,21 @@ export class SidebarService {
         page.closeGuard = { guard, triggers };
     }
 
+    isSidebarOpen(): boolean {
+        return this._pages.length > 0;
+    }
+
+    requestBackNavigation() {
+        if (!this.isSidebarOpen()) return;
+
+        const tabbable = this.getCurrentPageAsTabblabeOrUndefined();
+        if (tabbable && tabbable.canGoTabBack()) {
+            tabbable.tabBack();
+        } else {
+            this.requestBack(this._pages[this._pages.length - 1], 'page-back');
+        }
+    }
+
     backWithAnimation() {
         if (this._pages.length > 1) {
             this.setSidebarPointerEvents('none');
@@ -172,7 +200,7 @@ export class SidebarService {
             const currentPage = this._pages.pop();
             if (currentPage) {
                 enableBodyScroll(getHTMLElement(currentPage.pageRef));
-                currentPage?.settings.onClose?.();
+                currentPage?.settings.onClose?.('page-back');
                 currentPage.pageRef.destroy();
             }
             const page = this._pages[this._pages.length - 1];
@@ -180,6 +208,17 @@ export class SidebarService {
         } else {
             this.animateAndClose();
         }
+    }
+
+    private getCurrentPageAsTabblabeOrUndefined(): Tabbable | undefined {
+        if (this._pages.length === 0) return undefined;
+
+        const tabblable = this._pages[this._pages.length - 1].contentComponent.instance as Tabbable;
+        if (tabblable?.tabBack !== undefined) {
+            return tabblable;
+        }
+
+        return undefined;
     }
 
     onPageAdded(): void {
@@ -194,22 +233,37 @@ export class SidebarService {
         this._sidebarRef?.instance.animateAndClose();
     }
 
-    close(usingOnClose = true): void {
+    close(usingOnClose = true, closeTrigger: SidebarCloseTrigger): void {
         if (!this._sidebarRef) return;
 
         this._accessibilityService.enableHomeComponentTabIndex();
         this._keyPressedService.setOverlayOff();
 
-        Array.from(this._pages.values()).forEach((page) => {
+        const pages = Array.from(this._pages.values());
+        pages.forEach((page) => {
             enableBodyScroll(getHTMLElement(page.pageRef));
-            usingOnClose && page.settings.onClose?.();
+            if (usingOnClose) page.settings.onClose?.(closeTrigger);
             page.effectRef?.destroy();
         });
+
+        const firstSidebar = pages[0];
 
         // sidebar ref kan gesloten zijn door de page Onclose bij bv een router actie
         this._sidebarRef?.destroy();
         this._sidebarRef = undefined;
         this._pages = [];
+
+        pages.forEach((page) => {
+            if (page.afterClose) {
+                page.afterClose(closeTrigger);
+            }
+        });
+
+        // Indien we een bookmarkable URL hebben en we sluiten de sidebar,
+        // dan gaan we in de history back, zodat de history stack ook weer klopt.
+        if (closeTrigger !== 'navigation' && firstSidebar.settings.hasBookmarkableUrl && !isCurrentUrlInitialUrl()) {
+            window.history.back();
+        }
     }
 
     setSidebarPointerEvents(autoOrNone: PointerEventType) {
@@ -220,7 +274,24 @@ export class SidebarService {
         }
     }
 
+    getSidebarComponent<T>(componentType: Type<T>): T | undefined {
+        return this.getSidebarComponentRef(componentType)?.instance as T;
+    }
+
+    private getSidebarComponentRef<T>(componentType: Type<T>): ComponentRef<T> | undefined {
+        const page = this._pages.find((page) => page.contentComponentType === componentType);
+        return page?.contentComponent as ComponentRef<T>;
+    }
+
     private requestClose(page: SidebarPageInformation, trigger: SidebarCloseTrigger): void {
+        this.handleCloseOrBackRequest(page, trigger);
+    }
+
+    private requestBack(page: SidebarPageInformation, trigger: SidebarCloseTrigger): void {
+        this.handleCloseOrBackRequest(page, trigger, true);
+    }
+
+    private handleCloseOrBackRequest(page: SidebarPageInformation, trigger: SidebarCloseTrigger, requestBack = false): void {
         if (this.closingBlocked) return;
         if (page.closeGuard && page.closeGuard.triggers.includes(trigger)) {
             // we already have an active close guard - ignore close request
@@ -235,46 +306,27 @@ export class SidebarService {
                     take(1),
                     finalize(() => (this._pageWithActiveCloseGuard = undefined))
                 )
-                .subscribe((confirmed) => confirmed && this.startClose(page, trigger));
+                .subscribe((confirmed) => confirmed && (requestBack ? this.startBack(page, trigger) : this.startClose(page, trigger)));
         } else {
-            this.startClose(page, trigger);
+            if (requestBack) this.startBack(page, trigger);
+            else this.startClose(page, trigger);
         }
     }
 
-    private startClose(page: SidebarPageInformation, trigger: SidebarCloseTrigger) {
+    private startClose(page: SidebarPageInformation, trigger: SidebarCloseTrigger): void {
         if (SidebarCloseTriggersWithAnimations.includes(trigger)) {
             if (this.closingBlocked) return;
             this.closingBlocked = true;
             page.sidebarRef.instance.startSidebarCloseAnimation();
         } else {
             const usingOnClose = trigger !== 'navigation';
-            this.finalizeClose(page, usingOnClose);
+            this.finalizeClose(page, usingOnClose, trigger);
         }
     }
 
-    private finalizeClose(page: SidebarPageInformation, usingOnClose: boolean): void {
+    private finalizeClose(page: SidebarPageInformation, usingOnClose: boolean, closeTrigger: SidebarCloseTrigger): void {
         this.closingBlocked = false;
-        this.close(usingOnClose);
-    }
-
-    private requestBack(page: SidebarPageInformation, trigger: SidebarCloseTrigger): void {
-        if (this.closingBlocked) return;
-        if (page.closeGuard && page.closeGuard.triggers.includes(trigger)) {
-            // we already have an active close guard - ignore close request
-            if (this._pageWithActiveCloseGuard) {
-                return;
-            }
-            this._pageWithActiveCloseGuard = page;
-            page.closeGuard
-                .guard()
-                .pipe(
-                    takeUntilDestroyed(this._destroyRef),
-                    finalize(() => (this._pageWithActiveCloseGuard = undefined))
-                )
-                .subscribe(() => this.startBack(page, trigger));
-        } else {
-            this.startBack(page, trigger);
-        }
+        this.close(usingOnClose, closeTrigger);
     }
 
     private startBack(page: SidebarPageInformation, trigger: SidebarCloseTrigger) {
@@ -294,6 +346,13 @@ export class SidebarService {
         Object.entries(inputs).forEach(([key, value]) => {
             componentRef.setInput(key, value);
         });
+    }
+
+    public updateInputs<T>(componentType: Type<T>, inputs: SignalInputs<T>) {
+        const component = this.getSidebarComponentRef(componentType);
+        if (component) {
+            this.setInputs(component, inputs);
+        }
     }
 }
 

@@ -12,9 +12,10 @@ import { RLeerling } from 'leerling-codegen';
 import { DeploymentConfiguration, environment } from 'leerling-environment';
 import { SupportedErrorTypes } from 'leerling-error-models';
 import { RequestInformationBuilder, RequestService } from 'leerling-request';
-import { isWeb, sortLocale } from 'leerling-util';
+import { isWeb, setHref, sortLocale } from 'leerling-util';
+import { nxgsStorageKeys, RechtenService } from 'leerling/store';
 import { isEqual } from 'lodash-es';
-import { BehaviorSubject, catchError, filter, firstValueFrom, map, Observable, of, Subject, take, timeout } from 'rxjs';
+import { BehaviorSubject, catchError, defaultIfEmpty, filter, firstValueFrom, map, Observable, of, Subject, take, timeout } from 'rxjs';
 import { AuthenticationState } from '../models/authentication-state';
 import {
     AccountSwitchedEvents,
@@ -73,6 +74,7 @@ export class AuthenticationService {
     private _requestService = inject(RequestService);
     private _activatedRoute = inject(ActivatedRoute);
     private _authorizationHeaderService = inject(AuthorizationHeaderService);
+    private _rechtenService = inject(RechtenService);
 
     // local metadata + storage
     private _authenticationState = inject(AuthenticationState);
@@ -118,8 +120,6 @@ export class AuthenticationService {
                             this._router.navigate(['/error'], { queryParams: { type: 'idp_down' } });
                     }
                 }
-            } else if (incomingEvent.type === 'token_expires') {
-                this._setState('AUTH_INIT');
             } else if (incomingEvent.type === 'token_received' && this._oauthService.hasValidAccessToken()) {
                 this._authEvents$.next(new TokenReceivedEvent());
                 if (await this._afterLogin()) {
@@ -146,6 +146,7 @@ export class AuthenticationService {
                 const optionalCodeParam = this._activatedRoute.snapshot.queryParams['code'];
                 if (optionalCodeParam) {
                     await this._oauthService.tryLoginCodeFlow();
+                    await this._authenticationState.saveCurrentSessionToStorage(this.inMemoryOauthStorage.backup());
                 } else if (this._tryRedirectAfterInit) {
                     this._tryRedirectAfterInit = false;
                     this._redirectToIDP();
@@ -168,19 +169,16 @@ export class AuthenticationService {
             return;
         });
 
-        this._authorizationHeaderService.refreshError$.pipe().subscribe(async () => {
+        this._authorizationHeaderService.refreshError$.pipe().subscribe(() => {
             if (this._isContextChanging) return;
 
             this._setState('ERROR');
-            const currentSessionId = await this._authenticationState.getCurrentSessionIdentifier();
-            const idpRedirectNeeded = await this.removeCurrentContext();
-            if (idpRedirectNeeded) {
-                this.startLoginFlowOnCurrentContext();
-            } else {
-                this._authEvents$.next(new AuthenticationAccountRemovedEvent(currentSessionId));
-                info('Token-refresh-error, maar er is nog een ander account');
-                this._setState('READY');
-            }
+            const currentSessionId = this._authenticationState.getCurrentSessionIdentifier();
+            this.removeCurrentContext(new AuthenticationAccountRemovedEvent(currentSessionId)).then((logoffNeeded) => {
+                if (logoffNeeded) {
+                    this.startLoginFlowOnCurrentContext();
+                }
+            });
         });
     }
 
@@ -225,7 +223,7 @@ export class AuthenticationService {
     public async reinitialiseIfInvalid(): Promise<void> {
         if (this._isCurrentProfileInInvalidState()) {
             this._setState('RESUMING');
-            this.initStorage();
+            await this.initStorage();
             this.retryDiscoveryDocument();
         }
     }
@@ -260,17 +258,34 @@ export class AuthenticationService {
         }
     }
 
+    private async _deimpersonate(): Promise<void> {
+        await firstValueFrom(
+            this._requestService.post('account/deimpersonate', new RequestInformationBuilder().build()).pipe(
+                defaultIfEmpty(null) // Emit null bij geen value emit voor completion (httpresponse without body)
+            )
+        );
+        return;
+    }
+
     public async logoffAndRemove(force = false): Promise<void | string> {
         const idToken = this._oauthService.getIdToken();
         const postLogoutRedirectUri = environment.ownBaseUri;
         const shouldStopLogout: boolean = await this._tryToRevokeTokenAndDisablePush();
-        if (shouldStopLogout && !force) {
+        const sessionCount = this._authenticationState.getAantalAccountProfielen();
+        const isImpersonated = this._rechtenService.isCurrentAccountImpersonatedSnapshot();
+        if (shouldStopLogout && !force && sessionCount > 1) {
             return 'Uitloggen is op dit moment niet mogelijk omdat we Somtoday niet konden bereiken.';
         }
         this._setState('AUTH_INIT');
+        if (isImpersonated) {
+            await this._deimpersonate();
+        }
         if (await this.removeCurrentContextAndSwitchIfLast(undefined, false)) {
             if (Capacitor.isNativePlatform()) {
                 await PushNotifications.unregister().catch((error) => Bugsnag.notify(error));
+            }
+            if (isImpersonated) {
+                return this._redirectAfterImpersonation();
             }
             this._oauthService.logOut({ id_token_hint: idToken, post_logout_redirect_uri: postLogoutRedirectUri });
             return;
@@ -296,6 +311,10 @@ export class AuthenticationService {
         return false;
     }
 
+    public isCurrentAccountImpersonated(): Observable<boolean> {
+        return this._rechtenService.isCurrentAccountImpersonated();
+    }
+
     /**
      *   Dangerous, will clear full localStorage/cookieStorage (all contexts)
      */
@@ -315,8 +334,14 @@ export class AuthenticationService {
         } else {
             sessionIdentifier = await this._authenticationState.generatedBaseContext();
         }
+        if (sessionIdentifier) await this._switchContext(sessionIdentifier);
 
-        if (sessionIdentifier) return await this._switchContext(sessionIdentifier);
+        this._authenticationState.sanitizeStorageAPI().then(() => info('Sanitize Storage API done'));
+        return;
+    }
+
+    public get beschikbareSessionIdentifiers() {
+        return this._authenticationState.beschikbareSessionIdentifiers;
     }
 
     /**
@@ -350,6 +375,7 @@ export class AuthenticationService {
                 schoolnaam: claimset['orgname'] || 'Onbekende school',
                 subLeerlingen: subLeerlingen
             });
+            await this._rechtenService.initializeRechtenSynchronous(this._authenticationState.metadata.currentSessionIdentifier?.UUID);
             await this._preFetchPasfotos(subLeerlingen);
         }
 
@@ -391,11 +417,6 @@ export class AuthenticationService {
             }
         }
 
-        // nodig voor een refresh initial load, om de laatst bewaarde leerling terug te selecten.
-        this._authenticationState.updateMetadata({
-            currentSessionIdentifier: newSessionIdentifier,
-            currentLeerling: newLeerling
-        });
         this.inMemoryOauthStorage.restore(await this._authenticationState.loadSessionFromStorage(newSessionIdentifier));
 
         info('De inMemory-storage is geladen');
@@ -403,13 +424,19 @@ export class AuthenticationService {
         // let angular-oauth2-oidc know we are re-initing
         this._oauthService.setStorage(this.inMemoryOauthStorage);
         this._oauthService.configure(this._createBasicAuthConfig());
+
+        // nodig voor een refresh initial load, om de laatst bewaarde leerling terug te selecten.
+        await this._authenticationState.updateMetadata({
+            currentSessionIdentifier: newSessionIdentifier,
+            currentLeerling: newLeerling
+        });
         info('Oauth service is gerinit');
         let loginResult = false;
         try {
             info('Start wachten loadDiscoveryDocumentAndTryLogin');
             loginResult = await this._oauthService.loadDiscoveryDocumentAndTryLogin();
             info('klaar loadDiscoveryDocumentAndTryLogin');
-        } catch (exception) {
+        } catch {
             info('Switch Context login had an error, maybe network is down.');
         }
 
@@ -422,28 +449,20 @@ export class AuthenticationService {
             info('We hebben token en rechten zijn geupdated');
             if (this._oauthService.hasValidAccessToken()) {
                 this._setState('READY');
-            } else if (this._oauthService.getRefreshToken()) {
-                let tokenResponse;
+            } else if (this._authorizationHeaderService.isRefreshable()) {
                 info('...maar we hebben nog geen geldig access-token. Refresh het token handmatig.');
-                try {
-                    tokenResponse = await this._oauthService.refreshToken();
-                } catch (error: any) {
-                    info('Error getting token: ' + JSON.stringify(error));
-                    if (error && error.status !== 0 && error.status < 500) {
-                        const idpRedirectNeeded = await this.removeCurrentContext();
-                        if (idpRedirectNeeded) {
-                            this.startLoginFlowOnCurrentContext();
+                this._authorizationHeaderService
+                    .singleRefreshFailFast()
+                    .pipe(take(1))
+                    .subscribe(() => {
+                        if (this._oauthService.hasValidAccessToken()) {
+                            info('Token-refresh succesvol, we zijn READY');
+                            this._setState('READY');
+                        } else {
+                            info('Token-refresh niet gelukt');
+                            this._setState('ERROR');
                         }
-                    }
-                    // if >= 500 enkel lokale error renderen, niet sessie uitloggen.
-                }
-                if (tokenResponse) {
-                    info('Token-refresh succesvol, we zijn READY');
-                    this._setState('READY');
-                } else {
-                    info('Token-refresh niet gelukt');
-                    this._setState('ERROR');
-                }
+                    });
             }
         } else {
             info('geen login result - errr');
@@ -467,7 +486,7 @@ export class AuthenticationService {
     private _createBasicAuthConfig(): AuthConfig {
         return {
             showDebugInformation: true,
-            clockSkewInSec: 5,
+            clockSkewInSec: 120,
             issuer: environment.idpIssuer,
             skipIssuerCheck: true,
             strictDiscoveryDocumentValidation: false,
@@ -490,11 +509,11 @@ export class AuthenticationService {
                 this._authenticationState
                     .saveCurrentSessionToStorage(this.inMemoryOauthStorage.backup())
                     .then(() => {
-                        location.href = uri;
+                        setHref(uri);
                     })
                     .catch(() => {
                         error('Could not save context.', 'authenticatie');
-                        location.href = uri;
+                        setHref(uri);
                     });
             },
             customQueryParams: {
@@ -508,11 +527,16 @@ export class AuthenticationService {
         if (this._authenticationState.getAantalAccountProfielen() > 1 || forceAuth) {
             additionParameters['prompt'] = 'login';
             additionParameters['session'] = 'no_session';
+            additionParameters['force_authn'] = true;
         }
 
         this._authenticationState.saveCurrentSessionToStorage(this.inMemoryOauthStorage.backup()).then(() => {
             this._oauthService.initLoginFlow(undefined, additionParameters);
         });
+    }
+
+    private _redirectAfterImpersonation(): void {
+        setHref(environment.idpIssuer);
     }
 
     public _tryCodeExchangeOnCurrentContext(): void {
@@ -523,7 +547,7 @@ export class AuthenticationService {
      * Will add a new context and start the authentication flow with the IDP. Checks for availability of multiaccountlogin and emits event if unavailable.
      */
     private async addContextAndLogin() {
-        if (this.isCurrentContextOuderVerzorger) {
+        if (this.isCurrentContextOuderVerzorger && !this._rechtenService.isCurrentAccountImpersonatedSnapshot()) {
             this._isContextChanging = true;
             await this.createAndAuthenticateOuderVerzorger();
             this.startLoginFlowOnCurrentContext();
@@ -541,6 +565,7 @@ export class AuthenticationService {
         this._isContextChanging = true;
         const current = this._authenticationState.findCurrentAccountProfielOrError();
         await this._authenticationState.removeAccountProfiel(current);
+        this._clearCaches();
 
         if (event) {
             this._authEvents$.next(event);
@@ -569,6 +594,7 @@ export class AuthenticationService {
                 await this._authenticationState.saveCurrentSessionToStorage(this.inMemoryOauthStorage.backup(), true);
             }
         }
+        if (event && event.type === AuthenticationEventType.ACCOUNT_REPLACED) idpLogoutNeeded = false;
         return idpLogoutNeeded;
     }
 
@@ -668,11 +694,11 @@ export class AuthenticationService {
     }
 
     public retryDiscoveryDocument() {
-        if (this._errorOnContext.value) this._oauthService.loadDiscoveryDocumentAndLogin();
+        if (this._errorOnContext.value || !this._oauthService.discoveryDocumentLoaded) this._oauthService.loadDiscoveryDocumentAndLogin();
     }
 
-    get errorOnContext(): Observable<boolean> {
-        return this._errorOnContext;
+    public get currentSessionIdentifier() {
+        return this._authenticationState.getCurrentSessionIdentifier();
     }
 
     public get beschikbareProfielen$(): Observable<SomtodayAccountProfiel[]> {
@@ -706,6 +732,21 @@ export class AuthenticationService {
 
     get isAuthenticationReady$(): Observable<boolean> {
         return this.authenticationState$.pipe(map((state) => state === 'READY'));
+    }
+
+    public _clearCaches(): void {
+        // letop, clear all but rechten en landelijke mededelingen
+        for (const stateName of nxgsStorageKeys.map((sKey) => sKey.stateName)) {
+            if (!['rechten', 'landelijkeMededelingen'].includes(stateName)) localStorage.removeItem(stateName);
+        }
+        // week notifications + rooster/huiswerk caches
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (!key) continue;
+            if (key.startsWith('weekNotificationDiscarded') || key.startsWith('rooster-refresh-') || key.startsWith('huiswerk-refresh-')) {
+                localStorage.removeItem(key);
+            }
+        }
     }
 
     /**
@@ -760,6 +801,12 @@ export class AuthenticationService {
                 this.switchToProfile(request.accountContext, request.leerling);
                 break;
         }
+    }
+
+    public async hasChangedContext(): Promise<boolean> {
+        const storageProviderContextID = (await this._authenticationState.reloadSessionIdFromStorage())?.UUID;
+        const authStateContextID = this._authenticationState.getCurrentSessionIdentifier()?.UUID;
+        return storageProviderContextID !== authStateContextID;
     }
 }
 

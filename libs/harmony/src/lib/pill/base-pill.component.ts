@@ -1,6 +1,7 @@
 import { Directive, HostBinding, Input, OnChanges, inject } from '@angular/core';
 import { match } from 'ts-pattern';
 import { TooltipDirective } from '../directives/tooltip/tooltip.directive';
+import { Optional } from '../optional/optional';
 import { PillTagColor, PillTagType } from '../pill-tag/pill-tag.model';
 import { ColorToken } from '../tokens/color-token';
 
@@ -9,6 +10,7 @@ export abstract class BasePillComponent implements OnChanges {
     private tooltipDirective = inject(TooltipDirective, { optional: true });
     @Input() @HostBinding('attr.type') public type: PillTagType = 'light';
     @Input() @HostBinding('attr.color') public color: PillTagColor = 'primary';
+    @Input() @HostBinding('style.width') public width: Optional<string> = 'initial';
     @Input() @HostBinding('class.met-chevron') public metChevron = false;
     @Input() @HostBinding('class.hoverable') public hoverable: boolean;
     @Input() @HostBinding('class.pointer') public pointer = false;

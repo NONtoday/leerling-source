@@ -1,22 +1,22 @@
-@if (headerType() !== 'none') {
-    @if (toonMobileHeader()) {
-        <sl-mobile-sidebar-header
-            [class.borderless]="headerType() === 'borderless'"
-            [title]="title()"
-            [iconsRight]="iconsRight()"
-            [vakNaam]="vakIcon()"
-            [parentScrollY]="scrollY()"
-            [showBackButton]="showMobileBackButton()"
-            (terugClicked)="terugClicked()" />
-    } @else {
-        <sl-sidebar-header
-            [class.borderless]="headerType() === 'borderless'"
-            [title]="title()"
-            [showBackButton]="showBackButton()"
-            [iconLeft]="iconLeft()"
-            [iconsRight]="iconsRight()"
-            [vakNaam]="vakIcon()"
-            (terugClicked)="terugClicked()"
-            (sluitenClicked)="sluitenClicked()" />
-    }
+@if (toonMobileHeader()) {
+    <sl-mobile-sidebar-header
+        [class.borderless]="headerType() === 'borderless'"
+        [title]="title()"
+        [iconsRight]="iconsRight()"
+        [titleIcon]="titleIcon()"
+        [vakNaam]="vakIcon()"
+        [parentScrollY]="scrollY()"
+        [showBackButton]="showMobileBackButton()"
+        (terugClicked)="terugClicked()" />
+} @else if (toonDesktopHeader()) {
+    <sl-sidebar-header
+        [class.borderless]="headerType() === 'borderless'"
+        [title]="title()"
+        [showBackButton]="showBackButton()"
+        [iconLeft]="iconLeft()"
+        [iconsRight]="iconsRight()"
+        [titleIcon]="titleIcon()"
+        [vakNaam]="vakIcon()"
+        (terugClicked)="terugClicked()"
+        (sluitenClicked)="sluitenClicked()" />
 }

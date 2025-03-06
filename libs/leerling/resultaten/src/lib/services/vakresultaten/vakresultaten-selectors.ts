@@ -1,5 +1,5 @@
 import { createSelector } from '@ngxs/store';
-import { SVakExamenResultaat, SVakVoortgangsResultaat, VakResultaatSelectors } from 'leerling/store';
+import { SToetskolommen, SVakExamenResultaat, SVakVoortgangsResultaat, VakResultaatSelectors } from 'leerling/store';
 import {
     VakExamendossier,
     VakVoortgangsdossier,
@@ -22,7 +22,47 @@ export class VakResultatenSelectors {
             (examenResultaat: SVakExamenResultaat) => mapToVakExamendossier(examenResultaat)
         );
     }
+    public static getVakVoortgangsdossierMetKolommen(vakUuid: string, lichtingUuid: string, plaatsingUuid?: string) {
+        return createSelector(
+            [
+                VakResultaatSelectors.getVoortgangsResultaten(vakUuid, lichtingUuid, plaatsingUuid),
+                VakResultaatSelectors.getVoortgangsKolommen(vakUuid, lichtingUuid, plaatsingUuid)
+            ],
+            (voortgangsResultaat: SVakVoortgangsResultaat, kolommen: SToetskolommen) =>
+                mapToVakVoortgangsdossier(voortgangsResultaat, kolommen)
+        );
+    }
+    public static getVakExamendossierMetKolommen(vakUuid: string, lichtingUuid: string, plaatsingUuid?: string) {
+        return createSelector(
+            [
+                VakResultaatSelectors.getExamenResultaten(vakUuid, lichtingUuid, plaatsingUuid),
+                VakResultaatSelectors.getExamenKolommen(vakUuid, lichtingUuid, plaatsingUuid)
+            ],
+            (examenResultaat: SVakExamenResultaat, kolommen: SToetskolommen) => mapToVakExamendossier(examenResultaat, kolommen)
+        );
+    }
 
+    public static getVakToetsdossierMetKolommen(vakUuid: string, lichtingUuid: string, plaatsingUuid?: string) {
+        return createSelector(
+            [
+                this.getVakVoortgangsdossierMetKolommen(vakUuid, lichtingUuid, plaatsingUuid),
+                this.getVakExamendossierMetKolommen(vakUuid, lichtingUuid, plaatsingUuid)
+            ],
+            (vakVoortgangsdossier: VakVoortgangsdossier | undefined, vakExamendossier: VakExamendossier | undefined) => {
+                combineerWegingen(vakVoortgangsdossier, vakExamendossier);
+
+                if (!vakVoortgangsdossier && !vakExamendossier) {
+                    return undefined;
+                }
+
+                return {
+                    vakNaam: vakVoortgangsdossier?.vaknaam ?? vakExamendossier?.vaknaam,
+                    voortgangsdossier: vakVoortgangsdossier,
+                    examendossier: vakExamendossier
+                };
+            }
+        );
+    }
     public static getVakToetsdossier(vakUuid: string, lichtingUuid: string, plaatsingUuid?: string) {
         return createSelector(
             [

@@ -1,11 +1,15 @@
-<label class="checkbox-container">
-    <input
-        [tabIndex]="customTabIndex()"
-        [checked]="checked"
-        [disabled]="disabled"
-        (change)="valueChanged.emit(!this.checked)"
-        type="checkbox" />
+<label class="checkbox-container" (click)="toggleCheckbox($event)">
+    <input [checked]="checked" [tabIndex]="customTabIndex()" [disabled]="disabled" type="checkbox" />
     <div class="checkmark" [class.checked]="checked" [class.disabled]="disabled">
         <i [size]="isDesktop() ? 'smallest' : 'small'" hmyIcon="check"></i>
     </div>
 </label>
+@if (label) {
+    <label
+        class="checkbox-label ellipsis pointer"
+        [style.max-width]="maxWidthLabel"
+        [class.disabled]="disabled"
+        (click)="toggleCheckboxFromLabel()">
+        {{ label }}
+    </label>
+}

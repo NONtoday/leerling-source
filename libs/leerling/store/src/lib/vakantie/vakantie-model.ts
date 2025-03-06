@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { parseISO } from 'date-fns';
 import { RVakantie } from 'leerling-codegen';
+import { toLocalDateTime } from '../..';
 import { SEntiteit, getEntiteitId } from '../util/entiteit-model';
 
 export interface SVakantieModel {
@@ -23,7 +23,7 @@ function mapVakantie(rVakantie: RVakantie): SVakantie {
     return {
         id: getEntiteitId(rVakantie),
         naam: rVakantie.naam ?? 'vakantie',
-        beginDatum: parseISO(rVakantie.beginDatum!),
-        eindDatum: parseISO(rVakantie.eindDatum!)
+        beginDatum: toLocalDateTime(rVakantie.beginDatum!),
+        eindDatum: toLocalDateTime(rVakantie.eindDatum!)
     };
 }

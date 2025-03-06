@@ -10,7 +10,7 @@ import {
     output,
     signal
 } from '@angular/core';
-import { IconDirective, TooltipDirective } from 'harmony';
+import { IconDirective } from 'harmony';
 import { IconChevronOnder, IconFilter, provideIcons } from 'harmony-icons';
 import { OverlayService } from 'leerling-util';
 import { SVakkeuze } from 'leerling/store';
@@ -19,8 +19,7 @@ import { StudiewijzerFilterDropdownComponent } from '../studiewijzer-filter-drop
 
 @Component({
     selector: 'sl-studiewijzer-filter-button',
-    standalone: true,
-    imports: [CommonModule, IconDirective, TooltipDirective],
+    imports: [CommonModule, IconDirective],
     templateUrl: './studiewijzer-filter-button.component.html',
     styleUrl: './studiewijzer-filter-button.component.scss',
     changeDetection: ChangeDetectionStrategy.OnPush,

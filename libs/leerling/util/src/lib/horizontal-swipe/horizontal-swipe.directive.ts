@@ -29,7 +29,8 @@ export class HorizontalSwipeDirective {
         const speed = deltaX / (event.timeStamp - this._timestamp);
 
         if (Math.abs(deltaX) >= this.minDistance && Math.abs(speed) >= this.minSpeed) {
-            deltaX > 0 ? this.horizontalPrevious.emit() : this.horizontalNext.emit();
+            if (deltaX > 0) this.horizontalPrevious.emit();
+            else this.horizontalNext.emit();
         }
     }
 }

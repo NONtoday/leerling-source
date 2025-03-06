@@ -17,7 +17,6 @@ const ANIMATIONS = [collapseOnLeaveAnimation(), expandOnEnterAnimation()];
 
 @Component({
     selector: 'sl-resultaat-item-detail',
-    standalone: true,
     imports: [
         CommonModule,
         IconDirective,
@@ -43,6 +42,7 @@ export class ResultaatItemDetailComponent {
     public toonVakIcon = input<boolean>(true);
     public resultaatItem = input.required<ResultaatItem>();
     public toonVakCijferlijstKnop = input<boolean>(false);
+    public toonKolommen = input<boolean>(false);
 
     openVakCijferlijst = output<void>();
 

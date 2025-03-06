@@ -1,16 +1,29 @@
-import { AsyncPipe, ViewportScroller } from '@angular/common';
-import { AfterViewInit, ChangeDetectionStrategy, Component, HostListener, NgZone, OnInit, ViewContainerRef, inject } from '@angular/core';
+import { ViewportScroller } from '@angular/common';
+import {
+    AfterViewInit,
+    ChangeDetectionStrategy,
+    Component,
+    DestroyRef,
+    HostListener,
+    Injector,
+    NgZone,
+    OnInit,
+    ViewContainerRef,
+    inject
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Event, Router, RouterOutlet, Scroll } from '@angular/router';
+import { Event, NavigationError, Router, RouterOutlet, Scroll } from '@angular/router';
 import Bugsnag from '@bugsnag/js';
 import { App, URLOpenListenerEvent } from '@capacitor/app';
+import { Browser } from '@capacitor/browser';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { Store } from '@ngxs/store';
+import { SOMTODAY_API_CONFIG } from '@shared/utils/somtoday-api-token';
 import { SafeArea } from 'capacitor-plugin-safe-area';
 import { setDefaultOptions } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { info } from 'debugger';
-import { SpinnerComponent } from 'harmony';
+import { ModalService as HarmonyModalService, PopupService as HarmonyPopupService } from 'harmony';
 import { WeergaveService } from 'leerling-account-modal';
 import { AppStatusService } from 'leerling-app-status';
 import {
@@ -18,31 +31,54 @@ import {
     AuthenticationEventType,
     AuthenticationService,
     OAuthIDPErrorEvent,
-    PushNotificationService
+    PushNotificationService,
+    SomtodayAccountProfiel,
+    SomtodayLeerling,
+    SomtodayLeerlingIngelogdAccount
 } from 'leerling-authentication';
 import { RouterService, SomtodayAvailabilityService } from 'leerling-base';
 import { environment } from 'leerling-environment';
-import { RequestService } from 'leerling-request';
-import { AccessibilityService, RefreshService, isIOS, isWeb } from 'leerling-util';
-import { AvailablePushType, RechtenService, SharedSelectors } from 'leerling/store';
-import { Observable, combineLatest, debounceTime, filter, fromEvent, map, pairwise, startWith } from 'rxjs';
+import {
+    AccessibilityService,
+    GuardableComponent,
+    IHasActiveChild,
+    InfoMessageService,
+    ModalService,
+    PopupService,
+    RefreshService,
+    SidebarService,
+    Wizard,
+    isAndroid,
+    isIOS,
+    isWeb,
+    storeAuthRequestedUrl,
+    storeInitialUrl
+} from 'leerling-util';
+import { AccountContextMetRechten, AvailablePushType, RechtenService, SPushAction, SanitizeRechten, SwitchContext } from 'leerling/store';
+import { combineLatest, debounceTime, filter, fromEvent, map, pairwise, startWith } from 'rxjs';
+import { getRootPath } from '../root-redirect/root-redirect.component';
+
+const contextRemovalEvents: AuthenticationEventType[] = [
+    AuthenticationEventType.ACCOUNT_REMOVED,
+    AuthenticationEventType.ACCOUNT_REPLACED,
+    AuthenticationEventType.CONTEXT_NOT_FOUND
+];
 
 @Component({
     selector: 'sl-root',
     templateUrl: 'app.component.html',
     styleUrls: ['app.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: true,
-    imports: [RouterOutlet, AsyncPipe, SpinnerComponent]
+    imports: [RouterOutlet]
 })
 export class AppComponent implements OnInit, AfterViewInit {
     private _router = inject(Router);
+
     private _zone = inject(NgZone);
     // TODO: Import verplaatsen. Trekt nu hele account modal binnen bij initiele bundle.
+    private _somtodayApiConfig = inject(SOMTODAY_API_CONFIG);
     private _weergaveService = inject(WeergaveService);
     private _authenticationService = inject(AuthenticationService);
-    private _requestService = inject(RequestService);
-    private _store: Store = inject(Store);
     private _rechtenService = inject(RechtenService);
     private _somtodayAvailabilityService = inject(SomtodayAvailabilityService);
     private _pushNotificationService = inject(PushNotificationService);
@@ -51,24 +87,43 @@ export class AppComponent implements OnInit, AfterViewInit {
     private _routerService = inject(RouterService);
     private _appStatusService = inject(AppStatusService);
     private _refreshService = inject(RefreshService);
+    private _infoMessageService = inject(InfoMessageService);
+    private _destroyRef = inject(DestroyRef);
+
+    // Home Component is nodig om het actieve hoofd-component aan op te vragen.
+    private _homeComponent: IHasActiveChild | undefined;
+    private _injector = inject(Injector);
+    private _sidebarService = inject(SidebarService);
+    private _popupService = inject(PopupService);
+    private _harmonyPopupService = inject(HarmonyPopupService);
+    private _modalService = inject(ModalService);
+    private _store = inject(Store);
+
+    private _previousAccountLeerling: SomtodayLeerlingIngelogdAccount = {};
 
     // benodigd voor sidebar
     private _viewContainerRef = inject(ViewContainerRef);
-
-    public offline: Observable<boolean>;
-    public isWeb = isWeb();
-    public idpUrl = environment.idpIssuer;
+    public isOnline = this._appStatusService.isOnlineSignal();
 
     constructor() {
+        storeAuthRequestedUrl();
+        storeInitialUrl();
+
+        this.initChunkloadErrorHandling();
         this.initBugsnag();
         this._registerPush();
         fromEvent(window, 'resize')
             .pipe(debounceTime(50), takeUntilDestroyed(), startWith(new Event('resize')))
             .subscribe(() => this._applySafeArea());
-        this.offline = this._store.select(SharedSelectors.getConnectionStatus()).pipe(map((state) => !state.isOnline));
         this.initScrollOnNavigatie();
+        this.handleBackEvents();
+
         this._somtodayAvailabilityService.registerAvailabilityHandler();
+
         this._authenticationService.events$.pipe(takeUntilDestroyed()).subscribe((next) => {
+            if (contextRemovalEvents.includes(next.type)) {
+                this._authenticationService._clearCaches();
+            }
             // Log events naar bugsnag.
             // We loggen dingen als 'MEDEWERKER_UNSUPPORTED' ook --> Als dit vaak gebeurt,
             // dan is er wel een bepaalde behoefte waarin we niet voldoen.
@@ -87,17 +142,159 @@ export class AppComponent implements OnInit, AfterViewInit {
                     this._removeRechtenVoor(next as AuthenticationAccountRemovedEvent);
                     break;
                 case AuthenticationEventType.IDP_ERROR: {
-                    Bugsnag.notify('Authentication-event: IDP_ERROR: ' + (next as OAuthIDPErrorEvent).humanReadableErrorMessage);
+                    if (environment.debug)
+                        Bugsnag.notify('Authentication-event: IDP_ERROR: ' + (next as OAuthIDPErrorEvent).humanReadableErrorMessage);
                     break;
                 }
                 default:
-                    Bugsnag.notify('Authentication-event: ' + AuthenticationEventType[next.type]);
+                    if (environment.debug) Bugsnag.notify('Authentication-event: ' + AuthenticationEventType[next.type]);
+            }
+        });
+        this._rechtenService
+            .getAccountContextMetRechten()
+            .pipe(takeUntilDestroyed(), pairwise())
+            .subscribe((rechten: [AccountContextMetRechten, AccountContextMetRechten]) => {
+                const eerdereRechten = rechten[0];
+                const huidigeRechten = rechten[1];
+                if (
+                    eerdereRechten.localAuthenticationContext !== huidigeRechten.localAuthenticationContext ||
+                    !eerdereRechten.rechten ||
+                    !huidigeRechten.rechten ||
+                    eerdereRechten.leerlingId !== huidigeRechten.leerlingId
+                )
+                    return;
+
+                const gewijzigdeRechten: string[] = [];
+                if (eerdereRechten.rechten.huiswerkBekijkenAan && !huidigeRechten.rechten.huiswerkBekijkenAan)
+                    gewijzigdeRechten.push('de studiewijzer');
+                if (eerdereRechten.rechten.leermiddelenAan && !huidigeRechten.rechten.leermiddelenAan)
+                    gewijzigdeRechten.push('leermiddelen');
+                if (eerdereRechten.rechten.cijfersBekijkenAan && !huidigeRechten.rechten.cijfersBekijkenAan)
+                    gewijzigdeRechten.push('cijfers');
+                if (eerdereRechten.rechten.roosterBekijkenAan && !huidigeRechten.rechten.roosterBekijkenAan)
+                    gewijzigdeRechten.push('het rooster');
+                if (eerdereRechten.rechten.berichtenBekijkenAan && !huidigeRechten.rechten.berichtenBekijkenAan)
+                    gewijzigdeRechten.push('berichten');
+                if (gewijzigdeRechten.length > 0) {
+                    if (gewijzigdeRechten.length === 1) this._rechtUnavailableMessage(gewijzigdeRechten.join(', '));
+                    else this._rechtUnavailableMessage(gewijzigdeRechten.slice(0, -1).join(', ') + ' en ' + gewijzigdeRechten.slice(-1));
+                }
+            });
+
+        combineLatest([
+            this._authenticationService.currentAccountLeerling$.pipe(takeUntilDestroyed()),
+            this._authenticationService.authenticationState$
+        ]).subscribe(([currentAccountLeerling, status]) => {
+            if (status === 'AUTH_INIT') {
+                return;
+            }
+            info(
+                'SWITCHING:' +
+                    this._formatAccountLeerling(this._previousAccountLeerling) +
+                    ' - cur: ' +
+                    this._formatAccountLeerling(currentAccountLeerling)
+            );
+
+            if (
+                this._previousAccountLeerling.sessionIdentifier?.UUID !== currentAccountLeerling.sessionIdentifier?.UUID ||
+                this._previousAccountLeerling.leerling?.id !== currentAccountLeerling.leerling?.id ||
+                this._previousAccountLeerling.accountUUID !== currentAccountLeerling.accountUUID
+            ) {
+                info(
+                    `CurrentLeerling? ${currentAccountLeerling.leerling?.id}, AccountUUID: ${currentAccountLeerling.accountUUID}, AuthenticationContext: ${currentAccountLeerling.sessionIdentifier?.UUID}`
+                );
+                this._store.dispatch(
+                    new SwitchContext(
+                        currentAccountLeerling.sessionIdentifier?.UUID ?? 'UNKNOWN',
+                        currentAccountLeerling.accountUUID,
+                        currentAccountLeerling.leerling?.id,
+                        this._previousAccountLeerling.accountUUID === undefined
+                    )
+                );
+                this._previousAccountLeerling = currentAccountLeerling;
+                this._store.dispatch(new SanitizeRechten(this._authenticationService.beschikbareSessionIdentifiers));
             }
         });
     }
 
+    onRouterActivate(childComponent: any) {
+        const hasActiveChildComponent = childComponent as IHasActiveChild;
+        if (hasActiveChildComponent.getChildComponent !== undefined) {
+            this._homeComponent = childComponent;
+        }
+    }
+
+    private _formatAccountLeerling(accountLeerling: SomtodayLeerlingIngelogdAccount): string {
+        return (
+            ' (' + accountLeerling.sessionIdentifier?.UUID + ' - ' + accountLeerling.leerling?.id + ' ' + accountLeerling.leerling?.nn + ')'
+        );
+    }
+
+    /**
+     * Handelt back-events (bv back-swipe) af op mobiele devices.
+     * Indien er een sidebar/popup/modal open is, die sluiten, anders terug en als je op je 'home' bent de app sluiten.
+     */
+    private handleBackEvents() {
+        App.addListener('backButton', () => this.back());
+    }
+
+    back() {
+        // Zorgt ervoor dat als we ergens aan het typen waren, dat de 'navigation'-action van keyboard af gaat.
+        this._accessibilityService.onClicked();
+
+        if (this._popupService.isPopupOpen()) {
+            this._popupService.closeLastOpenedPopup();
+            return;
+        }
+
+        if (this._harmonyPopupService.isPopupOpen()) {
+            this._harmonyPopupService.closeLastOpenedPopup();
+            return;
+        }
+
+        // We kunnen de harmony-modal-service niet rechtstreeks injecten, omdat we dan een inject-cirkel referentie krijgen.
+        // Daarom injecten we hem hier pas met de injector.
+        const harmonyModalService = this._injector.get(HarmonyModalService);
+        if (harmonyModalService.isOpen()) {
+            harmonyModalService.backSwipeClose();
+            return;
+        }
+
+        if (this._modalService.isOpen()) {
+            this._modalService.animateAndClose();
+            return;
+        }
+
+        if (this._sidebarService.isSidebarOpen()) {
+            this._sidebarService.requestBackNavigation();
+            return;
+        }
+
+        const path = window.location.pathname;
+        const rootPath = '/' + getRootPath(this._rechtenService.getCurrentAccountRechtenSnapshot());
+        if ((path === rootPath || ['/login'].includes(path)) && isAndroid()) {
+            App.exitApp();
+            return;
+        }
+
+        const childComponent = this._homeComponent?.getChildComponent();
+        const wizard = childComponent as Wizard;
+        if (wizard?.isAtFirstStep !== undefined && !wizard.isAtFirstStep()) {
+            wizard.goToPreviousStep();
+        } else if ((childComponent as GuardableComponent)?.canDeactivate !== undefined) {
+            // er is een guard, ga pas terug als de gebruiker dat goed vindt.
+            (childComponent as GuardableComponent).canDeactivate().subscribe((canDeactivate) => {
+                if (canDeactivate) {
+                    window.history.back();
+                }
+            });
+        } else {
+            window.history.back();
+        }
+    }
+
     async ngOnInit() {
-        this._requestService.rootUrl = environment.apiUrl;
+        this._somtodayApiConfig.apiUrl = environment.apiUrl;
         this._applySafeArea();
         this._registerAppLinks();
         await this._weergaveService.initializeFromPreferences();
@@ -107,24 +304,77 @@ export class AppComponent implements OnInit, AfterViewInit {
         this._appStatusService.guardVersionSupported();
     }
 
+    private initChunkloadErrorHandling() {
+        this._router.events
+            .pipe(
+                filter((event) => event instanceof NavigationError),
+                map((event) => event as NavigationError),
+                takeUntilDestroyed()
+            )
+            .subscribe((event) => {
+                if (event.error instanceof Error && event.error.name == 'ChunkLoadError') {
+                    if (this.isOnline()) {
+                        this.windowAssign(`${window.location.protocol}//${window.location.host}${event.url}`);
+                    } else {
+                        this._infoMessageService.dispatchErrorMessage(
+                            'Deze functionaliteit is op dit moment niet beschikbaar, omdat je offline werkt.'
+                        );
+                    }
+                }
+            });
+    }
+
+    windowAssign(url: string) {
+        window.location.assign(url);
+    }
+
     private _registerPush() {
-        this._pushNotificationService.setupListenersOnly();
-        this._pushNotificationService.clickedPushNotications.pipe(takeUntilDestroyed()).subscribe((pushAction) => {
-            switch (pushAction.type) {
-                case AvailablePushType.BERICHTEN:
-                    this._routerService.routeToBerichten();
-                    break;
-                case AvailablePushType.CIJFERS:
-                    this._routerService.routeToCijfers();
-                    break;
-                default:
-                    break;
-            }
-        });
+        this._pushNotificationService
+            .registerPushnotifications()
+            .pipe(takeUntilDestroyed(this._destroyRef))
+            .subscribe((pushnotificationResult) => {
+                if (!pushnotificationResult) return;
+
+                const { pushAction, verzorgerLeerlingAccountData } = pushnotificationResult;
+
+                if (verzorgerLeerlingAccountData && this.isOnline()) {
+                    return this._switchProfileAndRoute(
+                        pushAction,
+                        verzorgerLeerlingAccountData.verzorgerProfiel,
+                        verzorgerLeerlingAccountData.leerling
+                    );
+                } else {
+                    return this.determineRoute(pushAction);
+                }
+            });
+    }
+
+    private _switchProfileAndRoute(pushAction: SPushAction, verzorgerProfiel: SomtodayAccountProfiel, leerling: SomtodayLeerling): void {
+        this._authenticationService.requestSwitchToProfile(verzorgerProfiel.sessionIdentifier, leerling);
+        return this.determineRoute(pushAction);
+    }
+
+    private determineRoute(pushAction: SPushAction): void {
+        // Bij notificaites heb je rechten, skip de check om timing issues te voorkomen.
+        this._rechtenService.skipRoutePermissionCheck();
+        switch (pushAction.type) {
+            case AvailablePushType.INLEVERPERIODEBERICHT:
+                this._routerService.routeToStudiewijzer(pushAction.entityId, pushAction.datum, 'Reacties');
+                break;
+            case AvailablePushType.BERICHTEN:
+                this._routerService.routeToBerichten(pushAction.entityId);
+                break;
+            case AvailablePushType.CIJFERS:
+                this._routerService.routeToCijfers(pushAction.entityId);
+                break;
+            case AvailablePushType.AFWEZIGHEID:
+                this._routerService.routeToAfwezigheid();
+                break;
+        }
     }
 
     ngAfterViewInit(): void {
-        SplashScreen.hide();
+        SplashScreen.hide({ fadeOutDuration: 500 });
     }
 
     initBugsnag() {
@@ -136,6 +386,7 @@ export class AppComponent implements OnInit, AfterViewInit {
                     school: profiel?.schoolnaam,
                     affiliation: profiel?.affiliation,
                     leerling: accountLeerling.leerling?.id,
+                    leerlingNummer: accountLeerling.leerling?.nr,
                     sessionIdentifier: profiel?.sessionIdentifier
                 });
             });
@@ -170,13 +421,21 @@ export class AppComponent implements OnInit, AfterViewInit {
                         info(`Result of route ${result}`);
                     });
                 }
+                // Catch om te zorgen dat het niets doet crashen
+                if (isIOS()) {
+                    Browser.close().catch(() => {});
+                }
             });
         });
 
-        App.addListener('resume', () => {
-            this._zone.run(async () => await this._authenticationService.reinitialiseIfInvalid());
+        App.addListener('resume', async () => {
+            if ((await this._authenticationService.hasChangedContext()) && isWeb()) {
+                window.location.reload();
+                return;
+            }
+            await this._zone.run(async () => await this._authenticationService.reinitialiseIfInvalid());
             if (this._authenticationService.isCurrentContextLoggedIn) {
-                this._pushNotificationService.setupPushNotification();
+                await this._pushNotificationService.setupPushNotification();
                 this._refreshService.resuming();
             }
         });
@@ -240,5 +499,9 @@ export class AppComponent implements OnInit, AfterViewInit {
         if (event && event.previousSessionIdentifier) {
             this._rechtenService.removeRechten(event.previousSessionIdentifier.UUID);
         }
+    }
+
+    private _rechtUnavailableMessage(humanReadableRecht: string) {
+        this._infoMessageService.dispatchInfoMessage(`Je kunt ${humanReadableRecht} niet meer zien, omdat je school het heeft uitgezet.`);
     }
 }

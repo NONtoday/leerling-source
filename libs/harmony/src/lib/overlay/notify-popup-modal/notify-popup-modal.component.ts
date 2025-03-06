@@ -4,7 +4,6 @@ import { ButtonComponent } from '../../button/button.component';
 
 @Component({
     selector: 'hmy-notify-popup-modal',
-    standalone: true,
     imports: [CommonModule, ButtonComponent],
     template: `<p class="text-moderate text-content">{{ text() }}</p>
         <hmy-button [label]="buttonLabel()" (click)="sluitenClick()()" mode="tertiary" />`,

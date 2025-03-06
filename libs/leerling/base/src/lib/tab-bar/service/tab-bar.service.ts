@@ -4,15 +4,7 @@ import { shareReplayLastValue } from 'harmony';
 import { BerichtState, RechtenService } from 'leerling/store';
 import { isEqual } from 'lodash-es';
 import { Observable, distinctUntilChanged, map, of, switchMap } from 'rxjs';
-import {
-    AFWEZIG_MELDEN_TAB,
-    BERICHTEN_TAB,
-    CIJFERS_TAB,
-    ROOSTER_TAB,
-    STUDIEWIJZER_TAB,
-    TabItem,
-    VANDAAG_TAB
-} from '../../tab-item/tab-item';
+import { AFWEZIGHEID_TAB, BERICHTEN_TAB, CIJFERS_TAB, ROOSTER_TAB, STUDIEWIJZER_TAB, TabItem, VANDAAG_TAB } from '../../tab-item/tab-item';
 
 @Injectable({
     providedIn: 'root'
@@ -34,7 +26,7 @@ export class TabBarService {
             ROOSTER_TAB,
             STUDIEWIJZER_TAB,
             CIJFERS_TAB,
-            AFWEZIG_MELDEN_TAB,
+            AFWEZIGHEID_TAB,
             {
                 ...BERICHTEN_TAB,
                 ...(aantalOngelezenConversaties > 0 && {

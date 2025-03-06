@@ -4,15 +4,21 @@
     [ngClass]="[disabledOrMode(), size(), getLabelColor, justifyContent()]"
     [attr.tabindex]="customTabindex()"
     hmyClassOnClick="active">
-    <div class="icon-container left" [style.marginRight]="leftIconMargin()">
-        @if (iconLeft(); as icon) {
-            <i [hmyIcon]="icon" [color]="getLabelColor" [size]="iconLeftSize()"></i>
+    @if (showSpinner()) {
+        <hmy-spinner [isWhite]="isSpinnerWhite()" />
+    } @else {
+        <div class="icon-container left" [style.marginRight]="leftIconMargin()">
+            @if (iconLeft(); as icon) {
+                <i [hmyIcon]="icon" [size]="iconLeftSize()"></i>
+            }
+        </div>
+        @if (label()) {
+            <span class="label">{{ label() }}</span>
         }
-    </div>
-    <span class="label">{{ label() }}</span>
-    <div class="icon-container right" [style.marginLeft]="rightIconMargin()">
-        @if (iconRight(); as icon) {
-            <i [hmyIcon]="icon" [color]="getLabelColor" [size]="iconRightSize()"></i>
-        }
-    </div>
+        <div class="icon-container right" [style.marginLeft]="rightIconMargin()">
+            @if (iconRight(); as icon) {
+                <i [hmyIcon]="icon" [size]="iconRightSize()"></i>
+            }
+        </div>
+    }
 </button>

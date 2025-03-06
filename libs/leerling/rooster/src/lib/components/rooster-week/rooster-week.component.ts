@@ -13,7 +13,6 @@ export type WeekDateTab = {
 
 @Component({
     selector: 'sl-rooster-week',
-    standalone: true,
     imports: [CommonModule, RoosterDagComponent, ButtonComponent],
     templateUrl: './rooster-week.component.html',
     styleUrls: ['./rooster-week.component.scss'],

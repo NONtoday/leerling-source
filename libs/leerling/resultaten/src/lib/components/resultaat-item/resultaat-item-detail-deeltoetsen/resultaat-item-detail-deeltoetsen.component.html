@@ -3,7 +3,11 @@
         <div class="resultaatitems" [@expandOnEnter]>
             @for (deeltoets of deeltoetsen$ | async; track deeltoets) {
                 <div tabindex="200">
-                    <sl-resultaat-item [resultaatItem]="deeltoets | deeltoetsToResultaatItem: isAlternatieveNormering" tabindex="0" />
+                    <sl-resultaat-item
+                        [resultaatItem]="deeltoets | deeltoetsToResultaatItem: isAlternatieveNormering"
+                        [toonVakIcon]="false"
+                        [ellipsis]="false"
+                        tabindex="0" />
                     @if (deeltoets.opmerkingen) {
                         <p class="opmerking">{{ deeltoets.opmerkingen }}</p>
                     }

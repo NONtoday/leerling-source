@@ -4,20 +4,17 @@ import { Router } from '@angular/router';
 import { ButtonComponent, SpinnerComponent } from 'harmony';
 import { IconSettings, provideIcons } from 'harmony-icons';
 import { GegevensService } from 'leerling-account-modal';
-import { TabBarComponent } from 'leerling-base';
+import { getRestriction, ROOSTER, STUDIEWIJZER, TabBarComponent } from 'leerling-base';
 import { REloRestricties } from 'leerling-codegen';
 import { HeaderComponent } from 'leerling-header';
 import { StudiemateriaalVakselectieComponent } from 'leerling-studiemateriaal';
 import { SidebarService, SlDatePipe } from 'leerling-util';
-import { RoosterComponent } from 'leerling/rooster';
 import { RechtenService } from 'leerling/store';
-import { StudiewijzerComponent } from 'leerling/studiewijzer';
 import { derivedAsync } from 'ngxtension/derived-async';
 import { map } from 'rxjs';
 
 @Component({
     selector: 'sl-vandaag',
-    standalone: true,
     imports: [HeaderComponent, SlDatePipe, SpinnerComponent, TabBarComponent, ButtonComponent],
     templateUrl: './vandaag.component.html',
     styleUrls: ['./vandaag.component.scss'],
@@ -57,6 +54,6 @@ export class VandaagComponent {
     }
 
     public getRechten(): (keyof REloRestricties)[] {
-        return [RoosterComponent.ROOSTERFEATURE, StudiewijzerComponent.HUISWERKFEATURE];
+        return [getRestriction(ROOSTER), getRestriction(STUDIEWIJZER)];
     }
 }

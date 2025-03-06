@@ -1,16 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ElementRef, HostBinding, Input, inject, output } from '@angular/core';
 import { IconChevronOnder, IconName, IconSluiten, provideIcons } from 'harmony-icons';
-import { TooltipDirective } from '../directives/tooltip/tooltip.directive';
-import { IconDirective } from '../icon/icon.directive';
+
 import { Optional } from '../optional/optional';
 import { PillTagColor, PillTagType } from '../pill-tag/pill-tag.model';
 import { InternalTagComponent } from './internal-tag/internal-tag.component';
 
 @Component({
     selector: 'hmy-tag',
-    standalone: true,
-    imports: [CommonModule, TooltipDirective, IconDirective, InternalTagComponent],
+    imports: [CommonModule, InternalTagComponent],
     template: `<hmy-internal-tag
         [class.active]="element.nativeElement.classList.contains('active')"
         [type]="type"
@@ -32,12 +30,6 @@ import { InternalTagComponent } from './internal-tag/internal-tag.component';
         `
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    hostDirectives: [
-        {
-            directive: TooltipDirective,
-            inputs: ['hmyTooltip: tooltip']
-        }
-    ],
     providers: [provideIcons(IconSluiten, IconChevronOnder)]
 })
 export class TagComponent {

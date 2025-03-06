@@ -5,6 +5,8 @@ import { RGeldendResultaat, RGeldendVoortgangsdossierResultaat } from 'leerling-
 import { RequestInformation, RequestInformationBuilder } from 'leerling-request';
 import { forkJoin, tap } from 'rxjs';
 import { CallService } from '../../call/call.service';
+import { IncomingPushAction } from '../../pushaction/pushaction-actions';
+import { AvailablePushType } from '../../pushaction/pushaction-model';
 import { SwitchContext } from '../../shared/shared-actions';
 import { AbstractState } from '../../util/abstract-state';
 import {
@@ -35,27 +37,29 @@ const DEFAULT_STATE = { geldendVoortgangsResultaten: undefined, geldendExamenRes
 })
 export class LaatsteResultaatState extends AbstractState {
     @Action(RefreshLaatsteResultaat)
-    refreshLaatsteResulaten(ctx: StateContext<SLaatsteResultaatModel>) {
+    refreshLaatsteResulaten(ctx: StateContext<SLaatsteResultaatModel>, action: RefreshLaatsteResultaat) {
         const leerlingID = this.getLeerlingID();
         if (!leerlingID) {
             return;
         }
 
-        const isStillFresh = this.isFresh(
-            this.createCallDefinition(
-                `geldendvoortgangsdossierresultaten/leerling/${leerlingID}`,
-                this.getTimeout(),
-                this.getLaatsteResultatenRequestInfo()
-            ),
-            this.createCallDefinition(
-                `geldendexamendossierresultaten/leerling/${leerlingID}`,
-                this.getTimeout(),
-                this.getLaatsteResultatenRequestInfo()
-            )
-        );
+        if (!action.forceUpdate) {
+            const isStillFresh = this.isFresh(
+                this.createCallDefinition(
+                    `geldendvoortgangsdossierresultaten/leerling/${leerlingID}`,
+                    this.getTimeout(),
+                    this.getLaatsteResultatenRequestInfo()
+                ),
+                this.createCallDefinition(
+                    `geldendexamendossierresultaten/leerling/${leerlingID}`,
+                    this.getTimeout(),
+                    this.getLaatsteResultatenRequestInfo()
+                )
+            );
 
-        if (isStillFresh) {
-            return;
+            if (isStillFresh) {
+                return;
+            }
         }
 
         const voortgangRequest = this.cachedUnwrappedGet<RGeldendVoortgangsdossierResultaat>(
@@ -101,6 +105,13 @@ export class LaatsteResultaatState extends AbstractState {
             .sortDesc('geldendResultaatCijferInvoer')
             .header('Range', 'items=0-' + AANTAL_LAATSTE_RESULTATEN_OPVRAGEN)
             .build();
+    }
+
+    @Action(IncomingPushAction)
+    incomingPushAction(ctx: StateContext<SLaatsteResultaatModel>, action: IncomingPushAction) {
+        if (action.type === AvailablePushType.CIJFERS) {
+            ctx.dispatch(new RefreshLaatsteResultaat(true));
+        }
     }
 
     @Action(SwitchContext)

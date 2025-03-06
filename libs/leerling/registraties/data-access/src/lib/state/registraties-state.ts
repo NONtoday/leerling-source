@@ -1,24 +1,30 @@
 import { Injectable } from '@angular/core';
-import { Action, Selector, State, StateContext, StateToken, createSelector } from '@ngxs/store';
-import { parseISO } from 'date-fns';
+import { Action, createSelector, Selector, State, StateContext, StateToken } from '@ngxs/store';
+import { differenceInMinutes } from 'date-fns';
 import { isPresent } from 'harmony';
-import { RLeerlingoverzichtRegistratie, RLeerlingoverzichtRegistratiesWrapper, RRegistratie } from 'leerling-codegen';
+import { RAfspraakItem, RLeerlingRegistratie, RLeerlingRegistraties } from 'leerling-codegen';
 import {
     LOCALSTORAGE_KEY_TIJDSPAN,
     RMentordashboardOverzichtPeriode,
     SRegistratie,
-    SRegistratieCategorie,
-    SRegistratieCategorieNaam,
     SRegistratiePeriode,
-    SRegistratiesState,
-    registratieCategorieNamen
+    SRegistraties,
+    SRegistratiesState
 } from 'leerling-registraties-models';
 import { RequestInformationBuilder } from 'leerling-request';
-import { AbstractState, CallService, assertIsDefined } from 'leerling/store';
-import { orderBy } from 'lodash-es';
+import {
+    AbstractState,
+    AvailablePushType,
+    Callproperties,
+    CallService,
+    IncomingPushAction,
+    mapAfspraakItem,
+    SMaatregelenState,
+    toLocalDateTime
+} from 'leerling/store';
 import { map, tap } from 'rxjs';
-import { P, match } from 'ts-pattern';
-import { RefreshRegistraties, SelectTijdspan } from './registraties.actions';
+import { match } from 'ts-pattern';
+import { RefreshRegistraties, SelectTijdspan, SetIsLoading } from './registraties.actions';
 
 export const BERICHT_STATE_TOKEN = new StateToken<SRegistratiesState>('registraties');
 
@@ -27,7 +33,8 @@ const DEFAULT_STATE: SRegistratiesState = {
     'Laatste 7 dagen': undefined,
     'Laatste 30 dagen': undefined,
     'Deze periode': undefined,
-    'Dit schooljaar': undefined
+    'Dit schooljaar': undefined,
+    isLoading: false
 };
 
 @State<SRegistratiesState>({
@@ -45,7 +52,7 @@ export class RegistratiesState extends AbstractState {
     }
 
     @Action(RefreshRegistraties)
-    refreshRegistraties(ctx: StateContext<SRegistratiesState>) {
+    refreshRegistraties(ctx: StateContext<SRegistratiesState>, action: RefreshRegistraties) {
         const tijdspan = ctx.getState().selectedTijdspan;
         const rperiode = match(tijdspan)
             .returnType<RMentordashboardOverzichtPeriode>()
@@ -55,38 +62,50 @@ export class RegistratiesState extends AbstractState {
             .with('Dit schooljaar', () => 'SCHOOLJAAR')
             .exhaustive();
 
-        return this.cachedGet<RLeerlingoverzichtRegistratiesWrapper>(
-            `leerlingen/${this.getLeerlingID()}/registratieOverzicht`,
-            new RequestInformationBuilder().parameter('periode', rperiode).build()
-        )?.pipe(
-            map((rLeerlingoverzichtRegistratiesWrapper) =>
-                (rLeerlingoverzichtRegistratiesWrapper.registraties ?? [])
-                    ?.map((rRegistratieCategorie): SRegistratieCategorie | undefined => {
-                        const categorieNaam = getRRegistratieCategorieNaam(rRegistratieCategorie);
-                        // filter categorieen die we niet willen tonen
-                        if (!categorieNaam || !registratieCategorieNamen.includes(categorieNaam)) return;
+        ctx.patchState({ isLoading: true });
 
-                        return {
-                            naam: categorieNaam,
-                            aantal: rRegistratieCategorie.periodeRegistratieDetails?.aantalRegistraties ?? 0,
-                            registraties: orderBy(
-                                rRegistratieCategorie.periodeRegistratieDetails?.vakRegistraties
-                                    ?.flatMap((vakRegistratie) => vakRegistratie.registraties ?? [])
-                                    .map(mapSRegistratie) ?? [],
-                                ['beginDatumTijd' satisfies keyof SRegistratie],
-                                'desc'
-                            )
-                        };
-                    })
-                    .filter(isPresent)
-            ),
-            tap((sRegistratieCategorieen) => ctx.patchState({ [tijdspan]: sRegistratieCategorieen }))
+        const callProperties: Callproperties = {};
+        if (action.requestOptions.forceRequest) {
+            callProperties.force = true;
+        }
+        const result = this.cachedGet<RLeerlingRegistraties>(
+            `leerlingen/${this.getLeerlingID()}/registratieOverzicht`,
+            new RequestInformationBuilder().parameter('periode', rperiode).build(),
+            callProperties
         );
+
+        if (result) {
+            return result.pipe(
+                map(mapRegistraties),
+                tap((registraties) => ctx.patchState({ [tijdspan]: registraties, isLoading: false }))
+            );
+        } else {
+            // Fallback for when the result is 'cached'.
+            ctx.patchState({ isLoading: false });
+            return result;
+        }
+    }
+
+    @Action(IncomingPushAction)
+    incomingPushAction(ctx: StateContext<SMaatregelenState>, action: IncomingPushAction) {
+        if (action.type === AvailablePushType.AFWEZIGHEID) {
+            ctx.dispatch(new RefreshRegistraties({ forceRequest: true }));
+        }
+    }
+
+    @Action(SetIsLoading)
+    setIsLoading(ctx: StateContext<SRegistratiesState>, action: SetIsLoading) {
+        return ctx.patchState({ isLoading: action.isLoading });
     }
 
     @Selector()
     static tijdspan(state: SRegistratiesState) {
         return state.selectedTijdspan;
+    }
+
+    @Selector()
+    static isLoading(state: SRegistratiesState) {
+        return state.isLoading;
     }
 
     static registratieCategorieen(tijdspan: SRegistratiePeriode) {
@@ -104,34 +123,47 @@ export class RegistratiesState extends AbstractState {
     }
 }
 
-type RLeerlingAfwezigheidsKolom = 'ONGEOORLOOFD_AFWEZIG' | 'GEOORLOOFD_AFWEZIG' | 'TE_LAAT' | 'VERWIJDERD';
+const mapRegistraties = (registraties: RLeerlingRegistraties): SRegistraties => ({
+    afwezigWaarnemingen: registraties?.afwezigWaarnemingen?.map(mapRegistratie)?.filter(isPresent) ?? [],
+    geoorloofdAfwezig: registraties?.geoorloofdAfwezig?.map(mapRegistratie)?.filter(isPresent) ?? [],
+    ongeoorloofdAfwezig: registraties?.ongeoorloofdAfwezig?.map(mapRegistratie)?.filter(isPresent) ?? [],
+    teLaat: registraties?.teLaat?.map(mapRegistratie)?.filter(isPresent) ?? [],
+    verwijderd: registraties?.verwijderd?.map(mapRegistratie)?.filter(isPresent) ?? [],
+    huiswerkNietInOrde:
+        registraties?.huiswerkNietGemaakt
+            ?.map((afspraak) => mapAfspraakRegistratie(afspraak, 'Huiswerk niet in orde'))
+            ?.filter(isPresent) ?? [],
+    materiaalNietInOrde:
+        registraties?.materiaalNietInOrde
+            ?.map((afspraak) => mapAfspraakRegistratie(afspraak, 'Materiaal niet in orde'))
+            ?.filter(isPresent) ?? []
+});
 
-const mapSRegistratie = (rRegistratie: RRegistratie) => {
-    assertIsDefined(rRegistratie.beginDatumTijd);
+const mapRegistratie = (registratie: RLeerlingRegistratie): SRegistratie | undefined => {
+    if (!registratie.begin) return undefined;
+
+    const begin = toLocalDateTime(registratie.begin);
+    const eindOfNu = registratie.eind ? toLocalDateTime(registratie.eind) : new Date();
+
     return {
-        beginDatumTijd: parseISO(rRegistratie.beginDatumTijd),
-        eindDatumTijd: rRegistratie.eindDatumTijd ? parseISO(rRegistratie.eindDatumTijd) : undefined,
-        absentieReden: rRegistratie.absentieReden,
-        opmerkingen: rRegistratie.opmerkingen,
-        vakOfTitel: rRegistratie.vakOfTitel,
-        beginLesuur: rRegistratie.beginLesuur,
-        minutenGemist: rRegistratie.minutenGemist,
-        eindLesuur: rRegistratie.eindLesuur
+        begin: begin,
+        eind: registratie.eind ? toLocalDateTime(registratie.eind) : undefined,
+        minutenGemist: differenceInMinutes(eindOfNu, begin),
+        omschrijving: registratie.omschrijving ?? '-',
+        afgehandeld: registratie.afgehandeld ?? false,
+        afspraken: registratie?.afspraken?.map(mapAfspraakItem).flat() ?? []
     };
 };
 
-const getRRegistratieCategorieNaam = (rRegistratieCategorie: RLeerlingoverzichtRegistratie) =>
-    match(rRegistratieCategorie.categorie)
-        .returnType<SRegistratieCategorieNaam | undefined>()
-        .with({ kolom: P.nonNullable }, (cat) => rLeerlingAfwezigheidsKolomToSRegistratieCategorieNaam(cat.kolom))
-        .with({ vrijVeld: { naam: P.union('Huiswerk niet in orde', 'Materiaal niet in orde') } }, (cat) => cat.vrijVeld?.naam)
-        .otherwise(() => undefined);
+const mapAfspraakRegistratie = (afspraak: RAfspraakItem, defaultOmschrijving: string): SRegistratie | undefined => {
+    if (!afspraak.beginDatumTijd) return undefined;
 
-const rLeerlingAfwezigheidsKolomToSRegistratieCategorieNaam = (kolom: RLeerlingAfwezigheidsKolom): SRegistratieCategorieNaam =>
-    match(kolom)
-        .returnType<SRegistratieCategorieNaam>()
-        .with('ONGEOORLOOFD_AFWEZIG', () => 'Afwezig ongeoorloofd')
-        .with('GEOORLOOFD_AFWEZIG', () => 'Afwezig geoorloofd')
-        .with('TE_LAAT', () => 'Te laat')
-        .with('VERWIJDERD', () => 'Verwijderd uit les')
-        .exhaustive();
+    return {
+        begin: toLocalDateTime(afspraak.beginDatumTijd),
+        eind: undefined,
+        minutenGemist: 0,
+        omschrijving: afspraak.vak?.naam ?? afspraak.titel ?? afspraak.omschrijving ?? defaultOmschrijving,
+        afgehandeld: true,
+        afspraken: mapAfspraakItem(afspraak)
+    };
+};

@@ -8,11 +8,11 @@
                 @for (dagOptie of weekOptie.dagOpties; track $index) {
                     <div
                         class="dag-optie"
-                        [class.range]="isBeginEindRangeOptie(dagOptie)"
-                        [class.disabled]="dagOptie.disabled"
-                        [class.selected]="isSelectedDagOptie(dagOptie)"
-                        [attr.aria-label]="dagOptieAriaLabel(dagOptie)"
-                        (click)="selectDagOptie(dagOptie)"
+                        [class.range]="!disabled() && dagOptie.isRangeOptie"
+                        [class.disabled]="disabled() || dagOptie.disabled"
+                        [class.selected]="!disabled() && dagOptie.selected"
+                        [attr.aria-label]="dagOptie.ariaLabel"
+                        (click)="!disabled() && selectDagOptie(dagOptie)"
                         tabindex="0"
                         role="button">
                         <div>
@@ -27,24 +27,32 @@
     <div class="toon-meer-week-opties" (click)="toonMeerWeekOpties()" role="button" tabindex="0">Toon meer</div>
 </div>
 
-@if (magTijdstipKiezen()) {
-    <div class="tijd-selectie-container" (click)="toggleHeleDag($event)" role="button" tabindex="0">
-        <div class="hele-dag-toggle">
-            <div class="hele-dag-toggle-text">Hele dag</div>
-            <hmy-toggle [(ngModel)]="heleDag" />
-        </div>
+@if (magTijdstipKiezen() && !disabled()) {
+    <div class="tijd-selectie-container" [attr.aria-label]="mode() === 'Begin' ? 'Begintijd' : 'Eindtijd'" tabindex="0">
+        <div class="tijd-selectie">
+            <div aria-hidden="true">{{ mode() === 'Begin' ? 'Begintijd' : 'Eindtijd' }}</div>
 
-        @if (!heleDag()) {
-            <div class="tijd-selectie">
-                <div>{{ mode() === 'Begin' ? 'Begintijd' : 'Eindtijd' }}</div>
+            <div class="tijd-selectie-dropdowns">
                 <hmy-dropdown
-                    [items]="tijdOptieDropdownItems()"
-                    [selected]="selectedTijdOptieDropdownItem()"
+                    [items]="urenDropdownItems()"
+                    [selected]="selectedUrenDropdownItem()"
                     [listHeight]="226"
                     [modalOnMobile]="true"
-                    (onSelectionChanged)="onTijdOptieSelected($event)"
-                    listWidth="fit-dropdown" />
+                    [placeholder]="'Uur'"
+                    (onSelectionChanged)="selectTijdOptieUren($event)"
+                    listWidth="fit-dropdown"
+                    data-testid="tijd-selectie-uren" />
+
+                <hmy-dropdown
+                    [items]="minutenDropdownItems()"
+                    [selected]="selectedMinutenDropdownItem()"
+                    [listHeight]="226"
+                    [modalOnMobile]="true"
+                    [placeholder]="'Minuten'"
+                    (onSelectionChanged)="selectTijdOptieMinuten($event)"
+                    listWidth="fit-dropdown"
+                    data-testid="tijd-selectie-minuten" />
             </div>
-        }
+        </div>
     </div>
 }

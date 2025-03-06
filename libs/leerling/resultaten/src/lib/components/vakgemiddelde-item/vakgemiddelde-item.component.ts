@@ -7,7 +7,6 @@ import { VakgemiddeldeItemCijferComponent } from '../vakgemiddelde-item-cijfer/v
 
 @Component({
     selector: 'sl-vakgemiddelde-item',
-    standalone: true,
     imports: [CommonModule, IconPillComponent, TooltipDirective, VakgemiddeldeItemCijferComponent, VakIconComponent],
     templateUrl: './vakgemiddelde-item.component.html',
     styleUrls: ['./vakgemiddelde-item.component.scss'],

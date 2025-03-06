@@ -1,21 +1,23 @@
 import { UpperCasePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, HostBinding, HostListener, computed, inject, input, output } from '@angular/core';
-import { PillComponent, isPresent } from 'harmony';
+import { IconDirective, PillComponent, isPresent } from 'harmony';
+import { IconBijlage, provideIcons } from 'harmony-icons';
 import { SsoService } from 'leerling-authentication';
 
 @Component({
     selector: 'sl-bijlage',
-    standalone: true,
-    imports: [PillComponent, UpperCasePipe],
+    imports: [PillComponent, UpperCasePipe, IconDirective],
     templateUrl: './bijlage.component.html',
     styleUrls: ['./bijlage.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    providers: [provideIcons(IconBijlage)]
 })
 export class BijlageComponent {
     private _ssoService = inject(SsoService);
 
     public omschrijving = input.required<string>();
     public uri = input.required<string>();
+    public icon = input<boolean>(false);
     public extension = input<string | undefined>(undefined);
     public methode = input<string | undefined>(undefined);
     public uitgever = input<string | undefined>(undefined);
@@ -24,7 +26,6 @@ export class BijlageComponent {
 
     public aanvullendeTekst = computed(() => {
         return [this.methode(), this.uitgever()].filter(isPresent).join(' • ');
-        // return values.length > 0 ? values.join(' • ') : undefined;
     });
 
     bijlageOpened = output<void>();

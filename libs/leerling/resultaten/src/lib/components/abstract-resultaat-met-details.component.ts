@@ -4,6 +4,7 @@ import { ResultaatItem } from './resultaat-item/resultaat-item-model';
 @Directive()
 export abstract class AbstractResultaatMetDetailsComponent implements OnChanges {
     @Input({ required: true }) @HostBinding('class.selected') public toonDetails: boolean;
+
     toonDetailsEvent = output<ResultaatItem | undefined>();
 
     public resultaatItem: ResultaatItem;

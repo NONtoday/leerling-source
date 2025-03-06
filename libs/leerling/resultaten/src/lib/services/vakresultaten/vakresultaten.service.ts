@@ -20,27 +20,39 @@ export class VakResultatenService {
     private _store = inject(Store);
     private _plaatsingService = inject(PlaatsingService);
 
-    public getVakToetsdossier(vakUuid: string, lichtingUuid: string, plaatsingUuid?: string): Observable<VakToetsdossier | undefined> {
+    public getVakToetsdossier(
+        vakUuid: string,
+        lichtingUuid: string,
+        plaatsingUuid?: string,
+        kolommen = false
+    ): Observable<VakToetsdossier | undefined> {
         if (plaatsingUuid && this._plaatsingService.isHuidigePlaatsing(plaatsingUuid)) {
             // huidige plaatsing hoeft niet te worden meegegeven.
             // Om dingen in de store zo veel mogelijk her te gebruiken, laten we de huidige plaatsing altijd achterwege.
             plaatsingUuid = undefined;
         }
 
-        this._store.dispatch(new RefreshVakResultaat(vakUuid, lichtingUuid, plaatsingUuid));
-        return this._store.select(VakResultatenSelectors.getVakToetsdossier(vakUuid, lichtingUuid, plaatsingUuid));
+        this._store.dispatch(new RefreshVakResultaat(vakUuid, lichtingUuid, plaatsingUuid, kolommen));
+        const selector = kolommen
+            ? VakResultatenSelectors.getVakToetsdossierMetKolommen(vakUuid, lichtingUuid, plaatsingUuid)
+            : VakResultatenSelectors.getVakToetsdossier(vakUuid, lichtingUuid, plaatsingUuid);
+        return this._store.select(selector);
     }
 
     public getSamengesteldeToetsDetails(
         dossierType: DossierType,
         samengesteldeToetskolomId: number,
-        plaatsingUuid?: string
+        plaatsingUuid?: string,
+        metKolommen = false
     ): Observable<SGeldendResultaat[] | undefined> {
         this._store.dispatch(
             dossierType === 'Voortgang'
-                ? new GetVoortgangsdossierDeeltoetsen(plaatsingUuid, samengesteldeToetskolomId)
-                : new GetExamendossierDeeltoetsen(plaatsingUuid, samengesteldeToetskolomId)
+                ? new GetVoortgangsdossierDeeltoetsen(plaatsingUuid, samengesteldeToetskolomId, metKolommen)
+                : new GetExamendossierDeeltoetsen(plaatsingUuid, samengesteldeToetskolomId, metKolommen)
         );
-        return this._store.select(VakResultaatSelectors.getDeeltoetsen(samengesteldeToetskolomId, dossierType));
+        const selector = metKolommen
+            ? VakResultaatSelectors.getDeeltoetsenMetKolommen(samengesteldeToetskolomId, dossierType)
+            : VakResultaatSelectors.getDeeltoetsen(samengesteldeToetskolomId, dossierType);
+        return this._store.select(selector);
     }
 }

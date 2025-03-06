@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import {
     ChangeDetectionStrategy,
-    ChangeDetectorRef,
     Component,
     ElementRef,
     HostBinding,
@@ -9,14 +8,17 @@ import {
     computed,
     inject,
     input,
-    output
+    output,
+    signal
 } from '@angular/core';
-import { CheckboxComponent, IconDirective, PillComponent, StripHTMLPipe, TooltipDirective, isPresent } from 'harmony';
+import { isAfter } from 'date-fns';
+import { CheckboxComponent, IconDirective, PillComponent, SpinnerComponent, StripHTMLPipe, TooltipDirective, isPresent } from 'harmony';
 import {
     IconChevronRechts,
     IconHuiswerk,
     IconInleveropdracht,
     IconLesstof,
+    IconSlot,
     IconToets,
     IconToetsGroot,
     IconWaarschuwing,
@@ -26,11 +28,10 @@ import { AccessibilityService } from 'leerling-util';
 import { SStudiewijzerItem } from 'leerling/store';
 import { StudiewijzerItemIconColorPipe } from '../pipes/studiewijzer-item-icon-color.pipe';
 import { StudiewijzerItemIconPipe } from '../pipes/studiewijzer-item-icon.pipe';
-import { TitelType, getTitel } from './studiewijzer-item.util';
+import { TitelType, getOmschrijving, getTitel } from './studiewijzer-item.util';
 
 @Component({
     selector: 'sl-studiewijzer-item',
-    standalone: true,
     imports: [
         CommonModule,
         IconDirective,
@@ -39,14 +40,27 @@ import { TitelType, getTitel } from './studiewijzer-item.util';
         TooltipDirective,
         StudiewijzerItemIconPipe,
         StudiewijzerItemIconColorPipe,
-        PillComponent
+        PillComponent,
+        SpinnerComponent
     ],
     templateUrl: './studiewijzer-item.component.html',
     styleUrl: './studiewijzer-item.component.scss',
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [
-        provideIcons(IconInleveropdracht, IconHuiswerk, IconToets, IconToetsGroot, IconLesstof, IconWaarschuwing, IconChevronRechts)
-    ]
+        provideIcons(
+            IconInleveropdracht,
+            IconHuiswerk,
+            IconToets,
+            IconToetsGroot,
+            IconLesstof,
+            IconWaarschuwing,
+            IconChevronRechts,
+            IconSlot
+        )
+    ],
+    host: {
+        '[class.disable-checkbox-animation]': 'state().saving()'
+    }
 })
 export class StudiewijzerItemComponent implements OnChanges {
     @HostBinding('attr.role') private _role = 'button';
@@ -64,15 +78,39 @@ export class StudiewijzerItemComponent implements OnChanges {
         const item = this.item();
 
         const labelVelden: (string | undefined)[] = [
+            item.swiToekenningType === 'AFSPRAAK' ? '' : item.swiToekenningType + 'taak',
             this.getHuiswerkTypeOmschrijving(item),
             getTitel(item, this.titelType()),
-            this.afgevinkt ? 'afgevinkt' : 'niet afgevinkt',
+            this.toonAfvinkKnop() ? (this.afgevinkt ? 'afgevinkt' : 'niet afgevinkt') : undefined,
             this.vervangTotEnMet(this.alternatieveOmschrijving() ?? new StripHTMLPipe().transform(item.omschrijving))
         ];
-        if (item.isInleveropdracht && !item.heeftInlevering) labelVelden.push('Nog geen inlevering');
+        if (item.isInleveropdracht && !item.laatsteInleveringStatus) labelVelden.push('Nog geen inlevering');
 
         return labelVelden.filter(isPresent).join(', ');
     });
+
+    public state = computed(() => ({
+        // item staat in de state zodat saving reset wordt bij update van de value
+        item: this.item(),
+        saving: signal(false)
+    }));
+
+    public isNaStartPeriode = computed(() => {
+        const inleverStart = this.item().inlevermoment?.start;
+        return inleverStart && isAfter(new Date(), inleverStart);
+    });
+
+    public toonWaarschuwing = computed(
+        () =>
+            this.item().isInleveropdracht &&
+            this.isNaStartPeriode() &&
+            (!this.item().laatsteInleveringStatus || this.item().laatsteInleveringStatus === 'HEROPEND')
+    );
+    public toonSlot = computed(
+        () =>
+            this.item().isInleveropdracht &&
+            (this.item().laatsteInleveringStatus === 'IN_BEHANDELING' || this.item().laatsteInleveringStatus === 'AKKOORD')
+    );
 
     public toggleAfgevinkt = output<SStudiewijzerItem>();
 
@@ -90,20 +128,20 @@ export class StudiewijzerItemComponent implements OnChanges {
         return '4px solid var(--' + this.studiewijzerItemIconColorPipe.transform(this.item(), this.afgevinkt) + ')';
     }
 
-    private _changeDetectorRef = inject(ChangeDetectorRef);
-
     public titel = '';
+    public omschrijving = '';
 
     toonAfvinkKnopZonderScreenReader = computed(() => !this.accessibilityService.isScreenReaderMobileEnabled() && this.toonAfvinkKnop());
 
     ngOnChanges(): void {
         this.titel = getTitel(this.item(), this.titelType());
+        this.omschrijving = getOmschrijving(this.item(), this.titelType());
         this.afgevinkt = this.item().gemaakt;
     }
 
-    onAfvinken() {
-        this.afgevinkt = !this.afgevinkt;
-        this._changeDetectorRef.markForCheck();
+    onAfvinken(event: Event) {
+        event.stopPropagation();
+        this.state().saving.set(true);
         this.toggleAfgevinkt.emit(this.item());
     }
 

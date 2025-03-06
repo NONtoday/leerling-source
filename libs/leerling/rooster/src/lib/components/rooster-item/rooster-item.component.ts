@@ -17,10 +17,12 @@ import {
     signal
 } from '@angular/core';
 import { format } from 'date-fns';
-import { IconDirective, IconPillComponent, PillComponent, PillTagColor, PillTagType } from 'harmony';
+import { DeviceService, IconPillComponent, PillComponent, PillTagColor, PillTagType } from 'harmony';
 import { IconHuiswerk, IconToets, IconToetsGroot, IconYesRadio, provideIcons } from 'harmony-icons';
+import { StudiemateriaalComponent, StudiemateriaalVakselectieComponent } from 'leerling-studiemateriaal';
 import {
     AccessibilityService,
+    ModalService,
     OverlayService,
     ResizeObserverService,
     SidebarService,
@@ -28,6 +30,8 @@ import {
     ToHuiswerkTypenPipe,
     WerkdrukIndicatorComponent
 } from 'leerling-util';
+import { SStudiewijzerItem } from 'leerling/store';
+import { StudiewijzerItemDetailComponent } from 'leerling/studiewijzer';
 import { isEqual } from 'lodash-es';
 import { RoosterItem } from '../../services/rooster-model';
 import { RoosterService } from '../../services/rooster.service';
@@ -54,17 +58,7 @@ const PILL_TAGCOLOR_GROTE_TOETS = 'negative';
 const PILL_TAGCOLOR_AFSPRAAK = 'positive';
 @Component({
     selector: 'sl-rooster-item',
-    standalone: true,
-    imports: [
-        CommonModule,
-        IconDirective,
-        PillComponent,
-        RoosterItemDetailComponent,
-        WerkdrukIndicatorComponent,
-        ToHuiswerkTypenPipe,
-        IconPillComponent,
-        SlDatePipe
-    ],
+    imports: [CommonModule, PillComponent, WerkdrukIndicatorComponent, ToHuiswerkTypenPipe, IconPillComponent],
     templateUrl: './rooster-item.component.html',
     styleUrls: ['./rooster-item.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -101,12 +95,16 @@ export class RoosterItemComponent implements OnInit, OnChanges, OnDestroy {
     private _resizeObserverService = inject(ResizeObserverService);
     private _overlayService = inject(OverlayService);
     private _sidebarService = inject(SidebarService);
+    private _modalService = inject(ModalService);
     private _accessibilityService = inject(AccessibilityService);
+    private _deviceService = inject(DeviceService);
 
     private _datePipe = new SlDatePipe();
 
     public titel = signal('');
     public isHovered = signal(false);
+    private isStudiemateriaalOpen = signal(false);
+    private isHuiswerkOpen = signal(false);
     public isVerlopen = computed(() => this.roosterItem().afspraakItem.kwtInfo?.inschrijfStatus === 'VERLOPEN');
     public pillText = computed(() => {
         const info = this.roosterItem().isToets ? 'Toets' : this.roosterItem().lestijd;
@@ -307,7 +305,7 @@ export class RoosterItemComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     private openRoosterItemDetail() {
-        this._overlayService.sidebarOrModal(
+        const component = this._overlayService.sidebarOrModal(
             RoosterItemDetailComponent,
             computed(() => ({
                 roosterItem: this.roosterItem(),
@@ -326,9 +324,62 @@ export class RoosterItemComponent implements OnInit, OnChanges, OnDestroy {
                         : 'initial'
             }
         );
+        component.huiswerkItemSelected.subscribe((item) => this.openHuiswerk(item));
+        component.openStudiemateriaal.subscribe(() => this.openStudiemateriaal());
+        component.openEditKwtItem.subscribe(() => this.openKWTInschrijven());
+    }
+
+    private reopenModal() {
+        this.isStudiemateriaalOpen.set(false);
+        this.isHuiswerkOpen.set(false);
+        if (!this._modalService.isOpen() && this._deviceService.isPhoneOrTabletPortrait()) {
+            this.openRoosterItemDetail();
+        }
+    }
+
+    private openHuiswerk(huiswerk: SStudiewijzerItem) {
+        if (this.isHuiswerkOpen()) return;
+        this.isHuiswerkOpen.set(true);
+        this._modalService.close();
+        this._sidebarService.push(
+            StudiewijzerItemDetailComponent,
+            computed(() => ({
+                item: this.roosterItem().studiewijzerItems.find((swi) => swi.id === huiswerk.id) ?? huiswerk,
+                showBackButton: false
+            })),
+            StudiewijzerItemDetailComponent.getSidebarSettings(huiswerk, this._sidebarService, false, () => this.reopenModal())
+        );
+    }
+
+    private openStudiemateriaal() {
+        if (this.isStudiemateriaalOpen()) return;
+        this.isStudiemateriaalOpen.set(true);
+        this._modalService.close();
+        const vak = this.roosterItem().afspraakItem.vak;
+        if (vak) {
+            this._sidebarService.push(
+                StudiemateriaalComponent,
+                {
+                    vak: vak,
+                    lesgroep: undefined,
+                    toonAlgemeneLeermiddelen: true
+                },
+                StudiemateriaalComponent.getSidebarSettings(vak, () => this.reopenModal())
+            );
+        } else {
+            this._sidebarService.push(
+                StudiemateriaalVakselectieComponent,
+                {},
+                StudiemateriaalVakselectieComponent.getSidebarSettings(() => this.reopenModal())
+            );
+        }
     }
 
     private openKWTInschrijven() {
+        const wasOpen = this._modalService.isOpen();
+        if (wasOpen) {
+            this._modalService.close();
+        }
         this._sidebarService.push(
             RoosterKwtInschrijvenComponent,
             computed(() => ({
@@ -336,7 +387,12 @@ export class RoosterItemComponent implements OnInit, OnChanges, OnDestroy {
             })),
             {
                 ...RoosterKwtInschrijvenComponent.getSidebarSettings('Inschrijven'),
-                onClose: () => this._onRoosterDetailsClose()
+                onClose: () => {
+                    this._onRoosterDetailsClose();
+                    if (wasOpen) {
+                        this.openRoosterItemDetail();
+                    }
+                }
             }
         );
     }

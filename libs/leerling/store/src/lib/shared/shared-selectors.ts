@@ -1,5 +1,5 @@
 import { createSelector } from '@ngxs/store';
-import { SSharedAccountStateModel, SSharedStateModel } from './shared-model';
+import { SSharedAccountStateModel, SSharedConnectionStateModel, SSharedStateModel } from './shared-model';
 import { SharedState } from './shared-state';
 
 export class SharedSelectors {
@@ -15,7 +15,7 @@ export class SharedSelectors {
 
     public static getConnectionStatus() {
         return createSelector([SharedState], (state: SSharedStateModel) => {
-            return { isOnline: state.isOnline, limitedData: state.limitedData };
+            return { isOnline: state.isOnline, limitedData: state.limitedData } satisfies SSharedConnectionStateModel;
         });
     }
 }

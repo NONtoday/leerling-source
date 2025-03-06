@@ -4,7 +4,8 @@ export class SwitchContext {
     constructor(
         public localAuthenticationContext: string,
         public accountUUID?: string,
-        public leerlingId?: number
+        public leerlingId?: number,
+        public initialContextSwitch = false
     ) {}
 }
 

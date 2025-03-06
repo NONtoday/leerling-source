@@ -31,7 +31,12 @@ export class AbsentieState extends AbstractState {
 
         return this.cachedUnwrappedGet<RAbsentieReden>(
             'absentieredenen',
-            new RequestInformationBuilder().parameter('vestiging', action.vestigingId).leerling(leerlingId).build()
+            new RequestInformationBuilder()
+                .parameter('vestiging', action.vestigingId)
+                .leerling(leerlingId)
+                .ignoreStatusCodes(HttpStatusCode.Forbidden)
+                // Als een verzorger geen enkele absentiereden mag gebruiken, krijgen we een 403 terug.
+                .build()
         )?.pipe(
             map((redenen) => redenen.map(mapAbsentieReden)),
             tap((redenen) => {

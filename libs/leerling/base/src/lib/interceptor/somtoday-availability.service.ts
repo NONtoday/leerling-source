@@ -18,13 +18,10 @@ export class SomtodayAvailabilityService implements OnDestroy {
 
     public async registerAvailabilityHandler() {
         const _networkState = this._networkState;
-        this._networkStateSubscription = combineLatest([_networkState.asObservable(), this._authenticationService.errorOnContext])
+        this._networkStateSubscription = combineLatest([_networkState.asObservable()])
             .pipe(
-                map(([connectionStatus, idpError]) => {
-                    return new UpdateConnectionStatus(
-                        connectionStatus.connected && !idpError,
-                        connectionStatus.connectionType === 'cellular'
-                    );
+                map(([connectionStatus]) => {
+                    return new UpdateConnectionStatus(connectionStatus.connected, connectionStatus.connectionType === 'cellular');
                 }),
                 startWith(new UpdateConnectionStatus(true, false)),
                 pairwise()
@@ -38,7 +35,7 @@ export class SomtodayAvailabilityService implements OnDestroy {
                     this._store.dispatch(
                         current.isOnline
                             ? new AddInfoMessage('Je werkt nu weer online')
-                            : new AddErrorMessage('Let op, Somtoday is niet te bereiken, je werkt offline')
+                            : new AddErrorMessage('Let op, Somtoday is niet te bereiken, je werkt offline. Functionaliteit is beperkt.')
                     );
                     this._authenticationService.retryDiscoveryDocument();
                 }

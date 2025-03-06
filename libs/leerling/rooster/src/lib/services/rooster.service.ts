@@ -2,15 +2,21 @@ import { inject, Injectable, untracked } from '@angular/core';
 import { Preferences } from '@capacitor/preferences';
 import { Store } from '@ngxs/store';
 import { endOfDay, startOfDay } from 'date-fns';
+import { isPresent } from 'harmony';
+import { AuthenticationService } from 'leerling-authentication';
 import { RequestService } from 'leerling-request';
 import {
+    AfspraakSelectors,
     getJaarWeek,
     RefreshAfspraak,
     RefreshHuiswerk,
+    RefreshMaatregelen,
     SAfspraakActie,
     SAfspraakItem,
     SharedSelectors,
     SKWTInfo,
+    SMaatregelToekenning,
+    SStatusNotification,
     SStudiewijzerItem,
     VoerKwtActieUit
 } from 'leerling/store';
@@ -31,23 +37,30 @@ export interface HuiswerkWeekEnDagItems {
 export class RoosterService {
     private _store = inject(Store);
     private _requestService = inject(RequestService);
+    private _authenticationService = inject(AuthenticationService);
 
     private _scrollableTitleSubject = new BehaviorSubject<string | undefined>('');
 
-    public getRooster(beginDatum: Date, eindDatum: Date): Observable<RoosterViewModel | undefined> {
+    public getRooster(beginDatum: Date, eindDatum: Date, refreshMaatregelen: boolean): Observable<RoosterViewModel | undefined> {
         const startOfDatum = startOfDay(beginDatum);
         this.refreshRooster(startOfDatum);
+        if (refreshMaatregelen) {
+            this.refreshMaatregelen();
+        }
         return this._store.select(RoosterSelectors.getDagEnWeekItems(beginDatum, eindDatum));
     }
 
-    public getRoosterVoorDag(datum: Date): Observable<RoosterViewModel | undefined> {
+    public getRoosterVoorDag(datum: Date, refreshMaatregelen: boolean): Observable<RoosterViewModel | undefined> {
         const startOfDatum = startOfDay(datum);
         this.refreshRooster(startOfDatum);
+        if (refreshMaatregelen) {
+            this.refreshMaatregelen();
+        }
         return this._store.select(RoosterSelectors.getViewModel(startOfDatum, endOfDay(datum)));
     }
 
-    public voerKwtActieUit(kwtInfo: SKWTInfo, afspraakActie: SAfspraakActie): Observable<void> {
-        return this._store.dispatch(new VoerKwtActieUit(kwtInfo, afspraakActie));
+    public voerKwtActieUit(kwtInfo: SKWTInfo, afspraakActie: SAfspraakActie, jaarWeek: string): Observable<void> {
+        return this._store.dispatch(new VoerKwtActieUit(kwtInfo, afspraakActie, jaarWeek));
     }
 
     public getAfspraakHerhalingInfo(uitvoerbareActieId: string | undefined): Observable<Date[]> {
@@ -62,18 +75,27 @@ export class RoosterService {
     }
 
     public getHuiswerkWeekEnDagItems(datum: Date): Observable<HuiswerkWeekEnDagItems> {
-        return this.getRoosterVoorDag(datum).pipe(
+        return this.getRoosterVoorDag(datum, false).pipe(
             map((data) => ({
                 weekitems: data?.weekitems ?? [],
-                dagitems: data?.dagen[0].dagitems ?? []
+                dagitems: data?.dagen[0].dagitems ?? [],
+                dagMaatregelen: data?.dagen[0].maatregelen ?? []
             }))
         );
     }
 
-    public static formatBeginEindLesuurForAriaLabel(afspraakItem: SAfspraakItem): string | undefined {
-        if (!afspraakItem.beginLesuur) return undefined;
+    public getWeekNotificationsVoor(datum: Date): Observable<SStatusNotification[] | undefined> {
+        return this._store.select(AfspraakSelectors.getWeekNotifications(datum));
+    }
 
-        if (!afspraakItem.eindLesuur || afspraakItem.beginLesuur === afspraakItem.eindLesuur) {
+    public getDagMaatregelen(datum: Date): Observable<SMaatregelToekenning[]> {
+        return this.getRoosterVoorDag(datum, true).pipe(map((data) => data?.dagen[0].maatregelen ?? []));
+    }
+
+    public static formatBeginEindLesuurForAriaLabel(afspraakItem: SAfspraakItem): string | undefined {
+        if (!isPresent(afspraakItem.beginLesuur)) return undefined;
+
+        if (!isPresent(afspraakItem.eindLesuur) || afspraakItem.beginLesuur === afspraakItem.eindLesuur) {
             return afspraakItem.beginLesuur + 'e uur';
         }
 
@@ -84,18 +106,38 @@ export class RoosterService {
         }
     }
 
+    public refreshMaatregelen(): void {
+        this._store.dispatch(new RefreshMaatregelen());
+    }
+
     public refreshRooster(beginDatum: Date): void {
         const jaarWeek = getJaarWeek(beginDatum);
         this._refreshRooster(jaarWeek);
     }
 
     private _refreshRooster(jaarWeek: string): void {
-        // TODO: untracked eruit schrijven? -> SLL-1780
-        untracked(() => this._store.dispatch(new RefreshHuiswerk(jaarWeek)));
-        const jaar = parseInt(jaarWeek.substring(0, 4));
-        const week = parseInt(jaarWeek.substring(5));
-        // TODO: untracked eruit schrijven? -> SLL-1780
-        untracked(() => this._store.dispatch(new RefreshAfspraak(jaar, week)));
+        const hasWeek = this._hasRoosterFor(jaarWeek);
+        const needsRefresh = this._needsRefresh(jaarWeek);
+        if (!hasWeek || needsRefresh) {
+            untracked(() => this._store.dispatch(new RefreshHuiswerk(jaarWeek)));
+            const jaar = parseInt(jaarWeek.substring(0, 4));
+            const week = parseInt(jaarWeek.substring(5));
+            this._store.dispatch(new RefreshAfspraak(jaar, week));
+        }
+    }
+
+    private _hasRoosterFor(jaarWeek: string): boolean {
+        return this._store.selectSnapshot(AfspraakSelectors.heeftAfspraakWeek(jaarWeek));
+    }
+
+    private _needsRefresh(jaarWeek: string): boolean {
+        const uuid = this._authenticationService.currentSessionIdentifier?.UUID || 'no-session';
+        const lastRefreshed = localStorage.getItem('rooster-refresh-' + uuid + '-' + jaarWeek);
+        const needsRefresh = !lastRefreshed || Number(lastRefreshed) + 30000 < new Date().getTime();
+        if (needsRefresh) {
+            localStorage.setItem('rooster-refresh-' + uuid + '-' + jaarWeek, new Date().getTime().toString());
+        }
+        return needsRefresh;
     }
 
     public set scrollableTitle(title: string | undefined) {

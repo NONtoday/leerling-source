@@ -1,12 +1,38 @@
 <div class="actiepanel">
     <div class="container links">
         <div class="datepicker">{{ maanden[maandnummer()] }}</div>
+        <div class="buttons">
+            <div class="button previous" (click)="vorigeWeekEnabled() && onNavigation('previous')" aria-label="Vorige week" role="button">
+                <div class="inner-button">
+                    <i
+                        #previous
+                        [class.disabled]="!vorigeWeekEnabled()"
+                        [color]="!vorigeWeekEnabled() ? 'disabled-fg' : undefined"
+                        (keydown.enter)="vorigeWeekEnabled() && onNavigation('previous')"
+                        hmyIcon="chevronBoven"
+                        size="small"
+                        hmyTooltip="Vorige week"
+                        tabindex="100"></i>
+                </div>
+            </div>
+            <div class="button next" (click)="volgendeWeekEnabled() && onNavigation('next')" role="button" aria-label="Volgende week">
+                <div class="inner-button">
+                    <i
+                        [class.disabled]="!volgendeWeekEnabled()"
+                        [color]="!volgendeWeekEnabled() ? 'disabled-fg' : undefined"
+                        (keydown.enter)="volgendeWeekEnabled() && onNavigation('next')"
+                        hmyIcon="chevronOnder"
+                        size="small"
+                        hmyTooltip="Volgende week"
+                        tabindex="0"></i>
+                </div>
+            </div>
+        </div>
         <hmy-button
-            #vandaag
-            (click)="naarVandaag.emit()"
+            (click)="onNavigation('vandaag')"
             label="Vandaag"
             mode="tertiary"
-            tabindex="100"
+            tabindex="0"
             customTabindex="-1"
             aria-label="Toon vandaag"
             role="link" />
@@ -14,12 +40,21 @@
             [vakkeuzes]="vakkeuzes()"
             [attr.aria-label]="filterButtonText()"
             (filters)="setNumberSelected($event)"
-            hmyTooltip="Filter"
             tabindex="0"
             role="link" />
     </div>
 
     <div class="container rechts">
+        <hmy-button
+            class="inleveropdrachten-btn"
+            (click)="openInleveropdrachten()"
+            iconLeft="inleveropdracht"
+            mode="tertiary"
+            tabindex="0"
+            customTabindex="-1"
+            role="link"
+            aria-label="Inleveropdrachten"
+            label="Inleveropdrachten" />
         <hmy-button
             class="studiemateriaal-btn"
             (click)="openStudiemateriaal()"

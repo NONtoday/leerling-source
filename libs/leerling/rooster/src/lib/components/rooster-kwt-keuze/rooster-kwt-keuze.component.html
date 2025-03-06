@@ -3,9 +3,13 @@
         <div class="wrapper">
             <span class="titel">{{ afspraakActie().titel }}</span>
             @if (!disabled) {
-                @if (this.afspraakActie().beschikbarePlaatsen; as plekken) {
+                @if (this.afspraakActie().heeftPlek) {
                     <label class="plekken"
-                        >{{ geselecteerd() ? 'Geselecteerd' : (plekken | i18nPlural: pluralMapping['plekken']) }}
+                        >{{
+                            geselecteerd()
+                                ? 'Geselecteerd'
+                                : (this.afspraakActie().beschikbarePlaatsen | i18nPlural: pluralMapping['plekken'])
+                        }}
                         <input [checked]="geselecteerd()" [disabled]="disabled || isOuderVerzorger" type="radio" tabindex="-1" />
                         <i class="icon" [hmyIcon]="'yesRadio'" color="action-primary-normal" size="large"></i>
                     </label>
@@ -27,7 +31,6 @@
             <hmy-icon-pill
                 class="locatie"
                 [text]="locatie"
-                [hmyTooltip]="locatie"
                 [color]="disabled ? 'disabled' : 'neutral'"
                 [type]="'outline'"
                 icon="locatie"

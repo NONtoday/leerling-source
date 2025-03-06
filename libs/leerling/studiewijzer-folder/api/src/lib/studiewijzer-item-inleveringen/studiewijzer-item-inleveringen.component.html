@@ -1,0 +1,93 @@
+@if (modus() === 'informatie') {
+    <div class="opdracht">
+        <div class="deadline">
+            <div class="statussen">
+                @if (categorie() === 'AANKOMEND') {
+                    <hmy-pill
+                        [text]="categorie() | inleveropdrachtCategorieToString"
+                        [color]="categorie() | inleveropdrachtCategorieIconColor" />
+                } @else {
+                    <hmy-icon-pill
+                        [text]="categorie() | inleveropdrachtCategorieToString"
+                        [icon]="categorie() | inleveropdrachtCategorieIconName"
+                        [color]="categorie() | inleveropdrachtCategorieIconColor"
+                        [iconSize]="'small'" />
+                }
+
+                @if (teLaat()) {
+                    <hmy-pill [text]="'Te laat'" color="negative" />
+                }
+            </div>
+            <div class="datum-container" tabindex="0" role="text">
+                <div class="datum">
+                    <i hmyIcon="kalenderDag"></i>
+                    <span>{{ datum() }}</span>
+                </div>
+                @if (deadlineWaarschuwing(); as waarschuwing) {
+                    <hmy-pill [text]="waarschuwing" [attr.aria-label]="waarschuwing" tabindex="0" color="warning" />
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="inleveringen">
+        <div class="titel">
+            <span tabindex="0">Ingeleverde bestanden</span>
+            @if (isAkkoord()) {
+                <i class="inlever-slot" hmyIcon="slot" size="small" color="action-neutral-normal"></i>
+            }
+        </div>
+        @if (heeftHuidigeInleveringen() || aantalInleveringenInVerwerking() > 0) {
+            <div>
+                @if (aantalInleveringenInVerwerking() > 0) {
+                    <shared-bijlage
+                        [omschrijving]="inVerwerkingOmschrijving()"
+                        [url]="undefined"
+                        [toonVerwijderKnop]="false"
+                        [ondertitel]="inVerwerkingOndertitel"
+                        extensie="-" />
+                }
+
+                @for (inlevering of huidigeInleveringen(); track inlevering.id) {
+                    <shared-bijlage
+                        [omschrijving]="inlevering.omschrijving"
+                        [ondertitel]="inlevering | inleveringOndertitel"
+                        [extensie]="inlevering.extensie"
+                        [url]="inlevering.url"
+                        [toonVerwijderKnop]="inlevering.status === 'TE_BEOORDELEN'"
+                        (click)="openUrl(inlevering.url)"
+                        (onVerwijder)="verwijderInlevering(inlevering)" />
+                }
+            </div>
+        } @else if (heeftInleveringen()) {
+            <span class="toelichting message-info" tabindex="0"
+                ><i hmyIcon="informatie" size="small"></i>Je inlevering is heropend door je docent. Lever de opdracht opnieuw in.</span
+            >
+        } @else if (categorie() === 'AANKOMEND') {
+            <span class="toelichting" tabindex="0">Je kan niet inleveren, omdat de inleverperiode nog niet geopend is.</span>
+        } @else {
+            <span class="empty" tabindex="0">Nog geen bestanden ingeleverd.</span>
+        }
+        @if (inBehandeling()) {
+            <span class="toelichting message-warning" tabindex="0"
+                ><i hmyIcon="slot" size="small"></i>Je kan niet meer inleveren omdat de opdracht in behandeling is genomen door je docent.
+                Neem contact op met je docent om de opdracht te heropenen.</span
+            >
+        }
+        @for (moment of heropendeMomenten(); track moment.datum) {
+            <sl-heropende-inleveringen [moment]="moment" />
+        }
+    </div>
+
+    @if (toonInleverenKnop()) {
+        <div class="footer">
+            <hmy-button [label]="huidigeInleveringen().length > 0 ? 'Meer inleveren' : 'Inleveren'" (click)="setModusInleveren()" />
+        </div>
+    }
+} @else if (modus() === 'inleveren') {
+    <sl-inleveren
+        [toekenningId]="toekenningId()"
+        [inlevermoment]="inlevermoment()"
+        [turnitInEulaUrl]="turnitInEulaUrl()"
+        (onResult)="setModusInformatie()" />
+}

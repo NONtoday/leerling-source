@@ -11,10 +11,16 @@
     <i class="icon iconleft" [hmyIcon]="iconLeft()!.name" (click)="iconLeft()!.onClick()" size="large"></i>
 }
 
-@if (vakNaam(); as vakNaam) {
-    <hmy-vak-icon [vaknaam]="vakNaam" />
-}
-<span class="title" tabindex="0">{{ title() }}</span>
+<div class="title-container">
+    @if (titleIcon(); as titleIcon) {
+        <i [hmyIcon]="titleIcon.name" [color]="titleIcon.color" size="medium"></i>
+    }
+
+    @if (vakNaam(); as vakNaam) {
+        <hmy-vak-icon [vaknaam]="vakNaam" />
+    }
+    <span class="title" tabindex="0">{{ title() }}</span>
+</div>
 @for (icon of iconsRight(); track $index) {
     <i class="icon" [hmyIcon]="icon.name" (click)="icon.onClick()" size="large"></i>
 } @empty {

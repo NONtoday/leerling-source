@@ -4,7 +4,7 @@ import { SBijlage, SExternmateriaal, SStudiewijzer } from './bijlage-model';
 
 const BIJLAGE_TYPES = ['IMAGE', 'VIDEO', 'DOCUMENT', 'MISC', 'AUDIO'];
 
-function getAssemblyResult(assemblyResults: RAssemblyResult[] | undefined): RAssemblyResult | undefined {
+export function getAssemblyResult(assemblyResults: RAssemblyResult[] | undefined): RAssemblyResult | undefined {
     return assemblyResults?.find((assembly) => assembly.assemblyFileType && BIJLAGE_TYPES.includes(assembly.assemblyFileType));
 }
 

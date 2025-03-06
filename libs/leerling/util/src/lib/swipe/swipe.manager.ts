@@ -49,7 +49,7 @@ export class SwipeManager {
             this.initialScrollPosition === currentScrollPosition
         ) {
             this.swipable.onSwipeStart();
-            evt.cancelable && evt.preventDefault();
+            if (evt.cancelable) evt.preventDefault();
             const current = this.isSwipeHorizontal() ? evt.touches[0].clientX : evt.touches[0].clientY;
             if (this.previousPosition !== undefined) {
                 this.moveElement(current, this.previousPosition);

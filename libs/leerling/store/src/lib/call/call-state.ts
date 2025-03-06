@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Action, State, StateContext, StateToken } from '@ngxs/store';
 import { produce } from 'immer';
 import { SwitchContext } from '../shared/shared-actions';
-import { StoreCallStart, StoreCallSuccess } from './call-actions';
+import { MarkDirty, StoreCallStart, StoreCallSuccess } from './call-actions';
 import { SCallModel } from './call-model';
 
 export const CALL_STATE_TOKEN = new StateToken<SCallModel>('call');
@@ -18,6 +18,13 @@ const DEFAULT_STATE = {
     providedIn: 'root'
 })
 export class CallState {
+    @Action(MarkDirty)
+    markDirty(ctx: StateContext<SCallModel>, action: MarkDirty) {
+        const callTypes = Object.assign({}, ctx.getState().callTypes);
+        delete callTypes[action.callNaam];
+        ctx.setState({ callTypes: callTypes });
+    }
+
     @Action(StoreCallSuccess)
     storeCallSuccess(ctx: StateContext<SCallModel>, action: StoreCallSuccess) {
         const newTimestamp: number = new Date().getTime();

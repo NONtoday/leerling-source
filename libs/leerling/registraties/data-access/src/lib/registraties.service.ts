@@ -3,11 +3,13 @@ import { Store } from '@ngxs/store';
 import { SRegistratiePeriode } from 'leerling-registraties-models';
 import { MaatregelState, RefreshMaatregelen } from 'leerling/store';
 import { RegistratiesState } from './state/registraties-state';
-import { RefreshRegistraties, SelectTijdspan } from './state/registraties.actions';
+import { RefreshRegistraties, SelectTijdspan, SetIsLoading } from './state/registraties.actions';
 
 @Injectable({ providedIn: 'root' })
 export class RegistratiesService {
     private _store = inject(Store);
+
+    refreshRegistraties = (forceRequest = false) => this._store.dispatch(new RefreshRegistraties({ forceRequest }));
     refreshMaatregelen = () => this._store.dispatch(new RefreshMaatregelen());
 
     registratiesCategorieen = (tijdspan: SRegistratiePeriode) => this._store.select(RegistratiesState.registratieCategorieen(tijdspan));
@@ -18,4 +20,6 @@ export class RegistratiesService {
     selectTijdspanRefreshRegistraties(tijdspan: SRegistratiePeriode) {
         this._store.dispatch([new SelectTijdspan(tijdspan), new RefreshRegistraties()]);
     }
+    setIsLoading = (isLoading: boolean) => this._store.dispatch(new SetIsLoading(isLoading));
+    isLoading = () => this._store.select(RegistratiesState.isLoading);
 }

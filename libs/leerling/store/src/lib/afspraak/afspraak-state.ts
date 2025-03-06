@@ -2,18 +2,19 @@ import { Injectable } from '@angular/core';
 import { Action, State, StateContext, StateToken } from '@ngxs/store';
 import { patch } from '@ngxs/store/operators';
 import { addDays, differenceInCalendarDays, getWeek, getWeekYear, isMonday, previousMonday } from 'date-fns';
-import { produce } from 'immer';
-import { RAfspraakActieResultaat, RAfspraakItem, RAfspraakItemWijziging } from 'leerling-codegen';
+import { WritableDraft, produce } from 'immer';
+import { RAfspraakActieResultaat, RAfspraakItem, RAfspraakItemWijziging, RStatusNotification } from 'leerling-codegen';
 import { RequestInformationBuilder } from 'leerling-request';
 import { catchError, of, tap } from 'rxjs';
 import { CallService } from '../call/call.service';
 import { SwitchContext } from '../shared/shared-actions';
 import { AbstractState, insertOrUpdateItem } from '../util/abstract-state';
-import { getJaarWeek, getMaandagVanWeek, toLocalDateTime } from '../util/date-util';
+import { getJaarWeek, getJaarWeken, getMaandagVanWeek, toLocalDateTime } from '../util/date-util';
 import { KwtActieUitvoerenReady, RefreshAfspraak, VoerKwtActieUit } from './afspraak-actions';
-import { SAfspraakDag, SAfspraakModel, SAfspraakWeek, mapAfspraakItem } from './afspraak-model';
+import { SAfspraakDag, SAfspraakModel, SAfspraakWeek, SStatusNotification, mapAfspraakItem } from './afspraak-model';
 
-export const AFSPRAAK_STATE_TOKEN = new StateToken<SAfspraakModel>('afspraak');
+const STATE_NAME = 'afspraak';
+export const AFSPRAAK_STATE_TOKEN = new StateToken<SAfspraakModel>(STATE_NAME);
 const DEFAULT_STATE = { jaarWeken: undefined };
 
 @State<SAfspraakModel>({
@@ -31,9 +32,16 @@ export class AfspraakState extends AbstractState {
             return;
         }
 
-        return this.cachedUnwrappedGet<RAfspraakItem>(`afspraakitems\\${leerlingId}\\jaar\\${action.jaar}\\week\\${action.week}`)?.pipe(
+        return this.cachedGetAllPagesWithWrapper<RAfspraakItem>(
+            `afspraakitems\\${leerlingId}\\jaar\\${action.jaar}\\week\\${action.week}`
+        )?.pipe(
             tap((afspraakItems) => {
-                const sAfspraakWeek = this.createSAfspraakWeek(action.jaar, action.week, afspraakItems);
+                const sAfspraakWeek = this.createSAfspraakWeek(
+                    action.jaar,
+                    action.week,
+                    afspraakItems.items,
+                    afspraakItems.statusNotifications
+                );
                 if (ctx.getState().jaarWeken) {
                     ctx.setState(patch({ jaarWeken: insertOrUpdateItem((item) => item.jaarWeek, sAfspraakWeek) }));
                 } else {
@@ -66,7 +74,7 @@ export class AfspraakState extends AbstractState {
         return this.requestService
             .post<RAfspraakActieResultaat>('afspraakitems/uitvoeren', new RequestInformationBuilder().body(body).build())
             .pipe(
-                tap((actieResultaat) => this.verwerkAfspraakWijzigingen(ctx, actieResultaat.afspraakItemWijzigingen ?? [])),
+                tap((actieResultaat) => this.verwerkAfspraakWijzigingen(ctx, actieResultaat, action.jaarWeek)),
                 tap((actieResultaat) => this._store.dispatch(new KwtActieUitvoerenReady(actieResultaat.foutmelding))),
                 catchError(() => {
                     this._store.dispatch(new KwtActieUitvoerenReady('Er is iets fout gegaan.'));
@@ -75,11 +83,20 @@ export class AfspraakState extends AbstractState {
             );
     }
 
-    private verwerkAfspraakWijzigingen(ctx: StateContext<SAfspraakModel>, afspraakWijzigingen: RAfspraakItemWijziging[]) {
+    private verwerkAfspraakWijzigingen(
+        ctx: StateContext<SAfspraakModel>,
+        actieResultaat: RAfspraakActieResultaat,
+        initiatedFromJaarweek: string
+    ) {
         if (!ctx.getState().jaarWeken) return;
-
+        const afspraakWijzigingen: RAfspraakItemWijziging[] = actieResultaat.afspraakItemWijzigingen ?? [];
+        const statusNotifications: SStatusNotification[] = (actieResultaat.statusNotifications ?? []) as SStatusNotification[];
         ctx.setState(
             produce(ctx.getState(), (draft) => {
+                const notificationWeek: SAfspraakWeek | undefined = draft?.jaarWeken?.find(
+                    (afspraakWeek) => afspraakWeek.jaarWeek === initiatedFromJaarweek
+                );
+                if (notificationWeek) notificationWeek.statusNotications = statusNotifications;
                 afspraakWijzigingen.forEach((afspraakWijziging) => {
                     if (
                         !draft.jaarWeken ||
@@ -94,31 +111,40 @@ export class AfspraakState extends AbstractState {
                     const beginDatum = toLocalDateTime(afspraakWijziging.afspraakItem.beginDatumTijd);
                     const eindDatum = toLocalDateTime(afspraakWijziging.afspraakItem.eindDatumTijd);
                     const uniqueIdentifier = afspraakWijziging.afspraakItem.uniqueIdentifier;
-                    const jaarWeek = getJaarWeek(beginDatum);
+                    const jaarWeken = getJaarWeken(beginDatum, eindDatum);
 
-                    const weekIndex = draft.jaarWeken.findIndex((afspraakWeek) => afspraakWeek.jaarWeek === jaarWeek);
-                    if (weekIndex < 0) {
-                        // Indien we nog geen data van deze week ooit hebben opgehaald, hoeven we niets met dit afspraakitem.
+                    const jaarWekenState = draft.jaarWeken.filter((afspraakWeek) => {
+                        return jaarWeken.filter((jaarWeek) => afspraakWeek.jaarWeek === jaarWeek);
+                    });
+                    if (!jaarWekenState.length) {
+                        // Indien we nog geen data van deze weken ooit hebben opgehaald, hoeven we niets met dit afspraakitem.
                         return;
                     }
 
-                    const maandag = isMonday(beginDatum) ? beginDatum : previousMonday(beginDatum);
-                    const beginIndex = differenceInCalendarDays(beginDatum, maandag);
-                    const eindIndex = differenceInCalendarDays(eindDatum, maandag);
-                    const draftDagen = draft.jaarWeken[weekIndex].dagen;
-                    // Verwijder alle bestaande afspraak-items met hetzelfde id.
-                    // Bij een 'wijziging' voegen we de items daarna opnieuw toe.
-                    for (let dagIndex = beginIndex; dagIndex <= eindIndex; dagIndex++) {
-                        draftDagen[dagIndex].items = draftDagen[dagIndex].items.filter(
-                            (item) => item.uniqueIdentifier !== uniqueIdentifier
-                        );
+                    for (const jaarWeekIndex of jaarWekenState) {
+                        const draftDagen = jaarWeekIndex.dagen;
+                        // Verwijder alle bestaande afspraak-items met hetzelfde id.
+                        // Bij een 'wijziging' voegen we de items daarna opnieuw toe.
+                        for (const draftDag of draftDagen) {
+                            if (!draftDag) {
+                                continue;
+                            }
+                            draftDag.items = draftDag.items.filter((item) => item.uniqueIdentifier !== uniqueIdentifier);
+                        }
                     }
-
                     // Indien het item niet verwijderd had moeten worden: voeg hem maar weer toe.
                     if (!afspraakWijziging.isVerwijderd) {
                         mapAfspraakItem(afspraakWijziging.afspraakItem).forEach((sAfspraakItem) => {
+                            const jaarWeek = getJaarWeek(sAfspraakItem.beginDatumTijd);
+                            const jaarWeekToUpdate: WritableDraft<SAfspraakWeek> | undefined = jaarWekenState.find(
+                                (jaarWeekState) => jaarWeekState.jaarWeek === jaarWeek
+                            );
+                            if (!jaarWeekToUpdate) return;
+                            const maandag = isMonday(sAfspraakItem.beginDatumTijd)
+                                ? sAfspraakItem.beginDatumTijd
+                                : previousMonday(sAfspraakItem.beginDatumTijd);
                             const dagIndex = differenceInCalendarDays(sAfspraakItem.beginDatumTijd, maandag);
-                            draftDagen[dagIndex].items.push(sAfspraakItem);
+                            jaarWeekToUpdate.dagen[dagIndex]?.items.push(sAfspraakItem);
                         });
                     }
                 });
@@ -127,21 +153,31 @@ export class AfspraakState extends AbstractState {
     }
 
     @Action(SwitchContext)
-    override switchContext(ctx: StateContext<SAfspraakModel>) {
-        return ctx.setState(DEFAULT_STATE);
+    override switchContext(ctx: StateContext<SAfspraakModel>, action: SwitchContext) {
+        if (!action.initialContextSwitch) {
+            ctx.setState(DEFAULT_STATE);
+        }
     }
 
-    private createSAfspraakWeek(jaar: number, week: number, rAfspraakItems: RAfspraakItem[]): SAfspraakWeek {
+    private createSAfspraakWeek(
+        jaar: number,
+        week: number,
+        rAfspraakItems: RAfspraakItem[],
+        statusNotifications?: RStatusNotification[]
+    ): SAfspraakWeek {
         const maandag = getMaandagVanWeek(week, jaar);
         const afspraakDagen = this.createEmptyAfspraakDagen(maandag);
         rAfspraakItems.forEach((rAfspraakItem) => {
             mapAfspraakItem(rAfspraakItem).forEach((afspraakItem) => {
                 const dagIndex = differenceInCalendarDays(afspraakItem.beginDatumTijd, maandag);
-                afspraakDagen[dagIndex].items.push(afspraakItem);
+                // Als deze niet gevonden wordt in de lijst, dan is het afspraak over weken heen waarbij de
+                // context dus nog van vorige of volgende week kan zijn. Deze kunnen genegeerd worden.
+                afspraakDagen[dagIndex]?.items.push(afspraakItem);
             });
         });
+        const statusNotications: SStatusNotification[] | undefined = statusNotifications?.map((sn) => sn as SStatusNotification);
 
-        const SAfspraakWeek: SAfspraakWeek = { jaarWeek: jaar + '~' + week, dagen: afspraakDagen };
+        const SAfspraakWeek: SAfspraakWeek = { jaarWeek: jaar + '~' + week, dagen: afspraakDagen, statusNotications: statusNotications };
         return SAfspraakWeek;
     }
 
@@ -164,5 +200,9 @@ export class AfspraakState extends AbstractState {
 
     override getTimeout(): number {
         return CallService.AFSPRAKEN_TIMEOUT;
+    }
+
+    public static getName(): string {
+        return STATE_NAME;
     }
 }

@@ -1,0 +1,45 @@
+<div>
+    <p class="text-moderate text-content-small-semi" tabindex="0">{{ text() }}</p>
+
+    @if (toonSubtext()) {
+        @if (subtext(); as subtext) {
+            <div class="subtext-container" tabindex="0">
+                <p class="text-strong text-content-small-semi" [innerHTML]="subtext"></p>
+            </div>
+        } @else {
+            <div class="subtext-container">
+                <hmy-spinner />
+            </div>
+        }
+    }
+
+    @if (url(); as url) {
+        <div class="iframe-wrapper" tabindex="0" role="document">
+            <iframe class="iframe" [src]="url | safe" title="EULA"></iframe>
+        </div>
+    }
+
+    @if (foutmelding(); as foutmelding) {
+        <hmy-message-bar [message]="foutmelding" messageType="error" role="alert" tabindex="0" />
+    }
+
+    <div class="buttons">
+        <hmy-button
+            class="annuleren-button"
+            [label]="annulerenButtonText()"
+            [disabled]="loading()!"
+            (click)="annulerenClick()"
+            mode="quaternary" />
+        @if (loading()) {
+            <div class="spinner-button" [ngClass]="{ primary: isBevestigenPrimaryOrSecondary() }">
+                <hmy-spinner [isWhite]="isBevestigenPrimaryOrSecondary()" />
+            </div>
+        } @else {
+            <hmy-button
+                class="bevestigen-button"
+                [label]="bevestigenButtonText()"
+                [mode]="bevestigenButtonMode()"
+                (click)="bevestigenClick()" />
+        }
+    </div>
+</div>

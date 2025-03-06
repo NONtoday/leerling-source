@@ -7,7 +7,6 @@ import { NotificationColor } from '../notification.model';
 
 @Component({
     selector: 'hmy-notification-solid',
-    standalone: true,
     imports: [CommonModule, CssVarPipe],
     templateUrl: './notification-solid.component.html',
     styleUrls: ['../notification.scss'],

@@ -11,7 +11,6 @@
         <label for="onderwerpInput">Onderwerp:</label>
         <input
             #onderwerpInput
-            [tabindex]="tabindexNieuwBerichtVanafOnderwerp"
             [placeholder]="deviceService.isTabletOrDesktop() ? 'Waar gaat het over? (verplicht)' : 'Waar gaat het over?'"
             formControlName="onderwerp"
             aria-label="onderwerp"
@@ -19,13 +18,11 @@
             name="onderwerp"
             autocomplete="off"
             maxlength="1024"
-            type="text"
-            tabindex="10" />
+            type="text" />
     </div>
     <div class="focus-veld inhoud">
         <textarea
             id="inhoudInput"
-            [tabindex]="tabindexNieuwBerichtVanafOnderwerp"
             formControlName="inhoud"
             aria-label="inhoud"
             name="inhoud"

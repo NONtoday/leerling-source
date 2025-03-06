@@ -13,8 +13,9 @@
                 <hmy-vak-icon [vaknaam]="view.vakToetsdossier.vakNaam!" />
                 <span>{{ view.vakToetsdossier.vakNaam }}</span>
             </div>
-            @if (view.tabs.length > 1 && view.vakToetsdossier.vakNaam) {
-                <hmy-switch-group>
+
+            <hmy-switch-group>
+                @if (view.tabs.length > 1) {
                     @for (tab of view.tabs; track $index) {
                         <hmy-switch
                             [active]="view.actieveTab === tab"
@@ -24,8 +25,10 @@
                             tabindex="100"
                             role="button" />
                     }
-                </hmy-switch-group>
-                <div class="tabs">
+                }
+            </hmy-switch-group>
+            <div class="tabs">
+                @if (view.tabs.length > 1) {
                     @for (tab of view.tabs; track $index) {
                         <hmy-tab
                             [attr.aria-selected]="view.actieveTab === tab"
@@ -35,9 +38,18 @@
                             tabindex="100"
                             role="button" />
                     }
-                    <div class="filler"></div>
+                }
+                <div class="filler">
+                    @if (tabletPortait$) {
+                        <ng-container class=".tabletFilterButton" *ngTemplateOutlet="filterMobileIcon"></ng-container>
+                    }
                 </div>
-            }
+            </div>
+
+            <div class="outline-btn" #resultatenFilter (click)="openFilter()" tabindex="100" aria-label="resultaat filter opties">
+                <i class="zichtbaar" hmyIcon="zichtbaar" size="medium"></i>
+                <i class="chevron-onder" hmyIcon="chevronOnder" size="smallest"></i>
+            </div>
         </div>
         @if (view.actieveTab === 'Examen' && view.vakToetsdossier.examendossier; as dossier) {
             <sl-examenresultaten [examendossier]="dossier" />
@@ -55,11 +67,11 @@
             <div class="geen-resultaten">
                 <sl-geen-data>
                     @if (!(view | heeftAndereVakResultaten)) {
-                        <p tabindex="100">Er zijn nog geen cijfers ingevoerd voor dit vak.</p>
+                        <p tabindex="100">Er zijn geen cijfers ingevoerd voor dit vak.</p>
                     }
                     @if (view | heeftAndereVakResultaten) {
                         <p tabindex="100">
-                            Er zijn nog geen cijfers ingevoerd. Kijk
+                            Er zijn geen cijfers ingevoerd. Kijk
                             {{ view.actieveTab === 'Rapport' ? 'in je examendossier.' : 'bij het andere niveau.' }}
                         </p>
                     }
@@ -71,4 +83,24 @@
             <hmy-spinner />
         </div>
     }
+}
+<ng-template #filterMobileIcon>
+    <div #tabletFilterIcon (click)="openFilter()" tabindex="100" aria-label="resultaten filter opties">
+        <i class="header-filter-icon" hmyIcon="zichtbaar" color="action-neutral-normal" size="medium"></i>
+    </div>
+</ng-template>
+@defer (on idle) {
+    <ng-template #filterOptions>
+        <div class="filter-options" [cdkTrapFocusAutoCapture]="true" role="dialog" cdkTrapFocus>
+            <div class="title">Weergave</div>
+            <div class="filter-item" (click)="flipKolommen($event)" tabindex="0">
+                <hmy-checkbox
+                    [checked]="metResultaatKolommen()"
+                    [customTabIndex]="-1"
+                    (click)="flipKolommen($event)"
+                    aria-label="Aankomende toetsen tonen"></hmy-checkbox>
+                <span class="label-text">Aankomende toetsen tonen</span>
+            </div>
+        </div>
+    </ng-template>
 }

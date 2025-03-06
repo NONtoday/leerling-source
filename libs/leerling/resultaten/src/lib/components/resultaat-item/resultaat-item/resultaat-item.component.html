@@ -6,7 +6,7 @@
             }
             <span class="titel">{{ resultaatItem().titel }}</span>
             @if (resultaatItem().titelPostfix) {
-                <span class="titel-postfix">&nbsp;({{ resultaatItem().titelPostfix }})</span>
+                <span class="titel-postfix">&nbsp;{{ resultaatItem().titelPostfix }}</span>
             }
         </div>
         @if (resultaatItem().subtitel) {
@@ -18,8 +18,8 @@
             @if (resultaatItem().toetstype === 'SamengesteldeToetsKolom') {
                 <i class="icon" size="small" hmyIcon="deeltoets" hmyTooltip="Toets bevat deeltoetsen"></i>
             }
-            @if (resultaatItem().isHerkansing) {
-                <i class="icon herkansing" size="small" hmyIcon="herkansing" hmyTooltip="Cijfer is een herkansing"></i>
+            @if (resultaatItem().isHerkansing && resultaatItem().resultaat !== '') {
+                <i class="icon herkansing" [hmyTooltip]="resultaatItem().pogingTooltipOmschrijving" size="small" hmyIcon="herkansing"></i>
             }
             @if (resultaatItem().heeftOpmerking) {
                 <i class="icon opmerking" size="small" hmyIcon="reacties" hmyTooltip="Cijfer heeft een opmerking"></i>
@@ -30,7 +30,7 @@
                 <div class="weging">{{ resultaatItem().weging }}</div>
             }
 
-            <div class="cijfer {{ resultaatItem().isVoldoende }}" [hmyTooltip]="tooltip.bind(this)">
+            <div class="cijfer {{ resultaatItem().isVoldoende }}" [hmyTooltip]="tooltip()">
                 <span>{{ resultaatItem().resultaat }}</span>
             </div>
         </div>

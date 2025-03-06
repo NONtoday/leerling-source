@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { Store } from '@ngxs/store';
 import { REloRestricties } from 'leerling-codegen';
 import { AccountContextMetRechten, RechtenSelectors, SRechten } from 'leerling/store';
-import { isEqual } from 'lodash-es';
+import { isEmpty, isEqual } from 'lodash-es';
 import { Observable, Subject, distinctUntilChanged, filter, map, merge, pairwise, startWith } from 'rxjs';
 
 export interface AccountContextSwitchedInfo {
@@ -70,10 +70,26 @@ export class RefreshService {
      * de vereiste rechten zijn niet aanwezig, dan wordt er een redirect uitgevoerd naar home. Gebruik deze methode
      * bij het top level component van een feature.
      *
-     * @param rechten De benodigde rechten voor de feature.
+     * @param requiredRechten De benodigde rechten voor de feature.
      * @returns void Deze observable emit enkel als de context is veranderd én de juiste rechten aanwezig zijn.
      */
-    onRefreshOrRedirectHome(rechten: Array<keyof REloRestricties>): Observable<RefreshReason> {
+    onRefreshOrRedirectHome(requiredRechten: Array<keyof REloRestricties>): Observable<RefreshReason> {
+        return this.onRefreshOrRedirectHomeVerify((current: AccountContextMetRechten) =>
+            requiredRechten.every((recht) => current.rechten[recht])
+        );
+    }
+
+    /**
+     * Luistert naar wanneer er 'verder' wordt gegaan. Bijvoorbeeld bij het heropenen van de app, of wanneer er van account geswitcht wordt. Voert daarbij  een rechtencheck uit. Als er wordt geswitcht, maar
+     * de vereiste rechten zijn niet aanwezig, dan wordt er een redirect uitgevoerd naar home. Gebruik deze functie
+     * bij het top level component van een feature als je een complexere rechtencontrole wil uitvoeren.
+     *
+     * @param verifyRechtenFn De functie om de rechten te controleren op basis van de huidige AccountContextMetRechten.
+     * @returns void Deze observable emit enkel als de context is veranderd én de juiste rechten aanwezig zijn.
+     */
+    onRefreshOrRedirectHomeVerify(
+        verifyRechtenFn: (currentAccount: Required<AccountContextMetRechten>) => boolean
+    ): Observable<RefreshReason> {
         return merge(
             this._resuming$.asObservable().pipe(map(() => RefreshReason.RESUME)),
             this._store.select(RechtenSelectors.getAccountContextMetRechten()).pipe(
@@ -83,9 +99,11 @@ export class RefreshService {
                 startWith(undefined),
                 // ontvang de vorige en de huidige emitted value
                 pairwise(),
+                // alleen doorgaan met rechten, leeg rechten object impliceert dat het nog niet opgevraagd is
+                filter(([, current]) => !isEmpty(current?.rechten)),
                 // alleen doorgaan als de vereiste rechten aanwezig zijn
                 filter(([, current]: [Required<AccountContextMetRechten>, Required<AccountContextMetRechten>]) => {
-                    const heeftRechten = rechten.every((recht) => current.rechten[recht]);
+                    const heeftRechten = verifyRechtenFn(current);
                     if (!heeftRechten) {
                         // huidige account heeft niet de vereiste rechten: redirect naar home
                         this._router.navigate(['']);

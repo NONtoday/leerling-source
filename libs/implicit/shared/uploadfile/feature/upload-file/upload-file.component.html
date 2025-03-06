@@ -1,0 +1,30 @@
+@if (state() === 'uploading') {
+    <div class="upload">
+        <hmy-spinner />
+        <ng-container *ngTemplateOutlet="filename"></ng-container>
+        <div class="progressbar-container">
+            <div class="progressbar" [style.width]="progress()" [attr.aria-label]="progressAriaLabel()" tabindex="0"></div>
+        </div>
+        <i class="verwijderen" (click)="cancel()" hmyIcon="verwijderen" size="medium"></i>
+    </div>
+} @else if (state() === 'processing') {
+    <div class="upload">
+        <hmy-spinner />
+        <div><span class="verwerken">Bezig met verwerken van </span><ng-container *ngTemplateOutlet="filename"></ng-container></div>
+        <i class="verwijderen" (click)="cancel()" hmyIcon="verwijderen" size="medium"></i>
+    </div>
+} @else {
+    <div class="upload">
+        <i hmyIcon="waarschuwing" color="action-negative-normal" size="medium"></i>
+        <ng-container *ngTemplateOutlet="filename"></ng-container>
+        <div class="retry" (click)="retry()" tabindex="0" role="button">
+            <i class="verversen" hmyIcon="verversen" size="medium"></i>
+            <span>Opnieuw</span>
+        </div>
+    </div>
+    <span class="error" tabindex="0"> Er is iets fout gegaan tijdens het uploaden. </span>
+}
+
+<ng-template #filename>
+    <span class="filename" tabindex="0"> {{ this.file().name }} </span>
+</ng-template>

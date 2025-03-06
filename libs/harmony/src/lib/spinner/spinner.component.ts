@@ -6,8 +6,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostBinding, inj
     template: ``,
     styleUrls: ['./spinner.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [CommonModule],
-    standalone: true
+    imports: [CommonModule]
 })
 export class SpinnerComponent implements OnInit {
     private _changeDetector = inject(ChangeDetectorRef);

@@ -1,20 +1,55 @@
 <div class="header">
     <div class="icon-titel">
-        @if (!showIconInPill() && registratie().vakOfTitel; as vakOfTitel) {
-            <i [hmyIcon]="vakOfTitel | vakToIcon" size="small"></i>
+        @if (toonIconAlsTitel()) {
+            <i class="vak-icon" [hmyIcon]="titel() | vakToIcon" size="small"></i>
         }
         <span class="titel ellipsis text-content-semi text-strong">{{ titel() }}</span>
+        @if (!this.registratie().afgehandeld) {
+            <span class="niet-afgehandeld">Niet afgehandeld</span>
+        }
     </div>
 </div>
 
 <span class="datum-info text-content-small text-moderate">{{ datuminfo() }} </span>
-@if (showIconInPill()) {
-    <hmy-icon-pill
-        [icon]="registratie().vakOfTitel ?? '' | vakToIcon"
-        [text]="registratie().vakOfTitel ?? ''"
-        type="outline"
-        color="neutral"></hmy-icon-pill>
+@if (minutenGemistInfo()) {
+    <span class="minuten-gemist-info text-content-small text-moderate">{{ minutenGemistInfo() }} </span>
 }
-@if (registratie().opmerkingen; as opmerkingen) {
-    <div class="opmerking text-content-small text-strong">{{ opmerkingen }}</div>
+
+@if (toonVakOnderDatum() && vakTitelOfOmschrijving(); as vakOfTitel) {
+    <hmy-icon-pill class="vak-pill" [icon]="vakOfTitel | vakToIcon" [text]="vakOfTitel" type="outline" color="neutral" />
+} @else if (aantalAfspraken() > 1) {
+    <div class="meerdere-afspraken">
+        <div
+            class="gemiste-lessen"
+            [tabIndex]="0"
+            [attr.aria-expanded]="afsprakenOpen()"
+            (click)="afsprakenOpen.set(!afsprakenOpen())"
+            role="button">
+            <i class="chevron" [class.open]="afsprakenOpen()" hmyIcon="chevronRechts" size="small"></i> {{ aantalAfspraken() }} gemiste
+            lessen
+        </div>
+        <div class="afspraken-container" [@collapse]="{ value: !afsprakenOpen() }">
+            <!-- Nodig om te zorgen dat de padding niet overflowed in collapsed state -->
+            <div class="flex-padding">
+                @for (element of datumAfspraken(); track element.datum) {
+                    <div class="dag-afspraken">
+                        @if (datumAfspraken().length > 1) {
+                            <span class="datum" [tabIndex]="0">{{ element.datum }}</span>
+                        }
+
+                        @for (afspraak of element.afspraken; track $index) {
+                            <div class="afspraak" [tabIndex]="0">
+                                <span [style.width]="tijdspanneWidth()">{{ afspraak.tijdspanne }}</span>
+                                <hmy-icon-pill
+                                    [icon]="afspraak.vakOfTitel | vakToIcon"
+                                    [text]="afspraak.vakOfTitel"
+                                    type="outline"
+                                    color="neutral" />
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
 }

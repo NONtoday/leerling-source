@@ -1,0 +1,20 @@
+<div class="extensie">
+    @if (url()) {
+        {{ extensie() }}
+    } @else {
+        <hmy-spinner />
+    }
+</div>
+<div class="inlevering">
+    <div class="omschrijving">{{ omschrijving() }}</div>
+    @if (ondertitel(); as ondertitel) {
+        <div class="ondertitel">{{ ondertitel }}</div>
+    }
+</div>
+@if (isVerwijderen()) {
+    <hmy-spinner />
+} @else if (toonVerwijderKnop()) {
+    <div class="verwijderen" [attr.aria-label]="verwijderAriaLabel()" (click)="verwijder($event)" tabindex="0" role="button">
+        <i hmyIcon="verwijderen" size="medium"></i>
+    </div>
+}

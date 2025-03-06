@@ -1,7 +1,7 @@
-@for (item of sortedItems; track item.id) {
+@for (item of sortedItems(); track item.id) {
     <sl-studiewijzer-item
         [item]="item"
-        [toonAfvinkKnop]="toonAfvinkKnop()"
+        [toonAfvinkKnop]="toonAfvinkKnop() && !isStacked()"
         [style.top]="$index | studiewijzerItemTop: isStacked()"
         [ngClass]="{ 'neutral-none-bg': neutralNoneBg() }"
         (toggleAfgevinkt)="toggleAfgevinkt($event)"

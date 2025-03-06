@@ -3,7 +3,6 @@ import { Injectable, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import Bugsnag from '@bugsnag/browser';
 import { Store } from '@ngxs/store';
-import { DeviceService } from 'harmony';
 import { AddErrorMessage, AddInfoMessage, AddSuccessMessage, AddWarningMessage, InfoMessagesSelectors, SInfoMessage } from 'leerling/store';
 import { ToastrService } from 'ngx-toastr';
 import { Observable } from 'rxjs';
@@ -14,7 +13,6 @@ import { Observable } from 'rxjs';
 export class InfoMessageService {
     private _store = inject(Store);
     private _toastr = inject(ToastrService);
-    private _deviceService = inject(DeviceService);
 
     message$: Observable<SInfoMessage | undefined> = this._store.select(InfoMessagesSelectors.getInfoMessages());
 
@@ -65,7 +63,7 @@ export class InfoMessageService {
     }
 
     private sendToBugsnag(error: HttpErrorResponse) {
-        if (error.status !== 401) {
+        if (error.status !== 401 && error.status !== 0) {
             Bugsnag.notify(error);
         }
     }

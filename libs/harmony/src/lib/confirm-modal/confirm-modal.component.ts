@@ -1,4 +1,3 @@
-import { CdkTrapFocus } from '@angular/cdk/a11y';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, EventEmitter, OnInit, Output, inject, input } from '@angular/core';
 import { IconWaarschuwing, provideIcons } from 'harmony-icons';
@@ -7,8 +6,7 @@ import { ModalService } from '../overlay/modal/service/modal.service';
 
 @Component({
     selector: 'hmy-confirm-modal',
-    standalone: true,
-    imports: [CommonModule, ButtonComponent, CdkTrapFocus],
+    imports: [CommonModule, ButtonComponent],
     providers: [provideIcons(IconWaarschuwing)],
     templateUrl: './confirm-modal.component.html',
     styleUrl: './confirm-modal.component.scss',
@@ -39,4 +37,4 @@ export class ConfirmModalComponent implements OnInit {
     }
 }
 
-type ConfirmResult = 'Positive' | 'Negative' | 'Closed';
+export type ConfirmResult = 'Positive' | 'Negative' | 'Closed';

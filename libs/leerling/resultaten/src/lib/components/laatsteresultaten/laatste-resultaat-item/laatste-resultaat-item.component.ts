@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input, inject, output } from '@angular/core';
 import { collapseOnLeaveAnimation, expandOnEnterAnimation } from 'angular-animations';
-import { DeviceService, IconDirective } from 'harmony';
+import { DeviceService } from 'harmony';
 import { Observable } from 'rxjs';
 import { LaatsteResultaat } from '../../../services/laatsteresultaten/laatsteresultaten-model';
 import { AbstractResultaatMetDetailsComponent } from '../../abstract-resultaat-met-details.component';
@@ -16,8 +16,7 @@ export const LAATSTE_RESULTAAT_ITEM_COMPONENT_SELECTOR = 'sl-laatste-resultaat-i
 
 @Component({
     selector: LAATSTE_RESULTAAT_ITEM_COMPONENT_SELECTOR,
-    standalone: true,
-    imports: [CommonModule, IconDirective, ResultaatItemComponent, ResultaatItemDetailComponent, ToResultaatItemPipe],
+    imports: [CommonModule, ResultaatItemComponent, ResultaatItemDetailComponent],
     templateUrl: './laatste-resultaat-item.component.html',
     styleUrls: ['../../abstract-resultaat-met-details.component.scss', './laatste-resultaat-item.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,

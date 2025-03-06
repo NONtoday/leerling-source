@@ -5,9 +5,9 @@ import {
     ChangeDetectionStrategy,
     Component,
     DestroyRef,
+    OnInit,
     ViewChild,
     ViewContainerRef,
-    effect,
     inject,
     input,
     output,
@@ -43,7 +43,6 @@ export type AnimationState = 'fade-visible' | 'fade-hidden' | 'slide-visible' | 
 
 @Component({
     selector: 'hmy-popup',
-    standalone: true,
     imports: [CommonModule],
     template: '<ng-template #content></ng-template>',
     styleUrls: ['./popup.component.scss'],
@@ -57,7 +56,7 @@ export type AnimationState = 'fade-visible' | 'fade-hidden' | 'slide-visible' | 
     },
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class PopupComponent implements AfterViewInit {
+export class PopupComponent implements AfterViewInit, OnInit {
     @ViewChild('content', { read: ViewContainerRef, static: true }) contentRef: ViewContainerRef;
     private readonly router = inject(Router);
     readonly destroyRef = inject(DestroyRef);
@@ -80,25 +79,19 @@ export class PopupComponent implements AfterViewInit {
                 takeUntilDestroyed()
             )
             .subscribe(() => this.closePopup.emit());
-        effect(
-            () => {
-                this.viewContainerRef.element.nativeElement.style.setProperty('--width', this.settings().width);
-                this.viewContainerRef.element.nativeElement.style.setProperty('--max-width', this.settings().maxWidth);
-
-                const connectedLocation = this.connectedElement().element.nativeElement.getBoundingClientRect() as BoundingClientRect;
-                const popupLocation = this.viewContainerRef.element.nativeElement.getBoundingClientRect() as BoundingClientRect;
-
-                this.top.set(calculateTop(connectedLocation, popupLocation, this.settings()));
-                const left = this.settings().left ?? calculateLeft(connectedLocation, popupLocation, this.settings());
-                this.left.set(left);
-            },
-            { allowSignalWrites: true }
-        );
         this.destroyRef.onDestroy(() => (this.isDestroyed = true));
     }
 
     ngAfterViewInit(): void {
         this.setupListeners();
+        this.updatePosition();
+    }
+
+    ngOnInit(): void {
+        this.viewContainerRef.element.nativeElement.style.setProperty('--width', this.settings().width);
+        this.viewContainerRef.element.nativeElement.style.setProperty('--max-width', this.settings().maxWidth);
+        this.viewContainerRef.element.nativeElement.style.setProperty('--max-height', this.settings().maxHeight);
+        this.viewContainerRef.element.nativeElement.style.setProperty('--overflow', this.settings().overflow);
     }
 
     private setupListeners() {
@@ -146,9 +139,17 @@ export class PopupComponent implements AfterViewInit {
             });
     }
 
+    private updatePosition() {
+        const connectedLocation = this.connectedElement().element.nativeElement.getBoundingClientRect() as BoundingClientRect;
+        const popupLocation = this.viewContainerRef.element.nativeElement.getBoundingClientRect() as BoundingClientRect;
+        this.top.set(calculateTop(connectedLocation, popupLocation, this.settings()));
+        const left = this.settings().left ?? calculateLeft(connectedLocation, popupLocation, this.settings());
+        this.left.set(left);
+    }
+
     onAnimationDone() {
-        if ((!this.isDestroyed && this.animationState() === 'fade-hidden') || this.animationState() === 'slide-hidden') {
-            this.closePopup.emit();
+        if (!this.isDestroyed && (this.animationState() === 'fade-hidden' || this.animationState() === 'slide-hidden')) {
+            this.closed();
         }
     }
 
@@ -156,6 +157,10 @@ export class PopupComponent implements AfterViewInit {
         match(this.settings().animation)
             .with('fade', () => this.animationState.set('fade-hidden'))
             .with('slide', () => this.animationState.set('slide-hidden'))
-            .with('none', () => this.closePopup.emit())
+            .with('none', () => this.closed())
             .exhaustive();
+
+    private closed() {
+        this.closePopup.emit();
+    }
 }

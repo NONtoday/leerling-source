@@ -14,7 +14,7 @@ import {
     input
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { DeviceService, IconDirective } from 'harmony';
+import { ColorToken, DeviceService } from 'harmony';
 import { IconName, IconPijlLinks, provideIcons } from 'harmony-icons';
 import { fromEvent, map, startWith } from 'rxjs';
 import { AccessibilityService } from '../accessibility/accessibility.service';
@@ -22,7 +22,7 @@ import { SidebarHeaderComponent } from '../sidebar-header/sidebar-header.compone
 import { SidebarMobileHeaderComponent } from '../sidebar-mobile-header/sidebar-mobile-header.component';
 import { SidebarService } from '../sidebar/service/sidebar.service';
 import { CloseSidebarUtil } from '../sidebar/sidebar-model';
-import { HeaderType } from '../sidebar/sidebar-settings';
+import { HeaderDevice, HeaderType } from '../sidebar/sidebar-settings';
 
 const PAGE_ANIMATION = trigger('pageAnimation', [
     transition('void => slide-visible', [
@@ -36,11 +36,14 @@ const PAGE_ANIMATION = trigger('pageAnimation', [
 
 type AnimationState = 'slide-visible' | 'slide-hidden';
 export type IconInput = { name: IconName; onClick: () => void };
+export type TitleIconInput = { name: IconName; color: ColorToken };
+
+const MOBILE_HEADER_TYPES: HeaderDevice[] = ['all', 'mobilePortrait'];
+const DESKTOP_HEADER_TYPES: HeaderDevice[] = ['all', 'tabletDesktop'];
 
 @Component({
     selector: 'sl-sidebar-page',
-    standalone: true,
-    imports: [CommonModule, SidebarHeaderComponent, SidebarMobileHeaderComponent, IconDirective],
+    imports: [CommonModule, SidebarHeaderComponent, SidebarMobileHeaderComponent],
     templateUrl: './sidebar-page.component.html',
     styleUrls: ['./sidebar-page.component.scss'],
     animations: [PAGE_ANIMATION],
@@ -57,17 +60,21 @@ export class SidebarPageComponent implements AfterViewInit {
     private _accessibilityService = inject(AccessibilityService);
 
     public title = input.required<string>();
+    public headerDevice = input.required<HeaderDevice>();
     public headerType = input.required<HeaderType>();
     public showBackButton = input(false);
     public hideMobileBackButton = input(false);
     public iconLeft = input<IconInput | undefined>(undefined);
     public iconsRight = input<IconInput[]>([]);
+    public titleIcon = input<TitleIconInput | undefined>(undefined);
     public vakIcon = input<IconName | undefined>(undefined);
     public closeSidebarUtil = input.required<CloseSidebarUtil>();
 
     public isTabletOrDesktop = toSignal(this._deviceService.isTabletOrDesktop$);
-    public toonMobileHeader = computed(() => !this.isTabletOrDesktop() && this.headerType() !== 'none');
     public showMobileBackButton = computed(() => this.showBackButton() || !this.hideMobileBackButton());
+
+    public toonMobileHeader = computed(() => !this.isTabletOrDesktop() && MOBILE_HEADER_TYPES.includes(this.headerDevice()));
+    public toonDesktopHeader = computed(() => this.isTabletOrDesktop() && DESKTOP_HEADER_TYPES.includes(this.headerDevice()));
 
     public scrollY = toSignal(
         fromEvent(this.elementRef.nativeElement, 'scroll').pipe(

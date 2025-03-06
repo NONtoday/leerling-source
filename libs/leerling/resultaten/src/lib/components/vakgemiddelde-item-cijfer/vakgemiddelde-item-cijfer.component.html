@@ -4,7 +4,7 @@
     }
     <span
         class="cijfer"
-        [class.onvoldoende]="formattedResultaat && !bijzonderheid && !isVoldoende"
+        [class.onvoldoende]="formattedResultaat && isVoldoende === false && bijzonderheid !== 'TeltNietMee'"
         [class.neutraal]="formattedResultaat && bijzonderheid === 'TeltNietMee'"
         >{{ formattedResultaat ?? '-' }}</span
     >

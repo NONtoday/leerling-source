@@ -1,9 +1,9 @@
-import { AnimationEvent } from '@angular/animations';
+import { animate, AnimationEvent, style, transition, trigger } from '@angular/animations';
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ElementRef, ViewChild, ViewContainerRef, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, inject, input, signal, ViewChild, ViewContainerRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { NavigationStart, Router } from '@angular/router';
-import { fadeInOnEnterAnimation, fadeOutAnimation, slideInRightOnEnterAnimation, slideOutRightAnimation } from 'angular-animations';
+import { ResolveStart, Router } from '@angular/router';
+import { fadeInOnEnterAnimation, fadeOutAnimation, slideInRightOnEnterAnimation } from 'angular-animations';
 import { debounceTime, filter } from 'rxjs';
 import { KeyPressedService } from '../keypressed/keypressed.service';
 import { CloseSidebarUtil } from './sidebar-model';
@@ -18,14 +18,13 @@ const ANIMATIONS = [
     slideInRightOnEnterAnimation({
         duration: 300
     }),
-    slideOutRightAnimation({
-        duration: 300
-    })
+    trigger('slideOutRight', [transition('* => *', [animate('300ms ease', style({ transform: 'translateX(100%)' }))])])
 ];
 
+export const SIDEBAR_COMPONENT_SELECTOR = 'sl-sidebar';
+
 @Component({
-    selector: 'sl-sidebar',
-    standalone: true,
+    selector: SIDEBAR_COMPONENT_SELECTOR,
     imports: [CommonModule],
     templateUrl: './sidebar.component.html',
     styleUrls: ['./sidebar.component.scss'],
@@ -45,7 +44,7 @@ export class SidebarComponent {
     constructor() {
         this._router.events
             .pipe(
-                filter((event) => event instanceof NavigationStart),
+                filter((event) => event instanceof ResolveStart),
                 takeUntilDestroyed()
             )
             .subscribe(() => this.closeSidebarUtil().requestClose('navigation'));
@@ -72,7 +71,7 @@ export class SidebarComponent {
 
     fadedOut(event: AnimationEvent) {
         if (event.toState && event.toState !== 'void') {
-            this.closeSidebarUtil().finalizeClose(true);
+            this.closeSidebarUtil().finalizeClose(true, 'external');
         }
     }
 

@@ -1,11 +1,18 @@
 <sl-header />
-<sl-scrollable-title class="scrollable-title title" [title]="'Registraties'" tabIndex="0" role="text" />
-<div class="content" id="mainContent" tabindex="-1">
+<sl-scrollable-title class="scrollable-title title" [title]="'Afwezigheid'" tabIndex="0" role="text" />
+<div class="content" [class.met-afwezig-melden]="toonAbsentieToevoegen()" tabindex="-1">
     <sl-registraties
-        [registratieCategorieeen]="registratieCategorieeen()"
+        *ngIf="heeftRegistratiesRechten()"
+        [registraties]="registraties()"
         [tijdspan]="tijdspan()"
+        [isLoading]="registratiesIsLoading()"
         (onSelectTijdspan)="selectTijdspan($event)" />
-    <sl-maatregelen [maatregelToekenningen]="maatregelToekenningen()" />
+    <sl-maatregelen *ngIf="heeftMaatregelRechten()" [maatregelToekenningen]="maatregelToekenningen()" />
 </div>
+@if (toonAbsentieToevoegen()) {
+    <div class="afwezig-melden">
+        <hmy-button (click)="naarAfwezigMelden()" iconLeft="kalenderToevoegen" mode="secondary" label="Afwezig melden" />
+    </div>
+}
 
 <sl-tab-bar [fixedToBottom]="true" />

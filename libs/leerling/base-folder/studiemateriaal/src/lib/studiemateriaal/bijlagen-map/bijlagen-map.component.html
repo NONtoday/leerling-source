@@ -5,26 +5,41 @@
 </div>
 
 @if (isOpen()) {
-    @for (bijlage of jaarbijlageMap()?.jaarbijlagen; track bijlage.bijlage.id) {
-        <sl-bijlage
-            [@collapseOnLeave]
-            [@expandOnEnter]
-            [omschrijving]="bijlage.naam"
-            [uri]="bijlage.uri"
-            [extension]="bijlage.extension"
-            (bijlageOpened)="bijlageOpened.emit(bijlage)"
-            tabindex="0" />
+    @if (jaarbijlageMap()?.jaarbijlagen; as jaarbijlagen) {
+        @for (bijlage of jaarbijlagen; track bijlage.bijlage.id) {
+            <sl-bijlage
+                [@collapseOnLeave]
+                [@expandOnEnter]
+                [omschrijving]="bijlage.naam"
+                [uri]="bijlage.uri"
+                [extension]="bijlage.extension"
+                (bijlageOpened)="bijlageOpened.emit(bijlage)"
+                tabindex="0" />
+        }
+        @if (jaarbijlagen.length === 0) {
+            <div class="empty-state" tabindex="0">
+                <p>Er zijn geen jaarbijlagen toegevoegd</p>
+            </div>
+        }
     }
 
-    @for (leermiddel of leermiddelen(); track leermiddel.uuid) {
-        <sl-bijlage
-            [@collapseOnLeave]
-            [@expandOnEnter]
-            [omschrijving]="leermiddel.titel"
-            [uri]="leermiddel.uri"
-            [methode]="leermiddel.methode"
-            [uitgever]="leermiddel.uitgever"
-            (bijlageOpened)="leermiddelOpened.emit(leermiddel)"
-            tabindex="0" />
+    @if (leermiddelen(); as leermiddelen) {
+        @for (leermiddel of leermiddelen; track leermiddel.uuid) {
+            <sl-bijlage
+                [@collapseOnLeave]
+                [@expandOnEnter]
+                [omschrijving]="leermiddel.titel"
+                [uri]="leermiddel.uri"
+                [methode]="leermiddel.methode"
+                [uitgever]="leermiddel.uitgever"
+                (bijlageOpened)="leermiddelOpened.emit(leermiddel)"
+                tabindex="0" />
+        }
+
+        @if (leermiddelen.length === 0) {
+            <div class="empty-state" tabindex="0">
+                <p>Er zijn geen leermiddelen toegevoegd</p>
+            </div>
+        }
     }
 }

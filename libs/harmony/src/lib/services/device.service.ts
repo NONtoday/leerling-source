@@ -1,6 +1,6 @@
-import { BreakpointObserver, BreakpointState } from '@angular/cdk/layout';
+import { BreakpointObserver } from '@angular/cdk/layout';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { distinctUntilChanged, map, startWith } from 'rxjs/operators';
 import { shareReplayLastValue } from '../operators/shareReplayLastValue.operator';
 
@@ -23,17 +23,9 @@ export class DeviceService {
     private mediaQueryTablet: MediaQueryList = window.matchMedia(tabletQuery);
     private mediaQueryPhone: MediaQueryList = window.matchMedia(phoneQuery);
 
-    public onDeviceChange$: Observable<BreakpointState>;
-    public isTabletOrDesktop$: Observable<boolean>;
-    public isPhoneOrTablet$: Observable<boolean>;
-    public isPhoneOrTabletPortrait$: Observable<boolean>;
-    public isPhone$: Observable<boolean>;
-    public isDesktop$: Observable<boolean>;
-
-    constructor() {
-        const breakpointObserver = inject(BreakpointObserver);
-
-        this.onDeviceChange$ = breakpointObserver.observe([desktopQuery, tabletQuery, tabletPortraitQuery, phoneQuery]).pipe(
+    onDeviceChange$ = inject(BreakpointObserver)
+        .observe([desktopQuery, tabletQuery, tabletPortraitQuery, phoneQuery])
+        .pipe(
             startWith({
                 breakpoints: {
                     [phoneQuery]: this.isPhone(),
@@ -46,34 +38,60 @@ export class DeviceService {
             shareReplayLastValue()
         );
 
-        this.isTabletOrDesktop$ = this.onDeviceChange$.pipe(
-            map((state) => state.breakpoints[tabletQuery] || state.breakpoints[desktopQuery]),
-            distinctUntilChanged()
-        );
+    isTabletOrDesktop$ = this.onDeviceChange$.pipe(
+        map((state) => state.breakpoints[tabletQuery] || state.breakpoints[desktopQuery]),
+        distinctUntilChanged()
+    );
+    isDesktop$ = this.onDeviceChange$.pipe(
+        map((state) => state.breakpoints[desktopQuery]),
+        distinctUntilChanged()
+    );
 
-        this.isDesktop$ = this.onDeviceChange$.pipe(
-            map((state) => state.breakpoints[desktopQuery]),
-            distinctUntilChanged()
-        );
+    isPhoneOrTablet$ = this.onDeviceChange$.pipe(
+        map((state) => state.breakpoints[phoneQuery] || state.breakpoints[tabletPortraitQuery] || state.breakpoints[tabletQuery]),
+        startWith(this.isPhoneOrTablet()),
+        shareReplayLastValue()
+    );
+    isPhoneOrTabletPortrait$ = this.onDeviceChange$.pipe(
+        map((state) => state.breakpoints[phoneQuery] || state.breakpoints[tabletPortraitQuery]),
+        startWith(this.isPhoneOrTabletPortrait()),
+        shareReplayLastValue()
+    );
+    isTabletPortrait$ = this.onDeviceChange$.pipe(
+        map((state) => state.breakpoints[tabletPortraitQuery]),
+        startWith(this.isTabletPortrait()),
+        shareReplayLastValue()
+    );
+    isPhone$ = this.onDeviceChange$.pipe(
+        map((state) => state.breakpoints[phoneQuery]),
+        startWith(this.isPhone()),
+        shareReplayLastValue()
+    );
+    isTabletPortait$ = this.onDeviceChange$.pipe(
+        map((state) => state.breakpoints[tabletPortraitQuery]),
+        startWith(this.isTabletPortrait()),
+        shareReplayLastValue()
+    );
 
-        this.isPhoneOrTablet$ = this.onDeviceChange$.pipe(
-            map((state) => state.breakpoints[phoneQuery] || state.breakpoints[tabletPortraitQuery] || state.breakpoints[tabletQuery]),
-            startWith(this.isPhoneOrTablet()),
-            shareReplayLastValue()
-        );
+    isPhoneSignal = toSignal(this.isPhone$, { initialValue: this.isPhone() });
+    isPhoneOrTabletPortraitSignal = toSignal(this.isPhoneOrTabletPortrait$, { initialValue: this.isPhoneOrTabletPortrait() });
+    isTabletOrDesktopSignal = toSignal(this.isTabletOrDesktop$, { initialValue: this.isTabletOrDesktop() });
+    isDesktopSignal = toSignal(this.isDesktop$, { initialValue: this.isDesktop() });
 
-        this.isPhoneOrTabletPortrait$ = this.onDeviceChange$.pipe(
-            map((state) => state.breakpoints[phoneQuery] || state.breakpoints[tabletPortraitQuery]),
-            startWith(this.isPhoneOrTabletPortrait()),
-            shareReplayLastValue()
-        );
-
-        this.isPhone$ = this.onDeviceChange$.pipe(
-            map((state) => state.breakpoints[phoneQuery]),
-            startWith(this.isPhone()),
-            shareReplayLastValue()
-        );
-    }
+    currentDevice = toSignal<Device>(
+        this.onDeviceChange$.pipe(
+            map((state) =>
+                state.breakpoints[phoneQuery]
+                    ? 'phone'
+                    : state.breakpoints[tabletPortraitQuery]
+                      ? 'tabletPortrait'
+                      : state.breakpoints[tabletQuery]
+                        ? 'tablet'
+                        : 'desktop'
+            )
+        ),
+        { requireSync: true }
+    );
 
     public isPhone(): boolean {
         return this.mediaQueryPhone.matches;

@@ -1,6 +1,6 @@
-import { inject, Injectable, untracked } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Store } from '@ngxs/store';
-import { isPresent } from 'harmony';
+import { ConfirmModalComponent, isPresent, ModalService } from 'harmony';
 import { InfoMessageService } from 'leerling-util';
 import {
     BerichtState,
@@ -25,17 +25,34 @@ import { Observable, take } from 'rxjs';
 export class BerichtService {
     private _store = inject(Store);
     private _infoMessageService = inject(InfoMessageService);
+    private _modalService = inject(ModalService);
 
     refreshConversaties = (refreshOptions?: RefreshConversatieOptions) => this._store.dispatch(new RefreshConversaties(refreshOptions));
     postvakIn = () => this._store.select(BerichtState.postvakIn);
     postvakUit = () => this._store.select(BerichtState.postvakUit);
-    refreshToegestaneOntvangers = () => untracked(() => this._store.dispatch(new RefreshToegestaneOntvangers()));
+    refreshToegestaneOntvangers = () => this._store.dispatch(new RefreshToegestaneOntvangers());
     aantalOngelezenConversatiesPostvakIn = () => this._store.select(BerichtState.aantalOngelezenConversatiesPostvakIn);
 
     markeerGelezen(conversatie: SConversatie | undefined) {
         if (isPresent(conversatie?.datumOudsteOngelezenBoodschap)) {
             this._store.dispatch(new MarkeerGelezen(conversatie));
         }
+    }
+
+    createVerwijderDialog(): ConfirmModalComponent | undefined {
+        if (this._modalService.isOpen()) return;
+        return this._modalService.modal({
+            component: ConfirmModalComponent,
+            inputs: {
+                text: 'Dit kan niet ongedaan worden gemaakt.',
+                annulerenButtonText: 'Annuleren',
+                bevestigenButtonText: 'Verwijderen',
+                bevestigenButtonMode: 'delete'
+            },
+            settings: {
+                title: 'Gesprek verwijderen?'
+            }
+        });
     }
 
     markeerOngelezen(conversatie: SConversatie) {

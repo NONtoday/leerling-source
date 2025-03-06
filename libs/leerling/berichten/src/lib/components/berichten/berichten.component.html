@@ -1,15 +1,15 @@
-<sl-header>
+<sl-header [hideBorderBottomMobile]="true">
     <sl-header-action-button
         *slHeeftRecht="'berichtenVerzendenAan'"
         [hideWhenOffline]="true"
         (click)="startNieuwBericht()"
         iconName="nieuwBericht"
         label="nieuw Bericht"
-        tabindex="10" />
+        tabindex="0" />
 </sl-header>
 <div class="container" [class.in-edit]="inEdit()" [class.in-detail]="selectedConversatie()">
     @if (isPhoneOrTabletPortrait()) {
-        <sl-scrollable-title class="scrollable-title" [title]="'Berichten'" />
+        <sl-scrollable-title class="scrollable-title" [title]="'Berichten'" [ellipsis]="false" />
     }
     <div class="tabs">
         @for (tab of tabs(); track tab.label) {
@@ -18,8 +18,9 @@
                 [tab]="tab"
                 [active]="tab.link === activeTab()"
                 [attr.aria-selected]="tab.link === activeTab()"
-                [tabindex]="$first ? 100 : 101"
+                [attr.id]="$index === 0 ? 'mainContent' : ''"
                 (click)="navigateToTab(tab.link)"
+                tabindex="0"
                 role="tab" />
         }
         @if (isOnline()) {
@@ -31,7 +32,7 @@
                     hmyTooltip="Nieuw bericht aanmaken"
                     size="medium"
                     role="button"
-                    tabindex="103"
+                    tabindex="0"
                     aria-label="nieuw bericht"></i>
             </div>
         }
@@ -44,11 +45,11 @@
                     [selected]="selectedConversatie()?.id === conversatie.id"
                     [tab]="activeTab()"
                     [conversatie]="conversatie"
-                    [tabindex]="tabindexBerichtSamenvatting"
                     (markeerGelezen)="markeerGelezen(conversatie)"
                     (markeerOngelezen)="markeerOngelezen(conversatie)"
                     (verwijder)="verwijder(conversatie)"
                     (click)="selectConversatie(conversatie)"
+                    tabindex="0"
                     role="button" />
             } @empty {
                 @if (alleConversatiesOpgehaald()) {
@@ -57,20 +58,27 @@
                             <span class="action-primary-normal cursor-pointer" (click)="startNieuwBericht()">Maak nieuw bericht</span>
                         }
                     </sl-geen-data>
-                    <div class="geen-bericht eerdere-berichten-geladen">Geen bericht ontvangen</div>
                 } @else {
-                    <div class="geen-bericht">Geen bericht ontvangen afgelopen 60 dagen</div>
+                    <div class="geen-bericht" tabindex="0">Geen bericht ontvangen afgelopen 60 dagen</div>
                 }
             }
-            <div class="laad-eerdere cursor-pointer" [class.ongeladen]="!alleConversatiesOpgehaald()" (click)="laadEerdereBerichten()">
-                @if (alleConversatiesOpgehaald() === false) {
-                    <span class="action-primary-normal" [tabindex]="tabindexBerichtSamenvatting" role="button">Laad eerdere berichten</span>
-                } @else if (alleConversatiesOpgehaald() === undefined) {
-                    <hmy-spinner [centeredInParent]="true" />
+            <div
+                class="laad-eerdere"
+                [class.ongeladen]="alleConversatiesOpgehaald() === undefined"
+                [tabIndex]="alleConversatiesOpgehaald() ? -1 : 0"
+                (click)="laadEerdereBerichten()"
+                tabindex="0"
+                role="button">
+                @if (alleBerichtenLaden()) {
+                    <hmy-spinner />
+                } @else if (geenNieuweBerichten() || alleConversatiesOpgehaald()) {
+                    <span class="geen-berichten text-weakest" tabindex="0">Geen eerdere berichten gevonden</span>
+                } @else {
+                    <span class="action-primary-normal" tabindex="0">Laad eerdere berichten</span>
                 }
             </div>
         } @else {
-            <hmy-spinner [centeredInParent]="true" />
+            <hmy-spinner />
         }
     </div>
 
@@ -99,7 +107,9 @@
                 <sl-geen-data>
                     @if (heeftBerichtenVerzendenRecht() && isOnline()) {
                         Selecteer of
-                        <span class="action-primary-normal cursor-pointer" (click)="startNieuwBericht()">maak nieuw bericht</span>
+                        <span class="action-primary-normal cursor-pointer" (click)="startNieuwBericht()" tabindex="0" role="button">
+                            maak nieuw bericht
+                        </span>
                     } @else {
                         Selecteer een bericht
                     }

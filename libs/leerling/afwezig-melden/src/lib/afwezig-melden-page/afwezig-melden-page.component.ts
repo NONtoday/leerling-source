@@ -1,41 +1,43 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { DeviceService, ModalService, SpinnerComponent, createModalSettings, isPresent } from 'harmony';
-import { SchoolContactgegevensComponent } from 'leerling-account-modal';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal, ViewChild } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { createModalSettings, DeviceService, isPresent, ModalService, SpinnerComponent } from 'harmony';
+
 import { AuthenticationService } from 'leerling-authentication';
-import { TabBarComponent, registerContextSwitchInterceptor } from 'leerling-base';
-import { REloRestricties } from 'leerling-codegen';
+import { AFWEZIG_MELDEN, getRestriction, registerContextSwitchInterceptor, TabBarComponent } from 'leerling-base';
 import { HeaderComponent, ScrollableTitleComponent } from 'leerling-header';
-import { onRefreshOrRedirectHome } from 'leerling-util';
+import { AccessibilityService, GeenDataComponent, GuardableComponent, onRefreshOrRedirectHome, Wizard } from 'leerling-util';
 import { PlaatsingService, RechtenService } from 'leerling/store';
 import { derivedAsync } from 'ngxtension/derived-async';
-import { Observable, Subject, delay, filter, finalize, map, of, switchMap, take } from 'rxjs';
+import { delay, distinctUntilChanged, filter, finalize, map, Observable, of, Subject, switchMap, take, tap } from 'rxjs';
 import { AfwezigMeldenWizardComponent } from '../afwezig-melden-wizard/afwezig-melden-wizard.component';
 import { AbsentieService } from '../services/absentie.service';
 
 @Component({
     selector: 'sl-afwezig-melden-page',
-    standalone: true,
     imports: [
         AfwezigMeldenWizardComponent,
         HeaderComponent,
         TabBarComponent,
         ScrollableTitleComponent,
-        SchoolContactgegevensComponent,
-        SpinnerComponent
+        SpinnerComponent,
+        GeenDataComponent
     ],
     providers: [AbsentieService],
     templateUrl: './afwezig-melden-page.component.html',
     styleUrl: './afwezig-melden-page.component.scss',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AfwezigMeldenPageComponent {
+export class AfwezigMeldenPageComponent implements GuardableComponent, Wizard {
+    @ViewChild('wizard') private _wizardComponent: AfwezigMeldenWizardComponent;
+
     private absentieService = inject(AbsentieService);
     private authenticationService = inject(AuthenticationService);
     private deviceService = inject(DeviceService);
     private modalService = inject(ModalService);
     private plaatsingService = inject(PlaatsingService);
     private rechtenService = inject(RechtenService);
+    private _destroyRef = inject(DestroyRef);
+    private _accessibilityService = inject(AccessibilityService);
 
     private leerling$ = this.authenticationService.currentAccountLeerling$.pipe(
         map(({ leerling }) => leerling),
@@ -43,12 +45,15 @@ export class AfwezigMeldenPageComponent {
     );
 
     private heeftAfwezigMeldenFeatureRechten$ = this.leerling$.pipe(
+        takeUntilDestroyed(this._destroyRef),
         switchMap(() => this.rechtenService.getCurrentAccountRechten()),
-        map((rechten) => !!rechten[AfwezigMeldenFeatureRecht])
+        map((rechten) => !!rechten[getRestriction(AFWEZIG_MELDEN)])
     );
 
     private absentieRedenen$ = this.heeftAfwezigMeldenFeatureRechten$.pipe(
+        takeUntilDestroyed(this._destroyRef),
         switchMap((heeftRechten) => (heeftRechten ? this.plaatsingService.getHuidigeVestiging() : of(undefined))),
+        distinctUntilChanged(),
         filter(isPresent),
         switchMap((vestiging) => this.absentieService.absentieRedenen(vestiging.id)),
         filter(isPresent)
@@ -66,11 +71,19 @@ export class AfwezigMeldenPageComponent {
     readonly pageTitle = 'Afwezig melden';
 
     constructor() {
-        onRefreshOrRedirectHome([AfwezigMeldenFeatureRecht]);
+        onRefreshOrRedirectHome([getRestriction(AFWEZIG_MELDEN)]);
         registerContextSwitchInterceptor(() => this.canDeactivate());
     }
 
+    isAtFirstStep(): boolean {
+        return this._wizardComponent?.isAtFirstStep() ?? true;
+    }
+    goToPreviousStep(): void {
+        this._wizardComponent?.goToPreviousStep();
+    }
+
     public canDeactivate(): Observable<boolean> {
+        if (!this.heeftAfwezigMeldenFeatureRechten()) return of(true);
         if (this.wizardIsDirty()) {
             // in sommige gevallen kan een andere modal open zijn, bijv. bij leerling switch op mobile
             if (this.modalService.isOpen()) {
@@ -105,14 +118,18 @@ export class AfwezigMeldenPageComponent {
                     title: 'Afwezig melden stoppen',
                     titleIcon: 'waarschuwing',
                     titleIconColor: 'action-negative-normal',
-                    widthModal: '420px'
+                    widthModal: '420px',
+                    cdkTrapFocusAutoCapture: this._accessibilityService.isAccessedByKeyboard()
                 })
             )
             .confirmResult.pipe(
                 map((result) => result === 'Positive'),
+                tap((canClose) => {
+                    if (canClose) {
+                        this._wizardComponent?.markAsPristine();
+                    }
+                }),
                 finalize(() => false)
             );
     }
 }
-
-const AfwezigMeldenFeatureRecht: keyof REloRestricties = 'absentiesBekijkenAan';

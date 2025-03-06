@@ -1,7 +1,5 @@
 @if (items() && items().length > 0) {
     <div [ngClass]="{ weekitems: toekenningsType() === 'WEEK', dagitems: toekenningsType() === 'DAG' }">
-        <span class="text">{{ items().length | i18nPlural: pluralMapping[toekenningsType() === 'WEEK' ? 'weekItems' : 'dagItems'] }}</span>
-
         @for (huiswerk of items(); track $index) {
             <sl-studiewijzer-item
                 [item]="huiswerk"

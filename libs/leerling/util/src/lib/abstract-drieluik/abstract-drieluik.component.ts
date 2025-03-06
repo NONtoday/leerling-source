@@ -38,6 +38,7 @@ const ANIMATION_DURATION = 220;
 @Directive()
 export abstract class AbstractDrieluikComponent<T extends ElementRefProvider> implements AfterViewInit, ISwipable {
     public peildatum = input.required<Date>();
+
     public allowKeyEvents = input(true);
     public peildatumChange = output<Date>();
 
@@ -205,7 +206,7 @@ export abstract class AbstractDrieluikComponent<T extends ElementRefProvider> im
     }
 
     public next() {
-        if (this._isAnimating) return;
+        if (this._isAnimating || this.isNextNavigationDisabled()) return;
 
         this.setAnimating();
         this.getElements().forEach((element) => {
@@ -236,7 +237,7 @@ export abstract class AbstractDrieluikComponent<T extends ElementRefProvider> im
     }
 
     public previous() {
-        if (this._isAnimating) return;
+        if (this._isAnimating || this.isPreviousNavigationDisabled()) return;
 
         this.setAnimating();
         this.getElements().forEach((element) => {
@@ -296,4 +297,6 @@ export abstract class AbstractDrieluikComponent<T extends ElementRefProvider> im
     public abstract getElements(): T[];
     public abstract onNavigation(direction: Direction): void;
     public abstract getAantalSwipeDagen(): number;
+    public abstract isPreviousNavigationDisabled(): boolean;
+    public abstract isNextNavigationDisabled(): boolean;
 }

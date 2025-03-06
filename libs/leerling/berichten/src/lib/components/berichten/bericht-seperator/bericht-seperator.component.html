@@ -3,4 +3,10 @@
     <span class="label">{{ label() }}</span>
     <div class="line"></div>
 </div>
-<i class="icon" hmyIcon="chevronOnder" size="smallest" color="border-neutral-strong"></i>
+<i
+    class="icon"
+    [class.hidden]="!clickable()"
+    [class.expanded]="expanded()"
+    hmyIcon="chevronOnder"
+    size="smallest"
+    color="border-neutral-strong"></i>

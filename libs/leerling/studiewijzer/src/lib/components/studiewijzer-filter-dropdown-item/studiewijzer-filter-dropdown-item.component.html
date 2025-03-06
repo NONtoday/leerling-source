@@ -1,4 +1,4 @@
-<hmy-checkbox class="checkbox" [checked]="afgevinkt()" [customTabIndex]="-1" (valueChanged)="onAfvinken()" color="primary" />
+<hmy-checkbox class="checkbox" [checked]="afgevinkt()" [customTabIndex]="-1" (click)="onAfvinken($event)" color="primary" />
 
 @if (icon(); as icon) {
     <i class="icon" [hmyIcon]="icon" [color]="iconColor()" size="medium"></i>

@@ -11,7 +11,7 @@ import {
     input,
     output
 } from '@angular/core';
-import { IconPillComponent, SpinnerComponent, getIconVoorVak } from 'harmony';
+import { IconPillComponent, getIconVoorVak } from 'harmony';
 import { IconChevronOnder, provideIcons } from 'harmony-icons';
 import { StudiewijzerItemComponent, StudiewijzerItemInstructieComponent } from 'leerling-studiewijzer-api';
 import { AccessibilityService, SidebarService, createSidebarSettings } from 'leerling-util';
@@ -24,8 +24,7 @@ export const DEFAULT_AANTAL_LESSTOF_ITEMS = 5;
 
 @Component({
     selector: 'sl-lesstof',
-    standalone: true,
-    imports: [CommonModule, StudiewijzerItemComponent, IconPillComponent, SpinnerComponent, LesstofAankomendPipe, LesstofDatumformatPipe],
+    imports: [CommonModule, StudiewijzerItemComponent, IconPillComponent, LesstofAankomendPipe, LesstofDatumformatPipe],
     templateUrl: './lesstof.component.html',
     styleUrl: './lesstof.component.scss',
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -67,7 +66,7 @@ export class LesstofComponent implements AfterViewInit {
     public openLesstof(lesstofItem: SStudiewijzerItem) {
         this._sidebarService.push(
             StudiewijzerItemInstructieComponent,
-            { item: lesstofItem },
+            { item: lesstofItem, toonInleverenKnop: false },
             createSidebarSettings({
                 title: this.vak()?.naam,
                 headerType: 'normal',

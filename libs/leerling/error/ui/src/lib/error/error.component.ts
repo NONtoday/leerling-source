@@ -12,7 +12,6 @@ import { ErrorImageComponent } from './error.image.component';
 
 @Component({
     selector: 'sl-error',
-    standalone: true,
     imports: [CommonModule, ErrorImageComponent, ButtonComponent],
     templateUrl: './error.component.html',
     styleUrls: ['./error.component.scss']
