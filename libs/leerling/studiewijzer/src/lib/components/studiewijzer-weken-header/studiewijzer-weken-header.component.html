@@ -1,0 +1,87 @@
+<div class="actiepanel">
+    <div class="container links">
+        <div class="datepicker">{{ maanden[maandnummer()] }}</div>
+        <div class="buttons">
+            <div class="button previous" (click)="vorigeWeekEnabled() && onNavigation('previous')" aria-label="Vorige week" role="button">
+                <div class="inner-button">
+                    <i
+                        #previous
+                        [class.disabled]="!vorigeWeekEnabled()"
+                        [color]="!vorigeWeekEnabled() ? 'disabled-fg' : undefined"
+                        (keydown.enter)="vorigeWeekEnabled() && onNavigation('previous')"
+                        hmyIcon="chevronBoven"
+                        size="small"
+                        hmyTooltip="Vorige week"
+                        tabindex="100"></i>
+                </div>
+            </div>
+            <div class="button next" (click)="volgendeWeekEnabled() && onNavigation('next')" role="button" aria-label="Volgende week">
+                <div class="inner-button">
+                    <i
+                        [class.disabled]="!volgendeWeekEnabled()"
+                        [color]="!volgendeWeekEnabled() ? 'disabled-fg' : undefined"
+                        (keydown.enter)="volgendeWeekEnabled() && onNavigation('next')"
+                        hmyIcon="chevronOnder"
+                        size="small"
+                        hmyTooltip="Volgende week"
+                        tabindex="0"></i>
+                </div>
+            </div>
+        </div>
+        <hmy-button
+            (click)="onNavigation('vandaag')"
+            label="Vandaag"
+            mode="tertiary"
+            tabindex="0"
+            customTabindex="-1"
+            aria-label="Toon vandaag"
+            role="link" />
+        <sl-studiewijzer-filter-button
+            [vakkeuzes]="vakkeuzes()"
+            [attr.aria-label]="filterButtonText()"
+            (filters)="setNumberSelected($event)"
+            tabindex="0"
+            role="link" />
+    </div>
+
+    <div class="container rechts">
+        <hmy-button
+            class="studiemateriaal-btn"
+            (click)="openStudiemateriaal()"
+            iconLeft="boek"
+            mode="tertiary"
+            tabindex="0"
+            customTabindex="-1"
+            role="link"
+            aria-label="Studiemateriaal"
+            label="Studiemateriaal" />
+        @if (toonWeekendButton()) {
+            <i
+                class="icon-action"
+                [ngClass]="toonWeekend() ? 'verberg' : 'toon'"
+                [hmyTooltip]="weekendButtonText()"
+                [attr.aria-label]="weekendButtonText()"
+                (click)="toggleWeekend()"
+                hmyIcon="downloaden"
+                size="medium"
+                tabindex="0"
+                role="button"></i>
+        }
+
+        <hmy-button
+            class="ga-naar-deze-week"
+            (click)="naarHuidigeWeek.emit()"
+            label="Ga naar deze week"
+            tabindex="0"
+            customTabindex="-1"
+            aria-label="Ga naar deze week"
+            role="link" />
+    </div>
+</div>
+<div class="dag-afkortingen">
+    @for (dag of dagen(); track $index) {
+        <div class="dag">
+            {{ dag.label }}
+        </div>
+    }
+</div>

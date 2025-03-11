@@ -1,0 +1,91 @@
+<div class="weergave-wrapper">
+    <div class="thema-wrapper">
+        <div
+            class="container light"
+            [attr.aria-checked]="selectedTheme() === 'light'"
+            (click)="toggleThemeLight()"
+            aria-label="Weergave licht"
+            tabindex="0"
+            role="radio">
+            <img src="../../assets/svg/lightmode.svg" alt="licht" />
+            <label>Licht</label>
+            <input [ngModel]="selectedTheme()" type="radio" name="thema" value="light" tabindex="-1" />
+        </div>
+        <div
+            class="container dark"
+            [attr.aria-checked]="selectedTheme() === 'dark'"
+            (click)="toggleThemeDark()"
+            tabindex="0"
+            aria-label="Weergave donker"
+            role="radio">
+            <img src="../../assets/svg/darkmode.svg" alt="donker" />
+            <label>Donker</label>
+            <input [ngModel]="selectedTheme()" type="radio" name="thema" value="dark" tabindex="-1" />
+        </div>
+        <div class="container-voorkeur settings">
+            <span class="settings-span">Gebruik systeemvoorkeur</span>
+            <hmy-toggle
+                class="toggle-systeemvoorkeur"
+                [ngModel]="systeemVoorkeur()"
+                [attr.aria-checked]="systeemVoorkeur()"
+                (click)="toggleSysteemVoorkeur()"
+                tabindex="0"
+                aria-label="Gebruik systeemvoorkeur"
+                role="checkbox"></hmy-toggle>
+        </div>
+    </div>
+    <div class="settings-wrapper">
+        <div class="settings with-preview">
+            <div class="setting-preview onvoldoendes">
+                <span class="fg-on-negative-weak">5,0</span>
+            </div>
+            <span class="settings-span">Onvoldoendes rood weergeven</span>
+            <hmy-toggle
+                class="toggle-onvoldoende-kleur"
+                [ngModel]="onvoldoendeRood()"
+                [attr.aria-checked]="onvoldoendeRood()"
+                (click)="toggleToonOnvoldoendesRood()"
+                tabindex="0"
+                aria-label="Onvoldoendes rood weergeven"
+                role="checkbox"></hmy-toggle>
+        </div>
+        <div class="setting-divider"></div>
+        <div class="settings with-preview">
+            <div class="setting-preview dyslexie">
+                <span class="fg-on-neutral-weak">Aa</span>
+            </div>
+            <span class="settings-span">
+                Optimaliseer voor dyslexie
+                <p class="settings-subtext">Maak gebruik van een dyslexie lettertype voor een betere leeservaring</p>
+            </span>
+            <hmy-toggle
+                class="toggle-dyslexie"
+                [ngModel]="dyslexieLettertype()"
+                [attr.aria-checked]="dyslexieLettertype()"
+                (click)="toggleDyslexieLettertype()"
+                tabindex="0"
+                aria-label="Maak gebruik van een dyslexie lettertype voor een betere leeservaring"
+                role="checkbox"></hmy-toggle>
+        </div>
+        @if (!isOuder && accountLeerling()?.leerling?.avatarSrc) {
+            <div class="setting-divider"></div>
+            <div class="settings with-preview profielfoto-optie">
+                <div class="setting-preview profielfoto">
+                    <i hmyIcon="persoon" size="medium"></i>
+                </div>
+                <span class="settings-span"
+                    >Verberg profielfoto
+                    <p class="settings-subtext">Toon je voorletter in plaats van je profielfoto</p>
+                </span>
+                <hmy-toggle
+                    class="toggle-profielfoto-verbergen"
+                    [ngModel]="profielfotoVerbergen()"
+                    [attr.aria-checked]="profielfotoVerbergen()"
+                    (click)="toggleProfielfotoVerbergen()"
+                    tabindex="0"
+                    aria-label="Toon je voorletter in plaats van je profielfoto"
+                    role="checkbox"></hmy-toggle>
+            </div>
+        }
+    </div>
+</div>

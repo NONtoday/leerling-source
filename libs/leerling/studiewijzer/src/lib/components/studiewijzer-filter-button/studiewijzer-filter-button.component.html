@@ -1,0 +1,8 @@
+<i class="icon" hmyIcon="filter" size="medium"></i>
+<div class="label">Filteren</div>
+
+@if (activeFilters().swiType.length || activeFilters().vak.length) {
+    <div class="counter">{{ activeFilters().swiType.length + activeFilters().vak.length }}</div>
+}
+
+<i class="chevron" hmyIcon="chevronOnder" size="smallest"></i>

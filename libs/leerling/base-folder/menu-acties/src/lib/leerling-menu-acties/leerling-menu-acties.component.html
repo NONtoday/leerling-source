@@ -1,0 +1,57 @@
+<div class="settings" [cdkTrapFocusAutoCapture]="true" cdkTrapFocus>
+    <div class="leerlinginfo-divider">
+        <div class="leerling">
+            <hmy-avatar
+                [lazyLoading]="false"
+                [initialen]="leerling().initialen"
+                [src]="leerling().avatarSrc"
+                [profielfotoVerbergen]="profielfotoVerbergen()"
+                [naam]="leerling().naam" />
+            <div class="leerling-info">
+                <span class="naam text-content-semi text-strong">{{ leerling().naam }}</span>
+                <span class="school text-content-smallest text-weak">{{ leerling().organisatienaam ?? 'Onbekende school' }}</span>
+            </div>
+        </div>
+        <div class="divider"></div>
+    </div>
+    @if (isOnline()) {
+        <div class="selector-option studiemateriaal" (click)="studiemateriaal()" role="button" tabindex="0">
+            <i hmyIcon="boek" size="small"></i>
+            <span>Studiemateriaal</span>
+        </div>
+        @if (heeftRegistratieOverzichtRechten()) {
+            <div class="selector-option registraties" (click)="registraties()" tabindex="0" role="button">
+                <i hmyIcon="lijst" size="small"></i>
+                <span>{{ 'Registraties' }}</span>
+            </div>
+        }
+
+        <div class="divider"></div>
+
+        <div class="selector-option school" (click)="schoolinformatie()" tabindex="0" role="button">
+            <i hmyIcon="school" size="small"></i>
+            <span>Schoolinformatie</span>
+        </div>
+
+        <div class="selector-option instellingen" (click)="instellingen()" tabindex="0" role="button">
+            <i hmyIcon="settings" size="small"></i>
+            <span>Instellingen</span>
+        </div>
+    }
+
+    <div class="selector-option support" (click)="support()" tabindex="0" role="button">
+        <a #supportLink [href]="supportUrl()" target="_blank" tabindex="-1">
+            <i hmyIcon="help" size="small"></i>
+            <span>Somtoday support</span>
+            <i hmyIcon="link" size="small" color="action-neutral-weak"></i>
+        </a>
+    </div>
+
+    @if (isOnline()) {
+        <div class="divider"></div>
+        <div class="selector-option uitloggen" (click)="uitloggen()" tabindex="0" role="button">
+            <i hmyIcon="uitloggen" size="small"></i>
+            <span>Uitloggen</span>
+        </div>
+    }
+</div>

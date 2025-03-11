@@ -1,0 +1,16 @@
+@if (actionSize$ | async; as actionSize) {
+    <div class="action-icon-container terug" (click)="actionClicked.emit('terug')">
+        <i
+            class="action terug"
+            *ngIf="toonTerug"
+            [size]="actionSize"
+            hmyIcon="chevronLinks"
+            role="link"
+            aria-label="terug"
+            tabindex="0"></i>
+    </div>
+    <span class="title" #title tabindex="0">{{ titel }} </span>
+    <div class="action-icon-container sluiten" (click)="actionClicked.emit('sluiten')" tabindex="0" role="button">
+        <i class="action sluiten" [size]="actionSize" hmyIcon="sluiten" aria-label="sluiten"></i>
+    </div>
+}

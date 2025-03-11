@@ -1,0 +1,18 @@
+@if (jaarBijlagen(); as jaarbijlagen) {
+    @if (jaarbijlagen.mappen.length > 0 || jaarbijlagen.jaarbijlagen.length > 0) {
+        <h2 tabindex="0" role="text">Jaarbijlagen</h2>
+        <div class="container">
+            @for (map of jaarbijlagen.mappen; track map.id) {
+                <sl-bijlagen-map [jaarBijlageOfLeermiddel]="{ jaarbijlageMap: map }" (bijlageOpened)="registreerGebruik($event)" />
+            }
+            @for (bijlage of jaarbijlagen.jaarbijlagen; track bijlage.bijlage.id) {
+                <sl-bijlage
+                    [omschrijving]="bijlage.naam"
+                    [uri]="bijlage.uri"
+                    [extension]="bijlage.extension"
+                    (bijlageOpened)="registreerGebruik(bijlage)"
+                    tabindex="0" />
+            }
+        </div>
+    }
+}

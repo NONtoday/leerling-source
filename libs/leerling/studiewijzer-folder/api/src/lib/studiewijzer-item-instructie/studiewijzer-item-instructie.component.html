@@ -1,0 +1,79 @@
+<p class="onderwerp" tabindex="0" role="text">{{ item().onderwerp }}</p>
+
+<section class="informatie">
+    <div
+        class="row type"
+        [class.afvinkbaar]="afvinkenToegestaan()"
+        [class.afgevinkt]="afgevinkt()"
+        [attr.aria-checked]="afgevinkt()"
+        [throttleTimeout]="trottleTimeout"
+        (throttleClick)="toggleAfgevinkt()"
+        slPreventThrottle
+        tabindex="0"
+        role="button">
+        <i class="type-icon" [hmyIcon]="item() | studiewijzerItemIcon" size="medium"> </i>
+        <span class="omschrijving">{{ typeOmschrijving() }}</span>
+        @if (afvinkenToegestaan()) {
+            <span class="afvinken">{{ afgevinkt() ? 'Afgevinkt' : 'Afvinken' }}</span>
+            <hmy-checkbox [checked]="afgevinkt()" [customTabIndex]="-1" color="positive" />
+        }
+    </div>
+    <div class="row datum" tabindex="0" role="text">
+        <i hmyIcon="kalenderDag"></i>
+        <span>{{ datum() }}</span>
+        @if (inlevermomentWaarschuwing(); as waarschuwing) {
+            <hmy-pill [text]="waarschuwing" [hoverable]="false" tabindex="0" color="warning" />
+        }
+    </div>
+    @if (item().tijdsindicatie) {
+        <div class="row tijdsindicatie" tabindex="0" role="text">
+            <i hmyIcon="klok"></i>
+            <span>{{ item().tijdsindicatie }}</span>
+        </div>
+    }
+</section>
+
+@if (item().projectgroep; as projectgroep) {
+    <div class="projectgroep" tabindex="0" role="text">
+        @for (leerling of projectgroep.leerlingen; track leerling) {
+            <hmy-tag [label]="leerling" icon="none" />
+        }
+    </div>
+}
+
+@if (heeftInhoud()) {
+    <section class="inhoud">
+        @if (item().leerdoelen; as leerdoelen) {
+            <div class="blok leerdoelen" tabindex="0" role="text">
+                <span>Leerdoelen</span>
+                <sl-html-content [content]="leerdoelen" (linkOpened)="registreerTekstLink($event)" />
+            </div>
+        }
+
+        @if (item().omschrijving; as omschrijving) {
+            <div class="blok omschrijving" tabindex="0" role="text">
+                <span>Omschrijving</span>
+                <sl-html-content [content]="omschrijving" (linkOpened)="registreerTekstLink($event)" />
+            </div>
+        }
+
+        @for (bijlage of item().bijlagen; track bijlage.id) {
+            <sl-bijlage [uri]="bijlage.fileUrl" [omschrijving]="bijlage.omschrijving" [extension]="bijlage.fileExtension" />
+        }
+
+        @for (materiaal of item().externeMaterialen; track materiaal.id) {
+            <sl-bijlage
+                [uri]="materiaal.uri"
+                [omschrijving]="materiaal.omschrijving"
+                (bijlageOpened)="registreerExternMateriaal(materiaal)"
+                extension="url" />
+        }
+
+        @if (item().notitie; as notitie) {
+            <div class="blok notitie" tabindex="0" role="text">
+                <span>Notitie</span>
+                <sl-html-content [content]="notitie" (linkOpened)="registreerTekstLink($event)" />
+            </div>
+        }
+    </section>
+}

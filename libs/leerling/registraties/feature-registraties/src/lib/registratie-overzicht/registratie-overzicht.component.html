@@ -1,0 +1,13 @@
+<sl-header />
+<sl-scrollable-title class="scrollable-title title" [title]="'Registraties'" tabIndex="0" role="text" />
+<div class="content" tabindex="-1">
+    <sl-registraties
+        *ngIf="heeftRegistratiesRechten()"
+        [registratieCategorieeen]="registratieCategorieeen()"
+        [tijdspan]="tijdspan()"
+        [isLoading]="registratiesIsLoading()"
+        (onSelectTijdspan)="selectTijdspan($event)" />
+    <sl-maatregelen *ngIf="heeftMaatregelRechten()" [maatregelToekenningen]="maatregelToekenningen()" />
+</div>
+
+<sl-tab-bar [fixedToBottom]="true" />

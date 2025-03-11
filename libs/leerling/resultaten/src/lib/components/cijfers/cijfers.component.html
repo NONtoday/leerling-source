@@ -1,0 +1,63 @@
+<sl-header [hideBorderBottomMobile]="true" />
+
+<div class="container">
+    @if (scrollableTitle(); as title) {
+        <sl-scrollable-title [title]="title" [vakNaam]="title === 'Cijfers' ? undefined : title" />
+    }
+    @if (toonTabs(); as toonTabs) {
+        @if (toonTabs) {
+            <hmy-switch-group>
+                <hmy-switch
+                    #switchLaatsteCijfers="routerLinkActive"
+                    #laatsteCijfers
+                    [routerLink]="['.']"
+                    [routerLinkActiveOptions]="routerLinkActiveOptions"
+                    [attr.aria-selected]="switchLaatsteCijfers.isActive"
+                    routerLinkActive="active"
+                    label="Laatste cijfers"
+                    role="tab"
+                    tabindex="100" />
+                <hmy-switch
+                    #switchGemiddelden="routerLinkActive"
+                    #vakgemiddelden
+                    [routerLink]="['vakgemiddelden']"
+                    [routerLinkActiveOptions]="routerLinkActiveOptions"
+                    [attr.aria-selected]="switchGemiddelden.isActive"
+                    routerLinkActive="active"
+                    role="tab"
+                    label="Vakgemiddelden"
+                    tabindex="101" />
+            </hmy-switch-group>
+
+            <div class="tabs">
+                <hmy-tab
+                    #switchLaatsteCijfers="routerLinkActive"
+                    #laatsteCijfers
+                    [routerLink]="['.']"
+                    [routerLinkActiveOptions]="routerLinkActiveOptions"
+                    [tab]="{ label: 'Laatste cijfers' }"
+                    [attr.aria-selected]="switchLaatsteCijfers.isActive"
+                    (click)="setTabIndex(200)"
+                    role="button"
+                    routerLinkActive="active"
+                    tabindex="100" />
+                <hmy-tab
+                    #switchGemiddelden="routerLinkActive"
+                    #vakgemiddelden
+                    [routerLink]="['vakgemiddelden']"
+                    [routerLinkActiveOptions]="routerLinkActiveOptions"
+                    [tab]="{ label: 'Vakgemiddelden' }"
+                    [attr.aria-selected]="switchGemiddelden.isActive"
+                    (click)="setTabIndex(110)"
+                    role="button"
+                    routerLinkActive="active"
+                    tabindex="101" />
+                <div class="filler"></div>
+            </div>
+        }
+    }
+
+    <router-outlet />
+</div>
+
+<sl-tab-bar />

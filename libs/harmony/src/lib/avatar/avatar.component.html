@@ -1,0 +1,21 @@
+<div class="container">
+    <ng-container *ngIf="lazyLoading; else eager">
+        <img
+            class="foto"
+            [class.hidden]="!src || loading || profielfotoVerbergen"
+            [lazyLoad]="src!"
+            [offset]="400"
+            [alt]="naam | altAvatarText"
+            (onStateChange)="stateChanged($event)" />
+        <div class="initials" *ngIf="!src || loading || profielfotoVerbergen">
+            <span>{{ initialen }}</span>
+        </div>
+    </ng-container>
+</div>
+
+<ng-template #eager>
+    <img class="foto" [class.hidden]="!src || profielfotoVerbergen" [src]="src" [alt]="naam | altAvatarText" />
+    <div class="initials" *ngIf="!src || profielfotoVerbergen">
+        <span>{{ initialen }}</span>
+    </div>
+</ng-template>

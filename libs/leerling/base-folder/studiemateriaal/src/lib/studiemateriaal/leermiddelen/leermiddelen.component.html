@@ -1,0 +1,23 @@
+@if (leermiddelen(); as leermiddelen) {
+    <h2 tabindex="0" role="text">Leermiddelen</h2>
+    <div class="container">
+        @if (leermiddelen.leermiddelen.length > 0) {
+            @for (leermiddel of leermiddelen.leermiddelen; track leermiddel.uuid) {
+                <sl-bijlage
+                    [omschrijving]="leermiddel.titel"
+                    [uri]="leermiddel.uri"
+                    [methode]="leermiddel.methode"
+                    [uitgever]="leermiddel.uitgever"
+                    (bijlageOpened)="registreerGebruik(leermiddel)"
+                    tabindex="0" />
+            }
+        }
+
+        @if (toonAlgemeneLeermiddelen() && leermiddelen.algemeneLeermiddelen.length > 0) {
+            <sl-bijlagen-map
+                [jaarBijlageOfLeermiddel]="{ leermiddelen: leermiddelen.algemeneLeermiddelen }"
+                [isMapOpen]="leermiddelen.leermiddelen.length === 0 ? true : false"
+                (leermiddelOpened)="registreerGebruik($event)" />
+        }
+    </div>
+}

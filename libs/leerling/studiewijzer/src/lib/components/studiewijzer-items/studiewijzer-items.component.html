@@ -1,0 +1,21 @@
+@for (item of sortedItems(); track item.id) {
+    <sl-studiewijzer-item
+        [item]="item"
+        [toonAfvinkKnop]="toonAfvinkKnop() && !isStacked()"
+        [style.top]="$index | studiewijzerItemTop: isStacked()"
+        [ngClass]="{ 'neutral-none-bg': neutralNoneBg() }"
+        (toggleAfgevinkt)="toggleAfgevinkt($event)"
+        (click)="toonDetails(item)"
+        tabindex="0" />
+}
+
+@if (stackable && canStack() && !isStacked()) {
+    <hmy-icon-pill
+        [reversed]="true"
+        [iconSize]="'smallest'"
+        [iconOpacity]="0.5"
+        [color]="'neutral'"
+        (click)="unstack($event)"
+        icon="chevronBoven"
+        text="Toon minder" />
+}

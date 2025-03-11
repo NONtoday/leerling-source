@@ -1,0 +1,8 @@
+@for (week of weken; track $index) {
+    <sl-studiewijzer-week
+        [id]="week.weeknummer"
+        [week]="week"
+        [toonWeekend]="toonWeekend()"
+        [activeFilters]="activeFilters()"
+        (terugNaarBoven)="terugNaarBoven.emit()" />
+}
