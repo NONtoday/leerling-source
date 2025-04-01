@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, effect, inject, OnDestroy, signal, WritableSignal } from '@angular/core';
-import { DeviceService, SpinnerComponent } from 'harmony';
+import { DeviceService, GeenDataComponent, SpinnerComponent } from 'harmony';
 import { CIJFERS, CIJFERS_RESULTAATITEM, RouterService } from 'leerling-base';
-import { AccessibilityService, GeenDataComponent, ModalService, onRefresh } from 'leerling-util';
+import { AccessibilityService, ModalService, onRefresh } from 'leerling-util';
 import { derivedAsync } from 'ngxtension/derived-async';
 import { injectQueryParams } from 'ngxtension/inject-query-params';
 import { CijfersService } from '../../../services/cijfers/cijfers.service';

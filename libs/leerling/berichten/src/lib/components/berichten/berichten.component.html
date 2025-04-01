@@ -53,11 +53,11 @@
                     role="button" />
             } @empty {
                 @if (alleConversatiesOpgehaald()) {
-                    <sl-geen-data class="inbox">
+                    <hmy-geen-data class="inbox">
                         @if (heeftBerichtenVerzendenRecht() && isOnline()) {
                             <span class="action-primary-normal cursor-pointer" (click)="startNieuwBericht()">Maak nieuw bericht</span>
                         }
-                    </sl-geen-data>
+                    </hmy-geen-data>
                 } @else {
                     <div class="geen-bericht" tabindex="0">Geen bericht ontvangen afgelopen 60 dagen</div>
                 }
@@ -104,7 +104,7 @@
                     (markeerOngelezen)="markeerOngelezen(selectedConversatie)"
                     (verwijder)="verwijder(selectedConversatie)" />
             } @else {
-                <sl-geen-data>
+                <hmy-geen-data>
                     @if (heeftBerichtenVerzendenRecht() && isOnline()) {
                         Selecteer of
                         <span class="action-primary-normal cursor-pointer" (click)="startNieuwBericht()" tabindex="0" role="button">
@@ -113,7 +113,7 @@
                     } @else {
                         Selecteer een bericht
                     }
-                </sl-geen-data>
+                </hmy-geen-data>
             }
         </div>
     }

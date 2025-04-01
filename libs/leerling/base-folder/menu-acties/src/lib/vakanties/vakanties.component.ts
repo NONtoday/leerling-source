@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, input } from '@angular/core';
-import { AvatarComponent, SpinnerComponent } from 'harmony';
-import { GeenDataComponent } from 'leerling-util';
+import { AvatarComponent, GeenDataComponent, SpinnerComponent } from 'harmony';
 import { derivedAsync } from 'ngxtension/derived-async';
 import { VakantieService } from './service/vakantie.service';
 import { VakantieSubtitlePipe } from './vakantie-subtitle.pipe';

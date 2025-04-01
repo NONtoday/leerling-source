@@ -672,18 +672,11 @@ export class AuthenticationService {
 
     private async _preFetchPasfotos(subLeerlingen: SomtodayLeerling[]): Promise<void> {
         const pasfotoLeerlingen = await Promise.all(
-            subLeerlingen.map((leerling) =>
-                firstValueFrom(
-                    this._requestService.get<RLeerling>(
-                        `leerlingen/${leerling.id}`,
-                        new RequestInformationBuilder().additional('pasfoto').build()
-                    )
-                )
-            )
+            subLeerlingen.map((leerling) => firstValueFrom(this._requestService.get<RLeerling>(`leerlingen/${leerling.id}`)))
         );
         subLeerlingen.forEach((leerling) => {
             const pasfotoLeerling = pasfotoLeerlingen.find((pasfotoLeerling) => leerling.id === pasfotoLeerling.links?.[0].id);
-            leerling.avatarSrc = pasfotoLeerling?.additionalObjects?.['pasfoto']?.datauri;
+            leerling.avatarSrc = pasfotoLeerling?.pasfotoUrl;
         });
     }
 

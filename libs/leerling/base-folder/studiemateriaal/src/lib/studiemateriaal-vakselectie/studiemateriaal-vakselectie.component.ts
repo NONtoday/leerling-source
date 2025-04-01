@@ -1,10 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { SpinnerComponent, VakIconComponent } from 'harmony';
+import { GeenDataComponent, SpinnerComponent, VakIconComponent } from 'harmony';
 import {
     FULL_SCREEN_MET_MARGIN,
-    GeenDataComponent,
     ModalSettings,
     SidebarService,
     SidebarSettings,

@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, Pipe, PipeTransform, inject } from '@angular/core';
-import { SpinnerComponent, isPresent } from 'harmony';
+import { GeenDataComponent, SpinnerComponent, isPresent } from 'harmony';
 import { RouterService } from 'leerling-base';
-import { AccessibilityService, DropdownComponent, DropdownConfig, DropdownItem, GeenDataComponent, onRefresh } from 'leerling-util';
+import { AccessibilityService, DropdownComponent, DropdownConfig, DropdownItem, onRefresh } from 'leerling-util';
 import {
     PlaatsingService,
     SPlaatsing,

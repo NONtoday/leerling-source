@@ -7,6 +7,7 @@ import { Preferences } from '@capacitor/preferences';
 import {
     CheckboxComponent,
     DeviceService,
+    GeenDataComponent,
     IconDirective,
     OverlayService,
     SpinnerComponent,
@@ -22,7 +23,7 @@ import { IconPijlLinks, IconZichtbaar, provideIcons } from 'harmony-icons';
 import { RouterService, VAKRESULATEN_BACK_URL, VAKRESULTATEN_PARAMETERS } from 'leerling-base';
 import { HeaderService } from 'leerling-header';
 
-import { AccessibilityService, CONTENT_TAB_INDEX, GeenDataComponent, RefreshReason, onRefresh } from 'leerling-util';
+import { AccessibilityService, CONTENT_TAB_INDEX, RefreshReason, onRefresh } from 'leerling-util';
 import { Observable, Subject, combineLatest, distinctUntilChanged, filter, map, switchMap, tap } from 'rxjs';
 import { CijfersService } from '../../../services/cijfers/cijfers.service';
 import { VakToetsdossier } from '../../../services/vakresultaten/vakresultaten-model';
@@ -77,7 +78,7 @@ export class VakresultatenComponent implements OnInit, OnDestroy {
     public metResultaatKolommen = this._cijfersService.toonLegeResultaatKolommen;
     private _metResultaatKolommen$ = toObservable(this.metResultaatKolommen);
 
-    tabletPortait$ = this._deviceService.isTabletPortrait$;
+    isPhoneOrTabletSignal = this._deviceService.isPhoneOrTabletSignal;
     resultatenFilter = viewChild('resultatenFilter', { read: ViewContainerRef });
     filterOptionsTemplate = viewChild('filterOptions', { read: TemplateRef });
     filterMobileIcon = viewChild('filterMobileIcon', { read: TemplateRef });

@@ -67,8 +67,10 @@ export class PopupService {
         );
         const popupElement = getHTMLElement(popupComponentRef);
 
-        // Zorg ervoor dat klikken op het connectedElement de popup niet opnieuw opent.
-        this.renderer.setStyle(element.element.nativeElement, 'pointer-events', 'none');
+        if (fullSettings.disableConnectedElement) {
+            // Zorg ervoor dat klikken op het connectedElement de popup niet opnieuw opent.
+            this.renderer.setStyle(element.element.nativeElement, 'pointer-events', 'none');
+        }
         if (!fullSettings.allowBodyScroll) {
             // Zorg dat body niet verspringt als de scrollbar verdwijnt bij docent
             this.renderer.addClass(window.document.body, 'disable-vertical-scrolling');

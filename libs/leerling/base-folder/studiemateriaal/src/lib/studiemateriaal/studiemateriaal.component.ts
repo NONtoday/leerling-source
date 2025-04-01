@@ -1,15 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
-import { SpinnerComponent, getIconVoorVak } from 'harmony';
+import { GeenDataComponent, SpinnerComponent, getIconVoorVak } from 'harmony';
 import { DEFAULT_AANTAL_LESSTOF_ITEMS, LesstofComponent } from 'leerling-lesstof';
-import {
-    FULL_SCREEN_MET_MARGIN,
-    GeenDataComponent,
-    ModalSettings,
-    SidebarSettings,
-    createModalSettings,
-    createSidebarSettings
-} from 'leerling-util';
+import { FULL_SCREEN_MET_MARGIN, ModalSettings, SidebarSettings, createModalSettings, createSidebarSettings } from 'leerling-util';
 import { SLesgroep, SVak } from 'leerling/store';
 import { derivedAsync } from 'ngxtension/derived-async';
 import { StudiemateriaalService } from '../studiemateriaal.service';

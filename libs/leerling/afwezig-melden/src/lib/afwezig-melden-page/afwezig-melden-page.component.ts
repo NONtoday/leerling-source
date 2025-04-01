@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal, ViewChild } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { createModalSettings, DeviceService, isPresent, ModalService, SpinnerComponent } from 'harmony';
+import { createModalSettings, DeviceService, GeenDataComponent, isPresent, ModalService, SpinnerComponent } from 'harmony';
 
 import { AuthenticationService } from 'leerling-authentication';
 import { AFWEZIG_MELDEN, getRestriction, registerContextSwitchInterceptor, TabBarComponent } from 'leerling-base';
 import { HeaderComponent, ScrollableTitleComponent } from 'leerling-header';
-import { AccessibilityService, GeenDataComponent, GuardableComponent, onRefreshOrRedirectHome, Wizard } from 'leerling-util';
+import { AccessibilityService, GuardableComponent, onRefreshOrRedirectHome, Wizard } from 'leerling-util';
 import { PlaatsingService, RechtenService } from 'leerling/store';
 import { derivedAsync } from 'ngxtension/derived-async';
 import { delay, distinctUntilChanged, filter, finalize, map, Observable, of, Subject, switchMap, take, tap } from 'rxjs';

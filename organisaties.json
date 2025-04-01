@@ -1899,8 +1899,8 @@
                         "domain_hint": "educalvijn.onmicrosoft.com"
                     },
                     {
-                        "omschrijving": "OIDC CSG Calvijn",
-                        "url": "https://beheer.calvijn.nl",
+                        "omschrijving": "OIDC Portus",
+                        "url": "https://beheer.cvo-portus.nl",
                         "domain_hint": ""
                     }
                 ]

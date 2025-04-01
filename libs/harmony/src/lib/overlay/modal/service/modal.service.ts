@@ -105,7 +105,7 @@ export class ModalService {
 
     /**
      * Bij een back-swipe willen we het modal sluiten. Bij een confirmation-modal doen we dat door te annuleren.
-     * In andere gevlalen kunnen we zelf de modal sluiten.
+     * In andere gevallen kunnen we zelf de modal sluiten.
      */
     backSwipeClose() {
         if (this.modalRef?.instance instanceof ConfirmModalComponent) {

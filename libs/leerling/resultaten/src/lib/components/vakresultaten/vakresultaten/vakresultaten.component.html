@@ -40,8 +40,8 @@
                     }
                 }
                 <div class="filler">
-                    @if (tabletPortait$) {
-                        <ng-container class=".tabletFilterButton" *ngTemplateOutlet="filterMobileIcon"></ng-container>
+                    @if (isPhoneOrTabletSignal()) {
+                        <ng-container *ngTemplateOutlet="filterMobileIcon"></ng-container>
                     }
                 </div>
             </div>
@@ -65,7 +65,7 @@
         }
         @if (!(view | heeftVakResultaten)) {
             <div class="geen-resultaten">
-                <sl-geen-data>
+                <hmy-geen-data>
                     @if (!(view | heeftAndereVakResultaten)) {
                         <p tabindex="100">Er zijn geen cijfers ingevoerd voor dit vak.</p>
                     }
@@ -75,7 +75,7 @@
                             {{ view.actieveTab === 'Rapport' ? 'in je examendossier.' : 'bij het andere niveau.' }}
                         </p>
                     }
-                </sl-geen-data>
+                </hmy-geen-data>
             </div>
         }
     } @else {
@@ -85,7 +85,7 @@
     }
 }
 <ng-template #filterMobileIcon>
-    <div #tabletFilterIcon (click)="openFilter()" tabindex="100" aria-label="resultaten filter opties">
+    <div class="tablet-filter-icon" #tabletFilterIcon (click)="openFilter()" tabindex="100" aria-label="resultaten filter opties">
         <i class="header-filter-icon" hmyIcon="zichtbaar" color="action-neutral-normal" size="medium"></i>
     </div>
 </ng-template>

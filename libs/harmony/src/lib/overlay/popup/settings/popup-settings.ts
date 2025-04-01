@@ -19,6 +19,12 @@ export interface PopupSettings {
     onClose?: () => void;
     overflow: string;
     allowBodyScroll: boolean;
+    /*
+        by default the connected element gets disabled to prevent reopening the popup by clicking on the same element twice.
+        However sometimes there's an element with a click handler behind the connected element that you don't want to activate.
+        In that case you can disable this behavior by setting this property to false.
+    */
+    disableConnectedElement: boolean;
 }
 
 export const createPopupSettings = (updatedSettings?: Partial<PopupSettings>, includeStickyOffsets = true): PopupSettings => {
@@ -51,6 +57,7 @@ export const createPopupSettings = (updatedSettings?: Partial<PopupSettings>, in
         popupOpenClass: 'popup-open',
         overflow: 'initial',
         allowBodyScroll: false,
+        disableConnectedElement: true,
         ...updatedSettings
     };
 };

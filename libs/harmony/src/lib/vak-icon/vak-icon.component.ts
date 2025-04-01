@@ -38,7 +38,8 @@ import {
     IconWiskunderekenen,
     provideIcons
 } from 'harmony-icons';
-import { IconDirective, IconSize } from '../icon/icon.directive';
+import { IconPlateComponent } from '../icon-plate/icon-plate.component';
+import { IconSize } from '../icon/icon.directive';
 import { VakType, overig, vaknamen } from './vaknamen';
 
 export const vakIcons = [
@@ -105,7 +106,7 @@ function findPartialMatch(firstChar: string): VakType | undefined {
 
 @Component({
     selector: 'hmy-vak-icon',
-    imports: [CommonModule, IconDirective],
+    imports: [CommonModule, IconPlateComponent],
     templateUrl: './vak-icon.component.html',
     styleUrl: './vak-icon.component.scss',
     changeDetection: ChangeDetectionStrategy.OnPush,

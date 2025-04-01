@@ -1,1 +1,1 @@
-the main brach represents the main [leerling.somtoday.nl](https://leerling.somtoday.nl) website
+the main branch represents the main [leerling.somtoday.nl](https://leerling.somtoday.nl) website

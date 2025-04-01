@@ -27,7 +27,7 @@ export class SchooljaarState extends AbstractState {
         if (!leerlingId) {
             return;
         }
-        return this.cachedGet<RSchooljaar>('schooljaren/huidig', new RequestInformationBuilder().leerling(leerlingId).build())?.pipe(
+        return this.cachedGet<RSchooljaar>('schooljaren/huidig', new RequestInformationBuilder().build())?.pipe(
             tap((schooljaar) => ctx.patchState({ huidigSchooljaar: mapSchooljaar(schooljaar) }))
         );
     }

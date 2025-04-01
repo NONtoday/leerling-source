@@ -14,7 +14,7 @@
             <sl-ouderavond-wizard #wizard [info]="ouderavondInfo" [paramId]="param()!" (isDirty)="wizardIsDirty.set($event)" />
         } @else if (ouderavondInfo() === null) {
             <div class="geen-data">
-                <sl-geen-data />
+                <hmy-geen-data />
                 <p tabindex="0">Ouderavond niet gevonden</p>
             </div>
         } @else {
@@ -24,7 +24,7 @@
         }
     } @else {
         <div class="geen-data">
-            <sl-geen-data />
+            <hmy-geen-data />
             <p tabindex="0">Ouderavond niet gevonden</p>
         </div>
     }

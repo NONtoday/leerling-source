@@ -4,6 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import {
     DeviceService,
+    GeenDataComponent,
     IconDirective,
     ModalService,
     NotificationCounterTabInput,
@@ -28,7 +29,7 @@ import {
     registerContextSwitchInterceptor
 } from 'leerling-base';
 import { HeaderActionButtonComponent, HeaderComponent, ScrollableTitleComponent } from 'leerling-header';
-import { AccessibilityService, GeenDataComponent, GuardableComponent, onRefreshOrRedirectHome } from 'leerling-util';
+import { AccessibilityService, GuardableComponent, onRefreshOrRedirectHome } from 'leerling-util';
 import {
     HeeftRechtDirective,
     NieuwBerichtInput,

@@ -9,6 +9,8 @@ import { isEqual } from 'lodash-es';
 import { forkJoin, tap } from 'rxjs';
 import { CallService } from '../call/call.service';
 import { ToggleInleverOpdrachtAfgevinkt } from '../inleveropdracht/inleveropdracht-list/inleveropdracht-list-actions';
+import { IncomingPushAction } from '../pushaction/pushaction-actions';
+import { AvailablePushType } from '../pushaction/pushaction-model';
 import { RechtenSelectors } from '../rechten/rechten-selectors';
 import { SwitchContext } from '../shared/shared-actions';
 import { AbstractState, insertOrUpdateItem } from '../util/abstract-state';
@@ -63,7 +65,7 @@ export class HuiswerkState extends AbstractState {
             this.createCallDefinition('studiewijzeritemweektoekenningen', this.getTimeout(), weekRequestInfo)
         );
 
-        if (isStillFresh) {
+        if (isStillFresh && !action.requestOptions.forceRequest) {
             return;
         }
 
@@ -206,6 +208,13 @@ export class HuiswerkState extends AbstractState {
     override switchContext(ctx: StateContext<SSWIModel>, action: SwitchContext) {
         if (!action.initialContextSwitch) {
             ctx.setState(DEFAULT_STATE);
+        }
+    }
+
+    @Action(IncomingPushAction)
+    incomingPushAction(ctx: StateContext<SSWIModel>, action: IncomingPushAction) {
+        if (action.type === AvailablePushType.INLEVERPERIODEBERICHT && action.datum) {
+            ctx.dispatch(new RefreshHuiswerk(getJaarWeek(action.datum), { forceRequest: true }));
         }
     }
 

@@ -77,6 +77,7 @@ export class DeviceService {
     isPhoneOrTabletPortraitSignal = toSignal(this.isPhoneOrTabletPortrait$, { initialValue: this.isPhoneOrTabletPortrait() });
     isTabletOrDesktopSignal = toSignal(this.isTabletOrDesktop$, { initialValue: this.isTabletOrDesktop() });
     isDesktopSignal = toSignal(this.isDesktop$, { initialValue: this.isDesktop() });
+    isPhoneOrTabletSignal = toSignal(this.isPhoneOrTablet$, { initialValue: this.isPhoneOrTablet() });
 
     currentDevice = toSignal<Device>(
         this.onDeviceChange$.pipe(

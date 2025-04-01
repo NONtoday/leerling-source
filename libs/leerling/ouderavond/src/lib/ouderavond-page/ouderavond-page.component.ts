@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, ViewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { createModalSettings, DeviceService, isPresent, ModalService, SpinnerComponent } from 'harmony';
+import { createModalSettings, DeviceService, GeenDataComponent, isPresent, ModalService, SpinnerComponent } from 'harmony';
 import { AuthenticationService } from 'leerling-authentication';
 import { TabBarComponent } from 'leerling-base';
 import { HeaderComponent, ScrollableTitleComponent } from 'leerling-header';
-import { AccessibilityService, GeenDataComponent, GuardableComponent, Wizard } from 'leerling-util';
+import { AccessibilityService, GuardableComponent, Wizard } from 'leerling-util';
 import { derivedAsync } from 'ngxtension/derived-async';
 import { injectParams } from 'ngxtension/inject-params';
 import { delay, filter, finalize, map, Observable, of, Subject, switchMap, take, tap } from 'rxjs';

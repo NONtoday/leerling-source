@@ -7,7 +7,10 @@ export class RefreshHuiswerk {
     // Jaarweek is bv 2023~12
     // Bewust gekozen voor week ipv datum range, omdat we elke call een unieke dataset willen teruggeven.
 
-    constructor(public jaarWeek: string) {}
+    constructor(
+        public jaarWeek: string,
+        readonly requestOptions: { forceRequest?: boolean } = {}
+    ) {}
 }
 
 export class ToggleAfgevinkt {

@@ -1,12 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { SpinnerComponent } from 'harmony';
+import { GeenDataComponent, SpinnerComponent } from 'harmony';
 import {
     AccessibilityService,
     createModalSettings,
     createSidebarSettings,
     FULL_SCREEN_MET_MARGIN,
-    GeenDataComponent,
     ModalSettings,
     SidebarService,
     SidebarSettings

@@ -2,7 +2,7 @@
     <i [hmyIcon]="icon" [color]="getIconColor()" [size]="iconSize" [style.opacity]="iconOpacity"></i>
 }
 
-@if (!iconOnly) {
+@if (!iconOnly && text !== '') {
     <span>{{ text }}</span>
 }
 
