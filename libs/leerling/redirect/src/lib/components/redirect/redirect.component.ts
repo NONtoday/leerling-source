@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { sanitizeUrl } from '@braintree/sanitize-url';
 import { SpinnerComponent } from 'harmony';
 import { sha256 } from 'js-sha256';
 import { environment } from 'leerling-environment';
@@ -70,8 +71,10 @@ export class RedirectComponent implements OnInit {
     private redirectToSavedUrl() {
         const redirectUrl = this.getSavedUrl();
         this.deleteSavedUrl();
-        if (redirectUrl) this.setHref(redirectUrl);
-        else this.invalidState.set(true);
+        if (redirectUrl) {
+            const sanUrl = sanitizeUrl(redirectUrl);
+            this.setHref(sanUrl);
+        } else this.invalidState.set(true);
     }
 
     private setHref(url: string) {

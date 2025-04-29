@@ -29,7 +29,7 @@ import { ErrorComponent } from 'leerling-error-ui';
 import { GeenPlaatsingComponent } from 'leerling-geen-plaatsing';
 import { RedirectComponent } from 'leerling-redirect';
 import { RegistratiesState } from 'leerling-registraties-data-access';
-import { GuardableComponent } from 'leerling-util';
+import { GuardableComponent, isWeb } from 'leerling-util';
 import { VandaagComponent } from 'leerling-vandaag';
 import {
     CijferOverzichtComponent,
@@ -170,7 +170,8 @@ export const routes: Routes = [
     },
     {
         path: `${REDIRECT}`,
-        component: RedirectComponent
+        component: RedirectComponent,
+        canActivate: [isWeb]
     },
     {
         path: OAUTH_CALLBACK,
