@@ -24,12 +24,14 @@ import {
     ButtonComponent,
     DeviceService,
     ModalService as HarmonyModalService,
+    HmyDatePipe,
     IconDirective,
     IconPillComponent,
     PillComponent,
     PillTagColor,
     TagComponent,
     VakIconComponent,
+    formatDateNL,
     isPresent
 } from 'harmony';
 import { IconBijlage, IconChevronOnder, IconPijlLinks, IconSluiten, IconWaarschuwing, provideIcons } from 'harmony-icons';
@@ -46,10 +48,8 @@ import {
     ModalSettings,
     SidebarService,
     SidebarSettings,
-    SlDatePipe,
     createModalSettings,
-    createSidebarSettings,
-    formatDateNL
+    createSidebarSettings
 } from 'leerling-util';
 import { KwtActieUitvoerenReady, SBijlage, SStudiewijzerItem, getJaarWeek } from 'leerling/store';
 import { isEqual } from 'lodash-es';
@@ -93,7 +93,7 @@ export class RoosterItemDetailComponent implements OnInit {
     private _elementRef = inject(ElementRef);
     private _aanhefPipe = new MedewerkerAanhefAriaLabelPipe();
 
-    private _datePipe = new SlDatePipe();
+    private _datePipe = new HmyDatePipe();
 
     public loading = signal(false);
     public kwtFoutmelding: WritableSignal<string | undefined> = signal(undefined);

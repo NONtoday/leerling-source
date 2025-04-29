@@ -1,9 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { IconDirective, PillComponent } from 'harmony';
+import { formatDateNL, IconDirective, PillComponent } from 'harmony';
 import { IconKalenderDag, IconSlot, provideIcons } from 'harmony-icons';
 import { isDeadlineVerstreken, StripAndElipsePipe } from 'leerling-studiewijzer-api';
-import { formatDateNL } from 'leerling-util';
 import { SStudiewijzerItem } from 'leerling/store';
 
 export type IndicatieType = 'Te laat' | 'Heropend' | undefined;

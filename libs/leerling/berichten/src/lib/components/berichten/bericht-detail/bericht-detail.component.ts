@@ -101,7 +101,9 @@ export class BerichtDetailComponent implements OnInit {
 
     ngOnInit() {
         injectHeaderConfig({
-            onBackButtonClick: () => this.router.navigate([], { queryParams: { conversatie: undefined } }),
+            onBackButtonClick: () => {
+                this.router.navigate([], { queryParams: { conversatie: undefined } });
+            },
             title: this.meestRecentRelevanteBericht().onderwerp,
             injector: this.injector,
             headerActions: this.headerActions

@@ -154,7 +154,7 @@ export class HeaderService {
                     isVerzorger,
                     leerlingNaam: currentAccountLeerling.leerling?.nn,
                     initialen: currentAccountLeerling.leerling?.initialen,
-                    organisatienaam: accountProfile?.schoolnaam,
+                    organisatienaam: currentAccountLeerling.leerling?.vestiging ?? accountProfile?.schoolnaam,
                     avatarSrc: currentAccountLeerling.leerling?.avatarSrc,
                     title: title,
                     verbergLeerlingInfo: !isDesktop && Boolean(title),

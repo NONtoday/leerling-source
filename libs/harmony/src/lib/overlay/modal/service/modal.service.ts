@@ -16,12 +16,14 @@ interface ComponentModalInput<Component> extends ModalInput {
     component: Type<Component>;
     template?: never;
     inputs?: SignalInputs<Component> | undefined;
+    context?: never;
 }
 
 interface TemplateModalInput<Template> extends ModalInput {
     template: TemplateRef<Template>;
     component?: never;
     inputs?: never;
+    context?: Template;
 }
 
 @Injectable({
@@ -44,7 +46,13 @@ export class ModalService {
 
     modal<Component>(input: ComponentModalInput<Component>): Component;
     modal<Template>(input: TemplateModalInput<Template>): EmbeddedViewRef<Template>;
-    modal<Component, Template>({ template, component, inputs, settings }: ComponentModalInput<Component> | TemplateModalInput<Template>) {
+    modal<Component, Template>({
+        template,
+        component,
+        inputs,
+        context,
+        settings
+    }: ComponentModalInput<Component> | TemplateModalInput<Template>) {
         const fullSettings = createModalSettings(settings);
         if (this.modalRef) {
             this.animateAndClose();
@@ -81,7 +89,7 @@ export class ModalService {
         this.modalRef = modalComponentRef;
 
         if (template) {
-            return modalComponentRef.instance.contentRef.createEmbeddedView(template);
+            return modalComponentRef.instance.contentRef.createEmbeddedView(template, context);
         }
 
         const contentComponent = modalComponentRef.instance.contentRef.createComponent(component);

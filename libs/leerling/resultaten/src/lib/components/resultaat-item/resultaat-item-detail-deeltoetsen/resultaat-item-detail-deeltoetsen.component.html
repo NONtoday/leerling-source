@@ -8,8 +8,8 @@
                         [toonVakIcon]="false"
                         [ellipsis]="false"
                         tabindex="0" />
-                    @if (deeltoets.opmerkingen) {
-                        <p class="opmerking">{{ deeltoets.opmerkingen }}</p>
+                    @if (getGeldendeOfEersteOpmerking(deeltoets); as opmerking) {
+                        <p class="opmerking">{{ opmerking }}</p>
                     }
                 </div>
             }

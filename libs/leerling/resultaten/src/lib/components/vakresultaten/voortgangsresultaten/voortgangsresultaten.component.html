@@ -30,7 +30,7 @@
                     </div>
                 </div>
             }
-            @if (periode.rapportCijfer) {
+            @if (periode.rapportCijfer || periode.rapportCijferOpmerking) {
                 <div
                     class="gemiddelde-wrapper"
                     [hmyTooltip]="periode.rapportCijferOpmerking"

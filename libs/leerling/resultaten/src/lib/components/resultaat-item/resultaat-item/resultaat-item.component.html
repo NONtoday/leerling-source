@@ -21,7 +21,7 @@
             @if (resultaatItem().isHerkansing && resultaatItem().resultaat !== '') {
                 <i class="icon herkansing" [hmyTooltip]="resultaatItem().pogingTooltipOmschrijving" size="small" hmyIcon="herkansing"></i>
             }
-            @if (resultaatItem().heeftOpmerking) {
+            @if (heeftEenTeTonenOpmerking()) {
                 <i class="icon opmerking" size="small" hmyIcon="reacties" hmyTooltip="Cijfer heeft een opmerking"></i>
             }
         </div>

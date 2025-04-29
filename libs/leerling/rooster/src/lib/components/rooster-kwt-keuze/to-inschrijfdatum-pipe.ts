@@ -1,6 +1,6 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { isBefore } from 'date-fns';
-import { formatDateNL } from 'leerling-util';
+import { formatDateNL } from 'harmony';
 import { SAfspraakActie } from 'leerling/store';
 
 @Pipe({

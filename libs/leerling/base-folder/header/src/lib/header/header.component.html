@@ -36,17 +36,17 @@
                     [profielfotoVerbergen]="profielfotoVerbergen()"
                     [naam]="viewModel.leerlingNaam"></hmy-avatar>
                 @if (viewModel.isVerzorger) {
-                    <div>
+                    <div class="naam-container">
                         <div class="naam">
                             @if (!viewModel.verbergLeerlingInfo) {
-                                <span>{{ viewModel.leerlingNaam }}</span>
+                                <span [@fadeInOut]>{{ viewModel.leerlingNaam }}</span>
                             }
                             @if (isOnline()) {
                                 <i hmyIcon="chevronOnder" size="smallest"></i>
                             }
                         </div>
                         @if (!viewModel.verbergLeerlingInfo) {
-                            <span class="vestiging">{{ viewModel.organisatienaam ?? 'Onbekende school' }}</span>
+                            <span class="vestiging" [@fadeInOut]>{{ viewModel.organisatienaam ?? 'Onbekende school' }}</span>
                         }
                     </div>
                 }

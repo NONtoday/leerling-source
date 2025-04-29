@@ -4,7 +4,7 @@
     @if (naam()) {
         <div class="welkom-container">
             <span class="naam">Hoi {{ naam() }},</span>
-            <span class="datum">{{ datum | slDate: 'dag_uitgeschreven_dagnummer_maand' }}</span>
+            <span class="datum">{{ datum | hmyDate: 'dag_uitgeschreven_dagnummer_maand' }}</span>
         </div>
     } @else {
         <hmy-spinner />

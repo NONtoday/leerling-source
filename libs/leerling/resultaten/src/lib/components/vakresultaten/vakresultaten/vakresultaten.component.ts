@@ -85,7 +85,9 @@ export class VakresultatenComponent implements OnInit, OnDestroy {
     filterTabletIconViewContainer = viewChild('tabletFilterIcon', { read: ViewContainerRef });
 
     constructor() {
-        this._headerService.backButtonClicked$.pipe(takeUntilDestroyed()).subscribe(() => this.onBackButtonClick());
+        this._headerService.backButtonClicked$.pipe(takeUntilDestroyed()).subscribe(() => {
+            this.onBackButtonClick();
+        });
 
         onRefresh((reason) => {
             if (reason === RefreshReason.LEERLING_SWITCH) this._routerService.routeToCijfers();
@@ -117,7 +119,7 @@ export class VakresultatenComponent implements OnInit, OnDestroy {
                     vakLichtingPlaatsing.vakUuid,
                     vakLichtingPlaatsing.lichtingUuid,
                     vakLichtingPlaatsing.plaatsingUuid,
-                    metKolommen as boolean
+                    metKolommen
                 );
             }),
             map((dossier: VakToetsdossier) => {

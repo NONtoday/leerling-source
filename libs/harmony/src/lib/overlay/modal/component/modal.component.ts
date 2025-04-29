@@ -18,7 +18,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationStart, Router } from '@angular/router';
-import anime from 'animejs/lib/anime.es.js';
+import { animate } from 'animejs';
 import { IconPijlLinks, IconSluiten, IconWaarschuwing, provideIcons } from 'harmony-icons';
 import { createNotifier } from 'ngxtension/create-notifier';
 import { explicitEffect } from 'ngxtension/explicit-effect';
@@ -117,7 +117,7 @@ export class ModalComponent implements OnInit {
         if (first) {
             this.dragging.set(true);
         }
-        anime.running.forEach((x) => x.pause());
+
         if (last && y > 100) {
             this.animateAndClose(y);
         } else if (last) {
@@ -144,32 +144,29 @@ export class ModalComponent implements OnInit {
         if (this.deviceService.isTabletOrDesktop()) {
             this.contentState.set('hide-modal');
         } else {
-            anime({
-                targets: this.containerRef().nativeElement,
-                translateY: [y, this.containerRef().nativeElement.clientHeight],
+            animate(this.containerRef().nativeElement, {
+                translateY: [{ to: y }, { to: this.containerRef().nativeElement.clientHeight }],
                 duration: 200,
-                easing: 'linear',
-                complete: () => !this.isDestroyed && this.closeModal.emit()
+                ease: 'linear',
+                onComplete: () => !this.isDestroyed && this.closeModal.emit()
             });
         }
     }
 
     private springBackOpen() {
         this.dragging.set(false);
-        anime({
-            targets: this.containerRef().nativeElement,
+        animate(this.containerRef().nativeElement, {
             translateY: 0,
             duration: 100,
-            easing: 'spring'
+            ease: 'spring'
         });
     }
 
     private moveOnDrag(y: number) {
-        anime({
-            targets: this.containerRef().nativeElement,
+        animate(this.containerRef().nativeElement, {
             translateY: y,
             duration: 0,
-            easing: 'linear'
+            ease: 'linear'
         });
     }
 

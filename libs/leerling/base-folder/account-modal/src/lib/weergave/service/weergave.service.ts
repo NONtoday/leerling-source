@@ -1,8 +1,9 @@
 import { Injectable, Renderer2, RendererFactory2, WritableSignal, computed, inject, signal } from '@angular/core';
 import { DarkMode, DarkModeListenerData, DarkModeListenerHandle } from '@aparajita/capacitor-dark-mode';
 import { StatusBar, Style } from '@capacitor/status-bar';
+import { EdgeToEdge } from '@capawesome/capacitor-android-edge-to-edge-support';
 import { AuthenticationService } from 'leerling-authentication';
-import { isIOS } from 'leerling-util';
+import { isWeb } from 'leerling-util';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { StudiewijzerModus } from '../studiewijzer-modus';
 import { Theme } from '../theme';
@@ -72,6 +73,11 @@ export class WeergaveService {
     }
 
     private _setTheme(theme: Theme) {
+        // bij het starten van de applicatie moet de statusbar wel de juiste kleur krijgen
+        if (!isWeb()) {
+            EdgeToEdge.setBackgroundColor({ color: 'dark' === theme ? '#181c20' : '#ffffff' });
+            StatusBar.setStyle({ style: 'dark' === theme ? Style.Dark : Style.Light });
+        }
         if (theme === this._selectedTheme.value) return;
 
         switch (theme) {
@@ -82,9 +88,7 @@ export class WeergaveService {
                 this._renderer.addClass(document.documentElement, 'dark');
                 break;
         }
-        if (isIOS()) {
-            StatusBar.setStyle({ style: 'dark' === theme ? Style.Dark : Style.Light });
-        }
+
         this._selectedTheme.next(theme);
         saveThemePreference(theme);
     }
@@ -142,11 +146,11 @@ export class WeergaveService {
         return this.setSysteemVoorkeur(!this._systeemVoorkeur.value);
     }
 
-    public async toggleToonOnvoldoendesRood() {
+    public toggleToonOnvoldoendesRood() {
         return this.setToonOnvoldoendeRood(!this._toonOnvoldoendeRood.value);
     }
 
-    public async toggleProfielfotoVerbergen() {
+    public toggleProfielfotoVerbergen() {
         return this.setProfielfotoVerbergen(!this.profielfotoVerbergenSetting());
     }
 

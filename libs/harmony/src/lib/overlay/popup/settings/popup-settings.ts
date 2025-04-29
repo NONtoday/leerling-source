@@ -1,3 +1,5 @@
+import { Signal, signal } from '@angular/core';
+
 export const DEFAULT_ELEMENT_OFFSET = 8;
 export const DEFAULT_SCROLL_OFFSET = 8;
 
@@ -25,6 +27,7 @@ export interface PopupSettings {
         In that case you can disable this behavior by setting this property to false.
     */
     disableConnectedElement: boolean;
+    clickOutSideToClose: Signal<boolean>;
 }
 
 export const createPopupSettings = (updatedSettings?: Partial<PopupSettings>, includeStickyOffsets = true): PopupSettings => {
@@ -58,6 +61,7 @@ export const createPopupSettings = (updatedSettings?: Partial<PopupSettings>, in
         overflow: 'initial',
         allowBodyScroll: false,
         disableConnectedElement: true,
+        clickOutSideToClose: signal(true),
         ...updatedSettings
     };
 };

@@ -2,9 +2,9 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
 import { BijlageComponent } from '@shared/uploadfile/ui';
 import { collapseOnLeaveAnimation, expandOnEnterAnimation } from 'angular-animations';
-import { IconDirective, PillComponent } from 'harmony';
+import { HmyDatePipe, IconDirective, PillComponent } from 'harmony';
 import { IconChevronLinks, provideIcons } from 'harmony-icons';
-import { SlDatePipe, windowOpen } from 'leerling-util';
+import { windowOpen } from 'leerling-util';
 import { InleveringOndertitelPipe } from '../inlevering/inlevering-ondertitel.pipe';
 import { HeropendMoment } from '../studiewijzer-item-inleveringen/studiewijzer-item-inleveringen.component';
 
@@ -12,7 +12,7 @@ const ANIMATIONS = [collapseOnLeaveAnimation(), expandOnEnterAnimation()];
 
 @Component({
     selector: 'sl-heropende-inleveringen',
-    imports: [CommonModule, PillComponent, IconDirective, BijlageComponent, SlDatePipe, InleveringOndertitelPipe],
+    imports: [CommonModule, PillComponent, IconDirective, BijlageComponent, HmyDatePipe, InleveringOndertitelPipe],
     templateUrl: './heropende-inleveringen.component.html',
     styleUrl: './heropende-inleveringen.component.scss',
     animations: ANIMATIONS,

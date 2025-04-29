@@ -133,6 +133,7 @@ export interface SomtodayLeerling {
     gn: string; //voornaam
     nn: string; //roepnaam
     nr: string; //llnr
+    vestiging?: string; // vestiging
     schoolnaam?: string; // optional computed property
     initialen?: string; // optional computed property
     avatarSrc?: string;

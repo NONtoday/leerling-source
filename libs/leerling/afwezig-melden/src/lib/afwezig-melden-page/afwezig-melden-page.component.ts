@@ -112,7 +112,8 @@ export class AfwezigMeldenPageComponent implements GuardableComponent, Wizard {
                     text: 'Wil je stoppen met afwezig melden? De reeds ingevoerde informatie gaat verloren.',
                     annulerenButtonText: 'Nee, ik wil door',
                     bevestigenButtonText: 'Ja, stoppen',
-                    bevestigenButtonMode: 'delete'
+                    bevestigenButtonMode: 'delete',
+                    bevestigenButtonIcon: undefined
                 },
                 createModalSettings({
                     title: 'Afwezig melden stoppen',

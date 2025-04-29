@@ -254,6 +254,7 @@ export class StudiewijzerComponent implements OnInit, OnDestroy, GuardableCompon
         );
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     async ngOnInit() {
         this.toonWeekend.set(await this._studiewijzerService.getToonWeekendPreference());
     }

@@ -15,14 +15,8 @@ import {
 } from '@angular/core';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import {
-    AccessibilityService,
-    createModalSettings,
-    createPopupSettings,
-    FULL_SCREEN_MET_MARGIN,
-    ModalSettings,
-    SlDatePipe
-} from 'leerling-util';
+import { HmyDatePipe } from 'harmony';
+import { AccessibilityService, createModalSettings, createPopupSettings, FULL_SCREEN_MET_MARGIN, ModalSettings } from 'leerling-util';
 import { SStudiewijzerItem } from 'leerling/store';
 import { RoosterHuiswerkDropdownItemsComponent } from '../rooster-huiswerk-dropdown-items/rooster-huiswerk-dropdown-items.component';
 
@@ -40,7 +34,7 @@ export class RoosterHuiswerkStackDetailComponent implements AfterViewInit {
     public viewContainerRef = inject(ViewContainerRef);
     public elementRef = inject(ElementRef);
 
-    private _datePipe = new SlDatePipe();
+    private _datePipe = new HmyDatePipe();
     public dagItems = input.required<SStudiewijzerItem[]>();
     public weekItems = input.required<SStudiewijzerItem[]>();
     public datum = input<Date | undefined>(undefined);

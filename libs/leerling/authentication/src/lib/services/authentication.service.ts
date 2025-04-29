@@ -106,6 +106,7 @@ export class AuthenticationService {
                 if (this._oauthService.discoveryDocumentLoaded) this._tryCodeExchangeOnCurrentContext();
             });
 
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         this._oauthService.events.pipe(takeUntilDestroyed()).subscribe(async (incomingEvent: OAuthEvent) => {
             info('Incoming oauthEvent ' + JSON.stringify(incomingEvent));
             await this._authenticationState.saveCurrentSessionToStorage(this.inMemoryOauthStorage.backup());
@@ -129,7 +130,7 @@ export class AuthenticationService {
             }
             if (incomingEvent instanceof OAuthErrorEvent) {
                 this._setState('ERROR');
-                const errorEvent = incomingEvent as OAuthErrorEvent;
+                const errorEvent = incomingEvent;
                 this._authEvents$.next(
                     new OAuthIDPErrorEvent(
                         JSON.stringify(

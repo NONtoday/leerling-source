@@ -2,9 +2,9 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal, Signal, viewChild, WritableSignal } from '@angular/core';
 import { BijlageComponent } from '@shared/uploadfile/ui';
 import { differenceInDays, isAfter, isEqual, startOfDay } from 'date-fns';
-import { ButtonComponent, IconDirective, IconPillComponent, PillComponent } from 'harmony';
+import { ButtonComponent, HmyDatePipe, IconDirective, IconPillComponent, PillComponent } from 'harmony';
 import { IconCheck, IconInbox, IconInformatie, IconKalenderDag, IconSlot, IconTijd, provideIcons } from 'harmony-icons';
-import { SlDatePipe, windowOpen } from 'leerling-util';
+import { windowOpen } from 'leerling-util';
 import { InleveropdrachtCategorie, InleveropdrachtListService, InleveropdrachtService, SInlevering, SInlevermoment } from 'leerling/store';
 import { Observable } from 'rxjs';
 import { HeropendeInleveringenComponent } from '../heropende-inleveringen/heropende-inleveringen.component';
@@ -58,7 +58,7 @@ export class StudiewijzerItemInleveringenComponent {
 
     private _inleverenComponent = viewChild(InleverenComponent);
 
-    private _datePipe = new SlDatePipe();
+    private _datePipe = new HmyDatePipe();
 
     public modus: WritableSignal<'informatie' | 'inleveren'> = signal('informatie');
 

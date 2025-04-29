@@ -1,6 +1,6 @@
 import { format, getDay, isDate, isFriday, isMonday, isSameDay, isSameYear, nextFriday, parseISO, previousMonday } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import { DateFormat } from './sl-date.pipe';
+import { DateFormat } from './hmy-date.pipe';
 
 export const formatDateNL = (date: Date, format: DateFormat) => {
     switch (format) {
@@ -94,6 +94,8 @@ export const formatDateNL = (date: Date, format: DateFormat) => {
         }
         case 'maand_uitgeschreven':
             return formatNL(date, 'MMMM');
+        case 'dagnummer_maandnummer_jaar_tijd':
+            return formatNL(date, 'dd-MM-yyyy, HH:mm');
         default:
             return 'Onbekend format';
     }

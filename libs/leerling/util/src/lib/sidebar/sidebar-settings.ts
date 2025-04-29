@@ -11,6 +11,7 @@ export interface SidebarSettings {
     iconLeft?: IconInput;
     iconsRight?: IconInput[];
     titleIcon?: TitleIconInput;
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     vakIcon?: IconName | string;
     avatar?: string;
     onClose?: (closeTrigger: SidebarCloseTrigger) => void;

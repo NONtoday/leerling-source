@@ -16,7 +16,7 @@ import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-i
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { isSameDay, isSameYear, setHours, setMilliseconds, setMinutes, setSeconds } from 'date-fns';
-import { ButtonComponent, IconDirective, SignalInputs, SpinnerComponent, ToggleComponent, isPresent } from 'harmony';
+import { ButtonComponent, IconDirective, SignalInputs, SpinnerComponent, ToggleComponent, capitalize, formatNL, isPresent } from 'harmony';
 import {
     IconBewerken,
     IconChevronRechts,
@@ -31,16 +31,7 @@ import { SomtodayLeerling } from 'leerling-authentication';
 import { AFWEZIGHEID } from 'leerling-base';
 import { RegistratiesService } from 'leerling-registraties-data-access';
 import { SRegistratieCategorieNaam, getSlugifiedCategorieNaam } from 'leerling-registraties-models';
-import {
-    AccessibilityService,
-    SidebarService,
-    SidebarSettings,
-    Wizard,
-    capitalize,
-    createSidebarSettings,
-    formatNL,
-    windowOpen
-} from 'leerling-util';
+import { AccessibilityService, SidebarService, SidebarSettings, Wizard, createSidebarSettings, windowOpen } from 'leerling-util';
 import { RechtenService, SAbsentieMeldingInvoer, SAbsentieReden, SLeerlingSchoolgegevens } from 'leerling/store';
 import { catchError, distinctUntilChanged, filter, of, pairwise, startWith, switchMap } from 'rxjs';
 import { AbsentieService } from '../services/absentie.service';

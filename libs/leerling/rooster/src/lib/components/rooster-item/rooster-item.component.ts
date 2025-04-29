@@ -17,7 +17,7 @@ import {
     signal
 } from '@angular/core';
 import { format } from 'date-fns';
-import { DeviceService, IconPillComponent, PillComponent, PillTagColor, PillTagType } from 'harmony';
+import { DeviceService, HmyDatePipe, IconPillComponent, PillComponent, PillTagColor, PillTagType } from 'harmony';
 import { IconHuiswerk, IconToets, IconToetsGroot, IconYesRadio, provideIcons } from 'harmony-icons';
 import { StudiemateriaalComponent, StudiemateriaalVakselectieComponent } from 'leerling-studiemateriaal';
 import {
@@ -26,7 +26,6 @@ import {
     OverlayService,
     ResizeObserverService,
     SidebarService,
-    SlDatePipe,
     ToHuiswerkTypenPipe,
     WerkdrukIndicatorComponent
 } from 'leerling-util';
@@ -99,7 +98,7 @@ export class RoosterItemComponent implements OnInit, OnChanges, OnDestroy {
     private _accessibilityService = inject(AccessibilityService);
     private _deviceService = inject(DeviceService);
 
-    private _datePipe = new SlDatePipe();
+    private _datePipe = new HmyDatePipe();
 
     public titel = signal('');
     public isHovered = signal(false);

@@ -14,7 +14,7 @@ import {
     viewChild
 } from '@angular/core';
 import { Router } from '@angular/router';
-import anime from 'animejs/lib/anime.es.js';
+import { animate, createTimeline } from 'animejs';
 import { isToday } from 'date-fns';
 import { DeviceService, IconDirective, PopupService, VerwijderConfirmationComponent, createPopupSettings, isPresent } from 'harmony';
 import {
@@ -215,36 +215,37 @@ export class BerichtSamenvattingComponent {
             this.swipeState.set('default');
         };
 
-        anime
-            .timeline({
-                duration: 200,
-                easing: 'linear'
-            })
-            .add({
-                targets: this.elementRef.nativeElement,
+        createTimeline({
+            defaults: { ease: 'linear', duration: 200 }
+        })
+            .add(this.elementRef.nativeElement, {
                 translateX: -this.elementRef.nativeElement.offsetWidth - 16
             })
-            .add({
-                targets: this.verwijderIcon().nativeElement,
-                keyframes: [{ scale: 1.5 }, { scale: 1 }],
+            .add(
+                this.verwijderIcon().nativeElement,
+                {
+                    left: this.elementRef.nativeElement.offsetWidth / 2 - 10
+                },
+                0
+            )
+            .add(this.verwijderIcon().nativeElement, {
+                scale: [{ to: 1.5 }, { to: 1 }],
                 duration: 400
             })
-            .add({
-                targets: this.elementRef.nativeElement,
+            .add(this.elementRef.nativeElement, {
                 translateX: -this.elementRef.nativeElement.offsetWidth * 2,
-                complete: onComplete
+                onComplete
             })
             .add(
+                this.verwijderIcon().nativeElement,
                 {
-                    targets: this.verwijderIcon().nativeElement,
                     delay: 400,
                     left: 20,
                     duration: 0,
-                    complete: () => this.confirmAnimationRunning.set(false)
+                    onComplete: () => this.confirmAnimationRunning.set(false)
                 },
                 animationStartOffset(200)
             );
-        this.animateVerwijderIconToCenter();
     }
 
     confirmMarkeerSwipe(event?: Event) {
@@ -255,61 +256,46 @@ export class BerichtSamenvattingComponent {
             else this.markeerAlsOngelezen();
             this.swipeState.set('default');
         };
-        anime
-            .timeline({
-                duration: 200,
-                easing: 'linear'
-            })
-            .add({
-                targets: this.elementRef.nativeElement,
+
+        createTimeline({
+            defaults: { ease: 'linear', duration: 200 }
+        })
+            .add(this.elementRef.nativeElement, {
                 translateX: this.elementRef.nativeElement.offsetWidth + 16
             })
-            .add({
-                targets: this.markeerIcon().nativeElement,
-                keyframes: [{ scale: 1.5 }, { scale: 1 }],
+            .add(
+                this.markeerIcon().nativeElement,
+                {
+                    right: this.elementRef.nativeElement.offsetWidth / 2 - 10
+                },
+                0
+            )
+            .add(this.markeerIcon().nativeElement, {
+                scale: [{ to: 1.5 }, { to: 1 }],
                 duration: 400
             })
             .add(
+                this.elementRef.nativeElement,
                 {
-                    targets: this.elementRef.nativeElement,
                     translateX: 0,
-                    complete: onComplete
+                    onComplete
                 },
-                animationStartOffset(400)
+                '+=400'
             )
             .add(
+                this.markeerIcon().nativeElement,
                 {
-                    targets: this.markeerIcon().nativeElement,
                     delay: 400,
                     right: 20,
                     duration: 0,
-                    complete: () => this.confirmAnimationRunning.set(false)
+                    onComplete: () => this.confirmAnimationRunning.set(false)
                 },
-                animationStartOffset(200)
+                '+=200'
             );
-        this.animateMarkeerIconToCenter();
-    }
-
-    private animateMarkeerIconToCenter() {
-        anime({
-            targets: this.markeerIcon().nativeElement,
-            right: this.elementRef.nativeElement.offsetWidth / 2 - 10,
-            duration: 200,
-            easing: 'linear'
-        });
-    }
-    private animateVerwijderIconToCenter() {
-        anime({
-            targets: this.verwijderIcon().nativeElement,
-            left: this.elementRef.nativeElement.offsetWidth / 2 - 10,
-            duration: 200,
-            easing: 'linear'
-        });
     }
 
     private dragElement(translateX: number) {
-        anime({
-            targets: this.elementRef.nativeElement,
+        animate(this.elementRef.nativeElement, {
             translateX,
             duration: 0,
             easing: 'linear'
@@ -318,8 +304,7 @@ export class BerichtSamenvattingComponent {
 
     private resetElement() {
         this.swipeState.set('default');
-        anime({
-            targets: this.elementRef.nativeElement,
+        animate(this.elementRef.nativeElement, {
             translateX: 0,
             duration: 200,
             easing: 'linear'

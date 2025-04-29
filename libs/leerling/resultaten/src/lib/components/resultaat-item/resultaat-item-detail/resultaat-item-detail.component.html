@@ -65,13 +65,13 @@
             </div>
         }
 
-        @if (resultaatItem().details && resultaatItem().heeftOpmerking) {
+        @if (getGeldendeOfEersteOpmerking(); as opmerking) {
             <div class="opmerking" tabindex="200" role="text">
                 <p class="opmerking-titel">
                     <i class="icon" size="small" hmyIcon="reacties"></i>
                     Opmerking van docent
                 </p>
-                <p class="opmerking">{{ resultaatItem().details?.opmerking }}</p>
+                <p class="opmerking">{{ opmerking }}</p>
             </div>
         }
 

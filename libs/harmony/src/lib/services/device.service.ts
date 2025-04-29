@@ -67,14 +67,16 @@ export class DeviceService {
         startWith(this.isPhone()),
         shareReplayLastValue()
     );
-    isTabletPortait$ = this.onDeviceChange$.pipe(
-        map((state) => state.breakpoints[tabletPortraitQuery]),
-        startWith(this.isTabletPortrait()),
+
+    isTablet$ = this.onDeviceChange$.pipe(
+        map((state) => state.breakpoints[tabletQuery]),
+        startWith(this.isTablet()),
         shareReplayLastValue()
     );
 
     isPhoneSignal = toSignal(this.isPhone$, { initialValue: this.isPhone() });
     isPhoneOrTabletPortraitSignal = toSignal(this.isPhoneOrTabletPortrait$, { initialValue: this.isPhoneOrTabletPortrait() });
+    isTabletSignal = toSignal(this.isTablet$, { initialValue: this.isTablet() });
     isTabletOrDesktopSignal = toSignal(this.isTabletOrDesktop$, { initialValue: this.isTabletOrDesktop() });
     isDesktopSignal = toSignal(this.isDesktop$, { initialValue: this.isDesktop() });
     isPhoneOrTabletSignal = toSignal(this.isPhoneOrTablet$, { initialValue: this.isPhoneOrTablet() });

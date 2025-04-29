@@ -11,9 +11,8 @@ import {
     input,
     output
 } from '@angular/core';
-import { ButtonComponent, SpinnerComponent } from 'harmony';
+import { ButtonComponent, HmyDatePipe, SpinnerComponent } from 'harmony';
 import { sorteerStudiewijzerItems } from 'leerling-studiewijzer-api';
-import { SlDatePipe } from 'leerling-util';
 import { derivedAsync } from 'ngxtension/derived-async';
 import { StudiewijzerWeek } from '../../services/studiewijzer-model';
 import { StudiewijzerService } from '../../services/studiewijzer.service';
@@ -31,7 +30,7 @@ import { StudiewijzerItemsComponent } from '../studiewijzer-items/studiewijzer-i
 export class StudiewijzerWeekComponent {
     private _studiewijzerService = inject(StudiewijzerService);
     public elementRef = inject(ElementRef);
-    private _datePipe = new SlDatePipe();
+    private _datePipe = new HmyDatePipe();
 
     @ViewChild('weekHeader', { read: ElementRef, static: true }) weekHeader: ElementRef;
     @ViewChildren(StudiewijzerDagComponent) dagenComponents: QueryList<StudiewijzerDagComponent>;

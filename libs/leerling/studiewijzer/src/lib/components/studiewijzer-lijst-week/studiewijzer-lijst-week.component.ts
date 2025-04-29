@@ -13,9 +13,8 @@ import {
     viewChildren
 } from '@angular/core';
 import { differenceInDays, isSameDay } from 'date-fns';
-import { PillComponent, SpinnerComponent } from 'harmony';
+import { HmyDatePipe, PillComponent, SpinnerComponent } from 'harmony';
 import { sorteerStudiewijzerItems } from 'leerling-studiewijzer-api';
-import { SlDatePipe } from 'leerling-util';
 import { isDayInCurrentSchoolyear } from 'leerling/store';
 import { derivedAsync } from 'ngxtension/derived-async';
 import { StudiewijzerWeek } from '../../services/studiewijzer-model';
@@ -38,7 +37,7 @@ export const WEEK_DIVIDER_HEIGHT = 33;
 export class StudiewijzerLijstWeekComponent {
     private _studiewijzerService = inject(StudiewijzerService);
     public elementRef = inject(ElementRef);
-    private _datePipe = new SlDatePipe();
+    private _datePipe = new HmyDatePipe();
 
     public weekHeader = viewChild.required('weekHeader', { read: ElementRef });
     public weekTaken = viewChild('weekTaken', { read: ElementRef });

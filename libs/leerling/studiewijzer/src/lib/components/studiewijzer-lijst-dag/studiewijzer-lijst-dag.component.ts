@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ElementRef, inject, input } from '@angular/core';
-import { NotificationSolidComponent, PillComponent, SpinnerComponent } from 'harmony';
+import { HmyDatePipe, NotificationSolidComponent, PillComponent, SpinnerComponent } from 'harmony';
 import { IconChevronBoven, provideIcons } from 'harmony-icons';
-import { ElementRefProvider, SlDatePipe } from 'leerling-util';
+import { ElementRefProvider } from 'leerling-util';
 import { derivedAsync } from 'ngxtension/derived-async';
 import { StudiewijzerDag } from '../../services/studiewijzer-model';
 import { StudiewijzerService } from '../../services/studiewijzer.service';
@@ -21,7 +21,7 @@ import { StudiewijzerItemsComponent } from '../studiewijzer-items/studiewijzer-i
         AantalAfgevinktAriaPipe,
         AllesAfgevinktPipe,
         SpinnerComponent,
-        SlDatePipe,
+        HmyDatePipe,
         NotificationSolidComponent
     ],
     templateUrl: './studiewijzer-lijst-dag.component.html',

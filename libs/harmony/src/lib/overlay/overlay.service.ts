@@ -6,22 +6,24 @@ import { ModalService } from './modal/service/modal.service';
 import { PopupService } from './popup/service/popup.service';
 import { PopupSettings, createPopupSettings } from './popup/settings/popup-settings';
 
-interface OverlayInput {
+export interface OverlayInput {
     element: ViewContainerRef;
     popupSettings?: Partial<PopupSettings>;
     modalSettings?: Partial<ModalSettings>;
 }
 
-interface ComponentOverlayInput<Component> extends OverlayInput {
+export interface ComponentOverlayInput<Component> extends OverlayInput {
     component: Type<Component>;
     template?: never;
     inputs?: SignalInputs<Component> | undefined;
+    context?: never;
 }
 
-interface TemplateOverlayInput<Template> extends OverlayInput {
+export interface TemplateOverlayInput<Template> extends OverlayInput {
     template: TemplateRef<Template>;
     component?: never;
     inputs?: never;
+    context?: Template;
 }
 
 @Injectable({
@@ -39,6 +41,7 @@ export class OverlayService {
         template,
         element,
         inputs,
+        context,
         popupSettings = createPopupSettings(),
         modalSettings = createModalSettings()
     }: ComponentOverlayInput<Component> | TemplateOverlayInput<Template>) {
@@ -49,8 +52,8 @@ export class OverlayService {
         }
         if (!template) throw new Error('Either component or template must be provided');
         return this.deviceService.isTabletOrDesktop()
-            ? this.popupService.popup<Template>({ template, element, settings: popupSettings })
-            : this.modalService.modal<Template>({ template, settings: modalSettings });
+            ? this.popupService.popup<Template>({ template, element, context, settings: popupSettings })
+            : this.modalService.modal<Template>({ template, context, settings: modalSettings });
     }
 
     isOpen = (connectedElement: ViewContainerRef) =>

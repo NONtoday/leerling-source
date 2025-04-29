@@ -270,7 +270,7 @@ function createLaatsteResultaat(
         omschrijving: geldendResultaat.omschrijving,
         vakNaam: vakNaam,
         heeftOpmerking: heeftOpmerking,
-        opmerking: upperFirst(opmerking),
+        opmerking: opmerking ? upperFirst(opmerking) : undefined,
         isHerkansing: herkansing !== undefined && herkansing > 0,
         datum: datum,
         formattedDate: formatCijferDate(datum),

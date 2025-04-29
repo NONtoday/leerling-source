@@ -17,12 +17,14 @@ interface ComponentPopupInput<Component> extends PopupInput {
     component: Type<Component>;
     template?: never;
     inputs?: SignalInputs<Component> | undefined;
+    context?: never;
 }
 
 interface TemplatePopupInput<Template> extends PopupInput {
     template: TemplateRef<Template>;
     component?: never;
     inputs?: never;
+    context?: Template;
 }
 
 @Injectable({
@@ -41,6 +43,7 @@ export class PopupService {
         template,
         element,
         inputs,
+        context,
         settings
     }: ComponentPopupInput<Component> | TemplatePopupInput<Template>) {
         const fullSettings = createPopupSettings(settings);
@@ -109,7 +112,7 @@ export class PopupService {
             return contentComponentRef.instance;
         }
 
-        return popupComponentRef.instance.contentRef.createEmbeddedView(template);
+        return popupComponentRef.instance.contentRef.createEmbeddedView(template, context);
     }
 
     public isPopupOpen(): boolean {
@@ -166,4 +169,10 @@ export class PopupService {
     isOpen = (connectedElement: ViewContainerRef) => this.openPopupsMap.has(connectedElement);
     close = (connectedElement: ViewContainerRef) => this.openPopupsMap.get(connectedElement)?.instance.animateAndClose();
     closeAll = () => this.openPopupsMap.forEach((popup) => popup.instance.animateAndClose());
+    updateSettings = (connectedElement: ViewContainerRef, settings: Partial<PopupSettings>) => {
+        const popupComponentRef = this.openPopupsMap.get(connectedElement);
+        if (popupComponentRef) {
+            popupComponentRef.setInput('settings', { ...popupComponentRef.instance.settings(), ...settings });
+        }
+    };
 }

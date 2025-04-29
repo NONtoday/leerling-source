@@ -236,7 +236,8 @@ export class BerichtenComponent implements GuardableComponent {
                     text: 'Dit bericht is niet verzonden en wordt niet opgeslagen',
                     annulerenButtonText: 'Annuleren',
                     bevestigenButtonText: 'Bericht verwijderen',
-                    bevestigenButtonMode: 'delete'
+                    bevestigenButtonMode: 'delete',
+                    bevestigenButtonIcon: undefined
                 },
                 createModalSettings({
                     title: 'Weet je het zeker?',

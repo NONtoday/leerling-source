@@ -25,6 +25,7 @@ import {
     SpinnerComponent,
     TagComponent,
     createPopupSettings,
+    formatDateNL,
     provideVakIcons,
     stripHtml
 } from 'harmony';
@@ -32,7 +33,7 @@ import { IconBijlage, IconReply, provideIcons } from 'harmony-icons';
 import { WeergaveService } from 'leerling-account-modal';
 import { AuthenticationService } from 'leerling-authentication';
 import { BijlageComponent, HtmlContentComponent } from 'leerling-base';
-import { AccessibilityService, VakToIconPipe, formatDateNL, windowOpen } from 'leerling-util';
+import { AccessibilityService, VakToIconPipe, windowOpen } from 'leerling-util';
 import { AUTOMATISCH_BERICHT, SBoodschap, getPreviewInhoudBoodschap, kanReagerenOpBoodschap } from 'leerling/store';
 import { toLazySignal } from 'ngxtension/to-lazy-signal';
 

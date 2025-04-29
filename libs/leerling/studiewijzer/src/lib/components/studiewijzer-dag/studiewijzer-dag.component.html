@@ -26,13 +26,15 @@
     <div
         class="dag-header"
         #dagHeader
-        [attr.aria-label]="(dag().datum | slDate: 'dag_uitgeschreven_dagnummer_maand') + (items | aantalAfgevinktAria)"
+        [attr.aria-label]="(dag().datum | hmyDate: 'dag_uitgeschreven_dagnummer_maand') + (items | aantalAfgevinktAria)"
         tabindex="0"
         role="text">
         <p
             class="datum"
             [ngClass]="{ first: dag().isEersteDag, vandaag: dag().isVandaag, eerstedagweekend: dag().isWeekendDag && dag().isEersteDag }">
-            {{ dag().isVandaag && !isMobileOrPortrait() ? (dag().datum | slDate: 'dag_uitgeschreven_dagnummer_maand_kort') : formatDate() }}
+            {{
+                dag().isVandaag && !isMobileOrPortrait() ? (dag().datum | hmyDate: 'dag_uitgeschreven_dagnummer_maand_kort') : formatDate()
+            }}
         </p>
         @if (isMobileOrPortrait()) {
             @if (items.length > 0) {

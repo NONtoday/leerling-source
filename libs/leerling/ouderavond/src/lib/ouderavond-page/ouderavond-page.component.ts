@@ -80,7 +80,8 @@ export class OuderavondPageComponent implements GuardableComponent, Wizard {
                     text: 'Wil je stoppen met de inschrijving? De reeds ingevoerde informatie gaat verloren.',
                     annulerenButtonText: 'Nee, ik wil door',
                     bevestigenButtonText: 'Ja, stoppen',
-                    bevestigenButtonMode: 'delete'
+                    bevestigenButtonMode: 'delete',
+                    bevestigenButtonIcon: undefined
                 },
                 createModalSettings({
                     title: 'Inschrijven stoppen',

@@ -1,6 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-
-import { capitalize, formatNL, removePeriod } from './sl-date-util';
+import { capitalize, formatNL, removePeriod } from 'harmony';
 
 @Pipe({ name: 'slTwoDate', standalone: true })
 export class SlTwoDatePipe implements PipeTransform {

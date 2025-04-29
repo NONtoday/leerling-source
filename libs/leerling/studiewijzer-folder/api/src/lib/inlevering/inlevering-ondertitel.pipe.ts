@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { SlDatePipe } from 'leerling-util';
+import { HmyDatePipe } from 'harmony';
 import { SInlevering } from 'leerling/store';
 
 @Pipe({
@@ -7,7 +7,7 @@ import { SInlevering } from 'leerling/store';
     standalone: true
 })
 export class InleveringOndertitelPipe implements PipeTransform {
-    private _datePipe = new SlDatePipe();
+    private _datePipe = new HmyDatePipe();
 
     public transform(inlevering: SInlevering): string | undefined {
         return [

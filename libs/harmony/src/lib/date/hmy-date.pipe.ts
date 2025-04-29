@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { formatDateNL } from './sl-date-util';
+import { formatDateNL } from './hmy-date-util';
 
 export type DateFormat =
     /** voorbeeld: '05:00' of '19:00' */
@@ -69,10 +69,13 @@ export type DateFormat =
     | 'week_begin_dag_totenmet_eind_dag_maand_lang'
 
     /** voorbeeld: 'januari' / 'augustus' */
-    | 'maand_uitgeschreven';
+    | 'maand_uitgeschreven'
 
-@Pipe({ name: 'slDate', standalone: true })
-export class SlDatePipe implements PipeTransform {
+    /** voorbeeld: '29-01-2024, 16:11' */
+    | 'dagnummer_maandnummer_jaar_tijd';
+
+@Pipe({ name: 'hmyDate', standalone: true })
+export class HmyDatePipe implements PipeTransform {
     transform(date: Date | undefined, _format: DateFormat) {
         return date ? formatDateNL(date, _format) : '';
     }

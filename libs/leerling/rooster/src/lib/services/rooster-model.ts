@@ -12,8 +12,7 @@ import {
     isWithinInterval,
     startOfDay
 } from 'date-fns';
-import { isPresent } from 'harmony';
-import { formatDateNL } from 'leerling-util';
+import { formatDateNL, isPresent } from 'harmony';
 import { SAfspraakActie, SAfspraakDag, SAfspraakItem, SKWTInfo, SMaatregelToekenning, SSWIDag, SStudiewijzerItem } from 'leerling/store';
 
 const nu = new Date();

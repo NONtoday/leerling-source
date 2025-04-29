@@ -81,7 +81,9 @@ export class BerichtBeantwoordenComponent implements OnInit {
         this.form.markAsPristine();
     }
 
-    annuleren = () => this.router.navigate([], { queryParams: { edit: null }, queryParamsHandling: 'merge' });
+    annuleren = () => {
+        this.router.navigate([], { queryParams: { edit: null }, queryParamsHandling: 'merge' });
+    };
 
     beantwoord() {
         if (this.form.valid && this.form.controls.inhoud.value) {

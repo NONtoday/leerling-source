@@ -23,7 +23,8 @@ import {
     IconDirective,
     MessageBarComponent,
     SpinnerComponent,
-    createModalSettings
+    createModalSettings,
+    formatDateNL
 } from 'harmony';
 import { IconInplannen, IconNoRadio, IconSluiten, IconVerversen, IconWaarschuwing, IconYesRadio, provideIcons } from 'harmony-icons';
 import { AppStatusService } from 'leerling-app-status';
@@ -34,8 +35,7 @@ import {
     InfoMessageService,
     SidebarService,
     SidebarSettings,
-    createSidebarSettings,
-    formatDateNL
+    createSidebarSettings
 } from 'leerling-util';
 import { KwtActieUitvoerenReady, SAfspraakActie, getJaarWeek } from 'leerling/store';
 import { isEqual, sortBy } from 'lodash-es';
@@ -183,7 +183,8 @@ export class RoosterKwtInschrijvenComponent implements OnInit, OnDestroy, AfterV
                     text: "Je hebt een moment gekozen, maar bent nog niet ingeschreven. Voltooi je inschrijving door 'Inschrijven' te kiezen.",
                     annulerenButtonText: 'Niet inschrijven',
                     bevestigenButtonText: 'Inschrijven',
-                    bevestigenButtonMode: 'primary'
+                    bevestigenButtonMode: 'primary',
+                    bevestigenButtonIcon: undefined
                 },
                 createModalSettings({
                     title: 'Je inschrijving is nog niet voltooid',

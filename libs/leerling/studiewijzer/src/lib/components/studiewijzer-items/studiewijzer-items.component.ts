@@ -82,10 +82,12 @@ export class StudiewijzerItemsComponent implements OnChanges, AfterViewInit {
         // We vergelijken bewust niet de hele studiewijzeritem, want dan verandert er iets bij het afvinken
         // van huiswerk.
         const vorigeItemIds = items?.previousValue
-            ? (items.previousValue as SStudiewijzerItem[]).map((item) => item.id + '; ' + item.datumTijd).sort()
+            ? // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+              (items.previousValue as SStudiewijzerItem[]).map((item) => item.id + '; ' + item.datumTijd).sort()
             : [];
         const huidigeItemIds = items?.currentValue
-            ? (items.currentValue as SStudiewijzerItem[]).map((item) => item.id + '; ' + item.datumTijd).sort()
+            ? // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+              (items.currentValue as SStudiewijzerItem[]).map((item) => item.id + '; ' + item.datumTijd).sort()
             : [];
         const zijnItemsGewijzigd = !isEqual(vorigeItemIds, huidigeItemIds);
 

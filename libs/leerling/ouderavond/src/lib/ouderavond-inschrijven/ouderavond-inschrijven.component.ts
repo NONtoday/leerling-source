@@ -2,9 +2,9 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, input, model, viewChildren } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { subDays } from 'date-fns';
-import { DeviceService, IconDirective, IconPillComponent, MessageBarComponent, ToggleComponent } from 'harmony';
+import { DeviceService, HmyDatePipe, IconDirective, IconPillComponent, MessageBarComponent, ToggleComponent } from 'harmony';
 import { IconInformatie, IconKalenderDag, provideIcons } from 'harmony-icons';
-import { SlContainsPipe, SlDatePipe } from 'leerling-util';
+import { SlContainsPipe } from 'leerling-util';
 import { AfspraakVerzoek, OuderavondInfo } from '../model/ouderavond.model';
 import { OuderavondKeuzeComponent } from '../ouderavond-keuze/ouderavond-keuze.component';
 import { OuderavondData } from '../ouderavond-wizard/ouderavond-wizard.component';
@@ -28,7 +28,7 @@ import { OuderavondData } from '../ouderavond-wizard/ouderavond-wizard.component
 })
 export class OuderavondInschrijvenComponent {
     private ouderavondKeuzes = viewChildren(OuderavondKeuzeComponent);
-    private _datePipe = new SlDatePipe();
+    private _datePipe = new HmyDatePipe();
 
     private _deviceService = inject(DeviceService);
 
@@ -87,6 +87,7 @@ export class OuderavondInschrijvenComponent {
     }
 
     keuzeAriaLabel(keuze: AfspraakVerzoek, isChecked: boolean): string {
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         return `${keuze.vak}, docenten: ${keuze.docenten}, ${isChecked ? 'geselecteerd' : 'niet geselecteerd'}`;
     }
 }

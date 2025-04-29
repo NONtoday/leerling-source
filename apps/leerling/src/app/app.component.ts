@@ -55,7 +55,7 @@ import {
     storeInitialUrl
 } from 'leerling-util';
 import { AccountContextMetRechten, AvailablePushType, RechtenService, SPushAction, SanitizeRechten, SwitchContext } from 'leerling/store';
-import { combineLatest, debounceTime, filter, fromEvent, map, pairwise, startWith } from 'rxjs';
+import { combineLatest, debounceTime, filter, fromEvent, pairwise, startWith } from 'rxjs';
 import { getRootPath } from '../root-redirect/root-redirect.component';
 
 const contextRemovalEvents: AuthenticationEventType[] = [
@@ -177,6 +177,7 @@ export class AppComponent implements OnInit, AfterViewInit {
                     gewijzigdeRechten.push('berichten');
                 if (gewijzigdeRechten.length > 0) {
                     if (gewijzigdeRechten.length === 1) this._rechtUnavailableMessage(gewijzigdeRechten.join(', '));
+                    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
                     else this._rechtUnavailableMessage(gewijzigdeRechten.slice(0, -1).join(', ') + ' en ' + gewijzigdeRechten.slice(-1));
                 }
             });
@@ -293,6 +294,7 @@ export class AppComponent implements OnInit, AfterViewInit {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     async ngOnInit() {
         this._somtodayApiConfig.apiUrl = environment.apiUrl;
         this._applySafeArea();
@@ -308,7 +310,6 @@ export class AppComponent implements OnInit, AfterViewInit {
         this._router.events
             .pipe(
                 filter((event) => event instanceof NavigationError),
-                map((event) => event as NavigationError),
                 takeUntilDestroyed()
             )
             .subscribe((event) => {
@@ -423,11 +424,13 @@ export class AppComponent implements OnInit, AfterViewInit {
                 }
                 // Catch om te zorgen dat het niets doet crashen
                 if (isIOS()) {
+                    // eslint-disable-next-line @typescript-eslint/no-empty-function
                     Browser.close().catch(() => {});
                 }
             });
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         App.addListener('resume', async () => {
             if ((await this._authenticationService.hasChangedContext()) && isWeb()) {
                 window.location.reload();

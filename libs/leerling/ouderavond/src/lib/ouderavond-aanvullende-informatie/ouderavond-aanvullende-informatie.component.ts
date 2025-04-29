@@ -1,9 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input, model } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { IconDirective, isPresent, MessageBarComponent, ToggleComponent } from 'harmony';
+import { HmyDatePipe, IconDirective, isPresent, MessageBarComponent, ToggleComponent } from 'harmony';
 import { IconKlok, provideIcons } from 'harmony-icons';
-import { SlDatePipe } from 'leerling-util';
 import { OuderavondInfo } from '../model/ouderavond.model';
 import { OuderavondVakDocentComponent } from '../ouderavond-vak-docent/ouderavond-vak-docent.component';
 import { OuderavondData } from '../ouderavond-wizard/ouderavond-wizard.component';
@@ -17,7 +16,7 @@ import { OuderavondData } from '../ouderavond-wizard/ouderavond-wizard.component
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class OuderavondAanvullendeInformatieComponent {
-    private _datePipe = new SlDatePipe();
+    private _datePipe = new HmyDatePipe();
 
     public data = model.required<OuderavondData>();
     public ouderavondInfo = input.required<OuderavondInfo>();

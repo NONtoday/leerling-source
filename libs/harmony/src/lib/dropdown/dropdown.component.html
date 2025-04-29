@@ -16,7 +16,13 @@
     <span class="dropdown-value ellipsis" [class.placeholder]="!selected()">
         {{ selected()?.label ?? placeholder() }}
     </span>
-    <i class="dropdown-chevron" hmyIcon="chevronOnder" size="smallest"></i>
+    @if (selected() && showCloseButton()) {
+        <div class="sluiten-icon" (click)="removeSelection($event)">
+            <i color="fg-on-neutral-weak" hmyIcon="sluiten" size="smallest"></i>
+        </div>
+    } @else {
+        <i class="dropdown-chevron" hmyIcon="chevronOnder" size="smallest"></i>
+    }
 </div>
 
 <ng-template #dropdownList>
@@ -25,7 +31,7 @@
             class="dropdown-list-container"
             [style.--list-popup-max-height]="listPopupMaxHeight()"
             [class.wrap-items]="shouldWrap()"
-            [cdkTrapFocusAutoCapture]="true"
+            [cdkTrapFocusAutoCapture]="useAutoCapture()"
             role="listbox"
             body-scroll-lock-ignore
             cdkTrapFocus>

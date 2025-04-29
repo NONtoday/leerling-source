@@ -34,4 +34,12 @@ export class ResultaatItemComponent {
 
         return null;
     });
+
+    public heeftEenTeTonenOpmerking = computed(() => {
+        const resultaatItem = this.resultaatItem();
+        if (resultaatItem.details?.opmerking) return !!resultaatItem.details.opmerking;
+        return !resultaatItem.resultaat || resultaatItem.resultaat === '-'
+            ? this.resultaatItem()?.details?.pogingen?.find((poging) => poging.opmerking != undefined)?.opmerking !== undefined
+            : false;
+    });
 }

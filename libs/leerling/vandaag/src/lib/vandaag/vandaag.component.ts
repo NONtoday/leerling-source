@@ -1,21 +1,21 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
-import { ButtonComponent, SpinnerComponent } from 'harmony';
+import { ButtonComponent, HmyDatePipe, SpinnerComponent } from 'harmony';
 import { IconSettings, provideIcons } from 'harmony-icons';
 import { GegevensService } from 'leerling-account-modal';
 import { getRestriction, ROOSTER, STUDIEWIJZER, TabBarComponent } from 'leerling-base';
 import { REloRestricties } from 'leerling-codegen';
 import { HeaderComponent } from 'leerling-header';
 import { StudiemateriaalVakselectieComponent } from 'leerling-studiemateriaal';
-import { SidebarService, SlDatePipe } from 'leerling-util';
+import { SidebarService } from 'leerling-util';
 import { RechtenService } from 'leerling/store';
 import { derivedAsync } from 'ngxtension/derived-async';
 import { map } from 'rxjs';
 
 @Component({
     selector: 'sl-vandaag',
-    imports: [HeaderComponent, SlDatePipe, SpinnerComponent, TabBarComponent, ButtonComponent],
+    imports: [HeaderComponent, HmyDatePipe, SpinnerComponent, TabBarComponent, ButtonComponent],
     templateUrl: './vandaag.component.html',
     styleUrls: ['./vandaag.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,

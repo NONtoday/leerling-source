@@ -276,7 +276,8 @@ export class InleverenComponent implements OnInit {
                     text: 'Je hebt een bestand gekozen, maar deze nog niet ingeleverd.',
                     annulerenButtonText: 'Stoppen ',
                     bevestigenButtonText: 'Verder met inlevering',
-                    bevestigenButtonMode: 'primary'
+                    bevestigenButtonMode: 'primary',
+                    bevestigenButtonIcon: undefined
                 },
                 createModalSettings({
                     title: 'Je opdracht is nog niet ingeleverd',

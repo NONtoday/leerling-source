@@ -172,6 +172,13 @@ function getAlternatiefNiveau(
     };
 }
 
+function geldendeOfEerstGevondenOpmerking(resultaat: ToetsResultaat<SGeldendVoortgangsdossierResultaat>) {
+    if (resultaat.geldendResultaat?.opmerkingen) return resultaat.geldendResultaat.opmerkingen;
+    return !resultaat.geldendResultaat.formattedResultaat || resultaat.geldendResultaat.formattedResultaat === '-'
+        ? resultaat.pogingen?.map((poging) => poging.opmerking).find((opmerking) => opmerking?.trim() !== '')
+        : undefined;
+}
+
 function getPerioden(
     resultaten: ToetsResultaat<SGeldendVoortgangsdossierResultaat>[],
     periodeGemiddelden: ToetsResultaat<SGeldendVoortgangsdossierResultaat>[],
@@ -195,7 +202,7 @@ function getPerioden(
         voortgangsPeriode.rapportCijfer = resultaat.resultaat;
         voortgangsPeriode.isLeegRapportCijfer = resultaat.isLeegResultaat;
         voortgangsPeriode.rapportCijferIsOnvoldoende = resultaat.isVoldoende === 'onvoldoende';
-        voortgangsPeriode.rapportCijferOpmerking = resultaat.geldendResultaat.opmerkingen;
+        voortgangsPeriode.rapportCijferOpmerking = geldendeOfEerstGevondenOpmerking(resultaat);
     });
     if (kolommen) {
         vulKolomPerioden(perioden, kolommen, (voortgangsPeriode, kolom) => {
@@ -398,10 +405,19 @@ function getToetsoortGemiddelden(resultaten: SGeldendResultaat[]): ToetssoortGem
         .filter(isPresent);
 }
 
+function heeftMinimaalEenOpmerking(resultaat: SGeldendResultaat): boolean {
+    return !!(
+        resultaat.opmerkingen ??
+        resultaat.opmerkingenEerstePoging ??
+        resultaat.opmerkingenHerkansing1 ??
+        resultaat.opmerkingenHerkansing2
+    );
+}
+
 function getResultaten<T extends SGeldendResultaat>(resultaten: T[], toetstypen: Toetstype[]): ToetsResultaat<T>[] {
     return getResultatenVanType(resultaten, toetstypen)
         .map((resultaat) => {
-            if (!resultaat.formattedResultaat && !resultaat.opmerkingen) {
+            if (!resultaat.formattedResultaat && !heeftMinimaalEenOpmerking(resultaat) && resultaat.type !== 'SamengesteldeToetsKolom') {
                 return undefined;
             }
 
@@ -460,8 +476,11 @@ function getAlternatieveResultaten(
 ): ToetsResultaat<SGeldendVoortgangsdossierResultaat>[] {
     return getResultatenVanType(resultaten, toetstypen)
         .map((resultaat) => {
-            const heeftOpmerkingBijLeegResultaat = resultaat.opmerkingen !== undefined && !resultaat.formattedResultaat;
-            if (!resultaat.formattedResultaatAlternatief && !heeftOpmerkingBijLeegResultaat) {
+            if (
+                !resultaat.formattedResultaatAlternatief &&
+                !heeftMinimaalEenOpmerking(resultaat) &&
+                resultaat.type !== 'SamengesteldeToetsKolom'
+            ) {
                 return undefined;
             }
 

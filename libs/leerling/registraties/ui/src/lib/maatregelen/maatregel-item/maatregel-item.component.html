@@ -1,7 +1,7 @@
 <div class="maatregel" [attr.aria-label]="toekenning | maatregelItemAriaLabel" tabindex="0" role="text">
     <div class="maatregel-header">
         <p class="maatregel-omschrijving">{{ toekenning.maatregel.omschrijving }}</p>
-        <p class="maatregel-datum">{{ toekenning.maatregelDatum | slDate: 'dag_uitgeschreven_dagnummer_maand' }}</p>
+        <p class="maatregel-datum">{{ toekenning.maatregelDatum | hmyDate: 'dag_uitgeschreven_dagnummer_maand' }}</p>
     </div>
     @if (toekenning.opmerkingen) {
         <div class="maatregel-opmerking">

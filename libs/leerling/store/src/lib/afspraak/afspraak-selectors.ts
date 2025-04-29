@@ -22,6 +22,7 @@ export class AfspraakSelectors {
         const jaarWeek = getJaarWeek(beginDatum);
         if (jaarWeek !== getJaarWeek(eindDatum)) {
             // Dit ondersteunen we niet omdat ik verwacht dat we niet meer dan 1 week per keer tonen.
+            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
             throw new Error(beginDatum + 'valt in een andere week dan ' + eindDatum);
         }
 

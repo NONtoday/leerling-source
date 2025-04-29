@@ -3,9 +3,9 @@ import { ChangeDetectionStrategy, Component, ElementRef, ViewChild, computed, in
 import { toSignal } from '@angular/core/rxjs-interop';
 import { endOfWeek, format, startOfWeek } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import { DeviceService, PillComponent, SpinnerComponent } from 'harmony';
+import { DeviceService, HmyDatePipe, PillComponent, SpinnerComponent } from 'harmony';
 import { IconChevronBoven, provideIcons } from 'harmony-icons';
-import { ElementRefProvider, SlDatePipe } from 'leerling-util';
+import { ElementRefProvider } from 'leerling-util';
 import { derivedAsync } from 'ngxtension/derived-async';
 import { map } from 'rxjs';
 import { StudiewijzerDag } from '../../services/studiewijzer-model';
@@ -25,7 +25,7 @@ import { StudiewijzerItemsComponent } from '../studiewijzer-items/studiewijzer-i
         AantalAfgevinktAriaPipe,
         AllesAfgevinktPipe,
         SpinnerComponent,
-        SlDatePipe
+        HmyDatePipe
     ],
     templateUrl: './studiewijzer-dag.component.html',
     styleUrl: './studiewijzer-dag.component.scss',
@@ -49,7 +49,7 @@ export class StudiewijzerDagComponent implements ElementRefProvider {
         initialValue: this._deviceService.isPhoneOrTabletPortrait()
     });
 
-    private _datePipe = new SlDatePipe();
+    private _datePipe = new HmyDatePipe();
     public periode = computed(() => this._datePipe.transform(this.dag().datum, 'week_begin_dag_tm_eind_dag_maand_kort'));
 
     public ariaPeriode = computed(() => {

@@ -328,5 +328,5 @@ function formatOmschrijving(omschrijving?: string): string | undefined {
 const SE_CIJFER_KOLOM_TYPES: Toetstype[] = ['SEGemiddeldeKolom', 'SECijferKolom'];
 
 export function isGeimporteerdSeResultaat(resultaat: SGeldendResultaat) {
-    return resultaat.anderVakKolom && SE_CIJFER_KOLOM_TYPES.includes(resultaat.anderVakKolom.resultaatkolomType as Toetstype);
+    return resultaat.anderVakKolom && SE_CIJFER_KOLOM_TYPES.includes(resultaat.anderVakKolom.resultaatkolomType);
 }

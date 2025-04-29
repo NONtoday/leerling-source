@@ -5,6 +5,7 @@ import {
     ChangeDetectionStrategy,
     Component,
     DestroyRef,
+    Injector,
     OnInit,
     ViewChild,
     ViewContainerRef,
@@ -61,6 +62,7 @@ export class PopupComponent implements AfterViewInit, OnInit {
     private readonly router = inject(Router);
     readonly destroyRef = inject(DestroyRef);
     readonly viewContainerRef = inject(ViewContainerRef);
+    readonly injector = inject(Injector);
 
     settings = input.required<PopupSettings>();
     connectedElement = input.required<ViewContainerRef>();
@@ -120,7 +122,10 @@ export class PopupComponent implements AfterViewInit, OnInit {
         );
 
         merge(mouseDown$, touchStart$)
-            .pipe(filter(notInsideFilter), takeUntilDestroyed(this.destroyRef))
+            .pipe(
+                filter((mouseLocationData) => notInsideFilter(mouseLocationData) && this.settings().clickOutSideToClose()),
+                takeUntilDestroyed(this.destroyRef)
+            )
             .subscribe(() => this.animateAndClose());
 
         // Voorkom dat enter op connected element de popup opnieuw opent.

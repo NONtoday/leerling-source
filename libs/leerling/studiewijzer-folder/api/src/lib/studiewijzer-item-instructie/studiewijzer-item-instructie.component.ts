@@ -6,6 +6,7 @@ import { differenceInDays, endOfDay, getISOWeek } from 'date-fns';
 import {
     ButtonComponent,
     CheckboxComponent,
+    HmyDatePipe,
     IconDirective,
     IconPillComponent,
     PillComponent,
@@ -38,7 +39,6 @@ import {
     ModalSettings,
     SidebarService,
     SidebarSettings,
-    SlDatePipe,
     SlTwoDatePipe
 } from 'leerling-util';
 import { SExternmateriaal, SStudiewijzerItem, ToggleAfgevinkt } from 'leerling/store';
@@ -101,7 +101,7 @@ export class StudiewijzerItemInstructieComponent {
     private _store = inject(Store);
     private _authenticationService = inject(AuthenticationService);
 
-    private _datePipe = new SlDatePipe();
+    private _datePipe = new HmyDatePipe();
     private _twoDatePipe = new SlTwoDatePipe();
 
     public item = input.required<SStudiewijzerItem>();

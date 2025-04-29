@@ -161,8 +161,10 @@ export class SidebarService {
     ) {
         const pages = this._pages.filter((page) => page.contentComponentType === componentType);
         if (pages.length < 1) {
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             throw new Error(`Could not find sidebar page for content component '${componentType}'`);
         } else if (pages.length > 1) {
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             throw new Error(`Not supported: multiple pages of same content component '${componentType}'`);
         }
         const page = pages[0];

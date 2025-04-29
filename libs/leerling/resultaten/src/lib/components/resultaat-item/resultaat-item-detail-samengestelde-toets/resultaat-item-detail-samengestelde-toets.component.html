@@ -12,14 +12,14 @@
                 }
                 <p class="omschrijving">
                     {{ details.value.omschrijving }}
-                    @if (details.isTabletOrDesktop) {
+                    @if (details.isTabletOrDesktop && details.value.formattedResultaat) {
                         <span class="sub-cijfer">
                             (<span [ngClass]="{ onvoldoende: details.value.isOnvoldoende }">{{ details.value.formattedResultaat }}</span
                             >)</span
                         >
                     }
                 </p>
-                @if (!details.isTabletOrDesktop) {
+                @if (!details.isTabletOrDesktop && details.value.formattedResultaat) {
                     <p class="sub-cijfer" [ngClass]="{ onvoldoende: details.value.isOnvoldoende }">
                         {{ details.value.formattedResultaat }}
                     </p>

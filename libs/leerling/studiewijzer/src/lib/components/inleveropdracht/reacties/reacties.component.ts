@@ -61,7 +61,8 @@ export class ReactiesComponent implements OnInit {
                     text: 'Deze reactie is niet verzonden en wordt niet opgeslagen',
                     annulerenButtonText: 'Annuleren',
                     bevestigenButtonText: 'Reactie verwijderen',
-                    bevestigenButtonMode: 'delete'
+                    bevestigenButtonMode: 'delete',
+                    bevestigenButtonIcon: undefined
                 },
                 createModalSettings({
                     title: 'Je reactie is nog niet verstuurd',

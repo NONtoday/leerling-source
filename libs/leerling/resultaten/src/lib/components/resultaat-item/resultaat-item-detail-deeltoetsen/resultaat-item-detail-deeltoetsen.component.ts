@@ -44,4 +44,13 @@ export class ResultaatItemDetailDeeltoetsenComponent implements OnInit {
             map((deeltoetsen) => orderBy(deeltoetsen, ['volgnummer'], ['desc']))
         );
     }
+
+    getGeldendeOfEersteOpmerking(deelToetsResultaat: SGeldendResultaat): string | undefined {
+        if (deelToetsResultaat.opmerkingen) return deelToetsResultaat.opmerkingen;
+        return !deelToetsResultaat.formattedResultaat || deelToetsResultaat.formattedResultaat === '-'
+            ? (deelToetsResultaat.opmerkingenEerstePoging ??
+                  deelToetsResultaat.opmerkingenHerkansing1 ??
+                  deelToetsResultaat.opmerkingenHerkansing2)
+            : undefined;
+    }
 }

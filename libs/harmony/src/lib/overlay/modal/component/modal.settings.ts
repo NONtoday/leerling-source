@@ -14,6 +14,7 @@ export interface ModalSettings {
     title: string | undefined;
     titleIcon: ModalIconName | undefined;
     titleIconColor: ColorToken | undefined;
+    titleColor: ColorToken;
     closePosition: {
         top: number | undefined;
         right: number | undefined;
@@ -40,6 +41,7 @@ export function createModalSettings(updatedSettings?: Partial<ModalSettings>): M
         keepOnNavigation: false,
         title: undefined,
         titleIcon: undefined,
+        titleColor: 'text-strong',
         titleIconColor: undefined,
         closePosition: {
             top: undefined,

@@ -6,13 +6,13 @@ import {
     ChangeDetectionStrategy,
     ChangeDetectorRef,
     Component,
-    ElementRef,
-    TemplateRef,
-    ViewContainerRef,
     computed,
+    ElementRef,
     inject,
     input,
-    viewChild
+    TemplateRef,
+    viewChild,
+    ViewContainerRef
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AvatarComponent, IconDirective, OverlayService, TooltipDirective } from 'harmony';
@@ -79,6 +79,7 @@ const ANIMATIONS = [FADE_IN_OUT_ANIMATION];
     host: {
         '[class.with-back-button]': 'viewModel()?.showBackButton',
         '[class.verzorger]': 'viewModel()?.isVerzorger',
+        '[class.verberg-leerling-info]': 'viewModel()?.verbergLeerlingInfo',
         '[class.hide-border-bottom-mobile]': 'hideBorderBottomMobile()'
     },
     animations: ANIMATIONS,

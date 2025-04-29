@@ -1,7 +1,6 @@
 import { Component, Input } from '@angular/core';
-import { IconDirective } from 'harmony';
+import { HmyDatePipe, IconDirective } from 'harmony';
 import { IconReacties, provideIcons } from 'harmony-icons';
-import { SlDatePipe } from 'leerling-util';
 import { SMaatregelToekenning } from 'leerling/store';
 import { MaatregelItemAriaLabelPipe } from './maatregel-item-aria-label.pipe';
 
@@ -9,7 +8,7 @@ import { MaatregelItemAriaLabelPipe } from './maatregel-item-aria-label.pipe';
     selector: 'sl-maatregel-item',
     templateUrl: './maatregel-item.component.html',
     styleUrls: ['./maatregel-item.component.scss'],
-    imports: [SlDatePipe, IconDirective, MaatregelItemAriaLabelPipe],
+    imports: [HmyDatePipe, IconDirective, MaatregelItemAriaLabelPipe],
     providers: [provideIcons(IconReacties)]
 })
 export class MaatregelItemComponent {

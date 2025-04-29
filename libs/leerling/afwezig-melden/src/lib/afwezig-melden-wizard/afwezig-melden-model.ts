@@ -1,5 +1,5 @@
 import { addDays, addWeeks, getDate, getMonth, getYear, isAfter, isBefore, isMonday, isSameDay, previousMonday, subDays } from 'date-fns';
-import { formatDateNL } from 'leerling-util';
+import { formatDateNL } from 'harmony';
 import { padStart, range, upperFirst } from 'lodash-es';
 
 export interface WeekOptie {

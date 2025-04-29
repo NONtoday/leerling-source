@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
 import { Capacitor } from '@capacitor/core';
 
 export enum SupportedPlatforms {

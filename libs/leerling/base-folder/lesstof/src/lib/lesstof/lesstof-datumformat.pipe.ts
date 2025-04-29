@@ -1,6 +1,6 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { getMonth, getWeek, nextFriday } from 'date-fns';
-import { formatDateNL } from 'leerling-util';
+import { formatDateNL } from 'harmony';
 import { SStudiewijzerItem, formatNL } from 'leerling/store';
 
 @Pipe({

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, WritableSignal, inject, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, WritableSignal, computed, inject, input, output, signal } from '@angular/core';
 import { ButtonComponent, DeviceService, IconDirective, PillComponent, VakIconComponent } from 'harmony';
 import { Observable } from 'rxjs';
 
@@ -43,6 +43,15 @@ export class ResultaatItemDetailComponent {
     public resultaatItem = input.required<ResultaatItem>();
     public toonVakCijferlijstKnop = input<boolean>(false);
     public toonKolommen = input<boolean>(false);
+
+    public getGeldendeOfEersteOpmerking = computed(() => {
+        const resultaat = this.resultaatItem();
+        if (resultaat.details?.opmerking) return resultaat.details.opmerking;
+        if (!resultaat.resultaat || resultaat.resultaat === '-') {
+            return this.resultaatItem()?.details?.pogingen?.find((poging) => poging.opmerking != undefined)?.opmerking;
+        }
+        return undefined;
+    });
 
     openVakCijferlijst = output<void>();
 

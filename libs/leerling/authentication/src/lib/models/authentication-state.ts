@@ -76,6 +76,7 @@ export class AuthenticationState {
     }
 
     public async updateMetadata(metadataFields: Partial<AuthenticationMetadata>) {
+        // eslint-disable-next-line @typescript-eslint/restrict-plus-operands, @typescript-eslint/no-base-to-string
         info('Update Metadata - ' + metadataFields);
         info('Oude metadata:' + this._metadataString());
         const newMetaData = { ...this._metaData, ...metadataFields };
@@ -111,6 +112,7 @@ export class AuthenticationState {
                 profiel.accountUUID !== value.accountUUID ||
                 // onderstaande is enkel om de context te removen en dient dus altijd false te returnen
                 // de promise is altijd beschikbaar, dus kan inverted worden voor gewenst resultaat.
+                // eslint-disable-next-line @typescript-eslint/no-misused-promises
                 !this._removeSessionFromStorage(value.sessionIdentifier)
         );
 
@@ -163,6 +165,7 @@ export class AuthenticationState {
     }
 
     public async purge(): Promise<void> {
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         this._metaData.allAuthenticationRecords.forEach((record) => this._removeSessionFromStorage(record.sessionIdentifier));
         await this.updateMetadata({ currentLeerling: undefined, currentSessionIdentifier: undefined, allAuthenticationRecords: [] });
         await this.sanitizeStorageAPI();

@@ -37,6 +37,7 @@ export class NotificatieSettingsComponent implements OnInit, OnDestroy {
     private _settingsOpenFailMessage =
         'We konden op jouw telefoon notification settings niet openen, probeer het handmatige via de settings van je telefoon.';
 
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     async ngOnInit() {
         this.currentProfile$ = this.authService.currentProfiel$;
         this.notificatieSettings$ = this.notificationService.getNotificatieSettings();

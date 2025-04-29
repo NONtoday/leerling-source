@@ -33,7 +33,7 @@
                 @if (settings().titleIcon; as titleIcon) {
                     <i class="title-icon" [color]="settings().titleIconColor" [hmyIcon]="titleIcon" size="medium"></i>
                 }
-                <span class="title ellipsis">{{ settings().title }}</span>
+                <span class="title ellipsis" [ngClass]="settings().titleColor">{{ settings().title }}</span>
             </div>
         }
         @if (settings().showClose) {

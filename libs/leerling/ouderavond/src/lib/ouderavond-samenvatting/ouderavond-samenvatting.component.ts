@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, Signal } from '@angular/core';
 import { subDays } from 'date-fns';
-import { IconDirective, IconPillComponent, isPresent, MessageBarComponent, MessageType } from 'harmony';
+import { HmyDatePipe, IconDirective, IconPillComponent, isPresent, MessageBarComponent, MessageType } from 'harmony';
 import { IconBewerken, IconKalenderDag, IconReactieToevoegen, provideIcons } from 'harmony-icons';
-import { SlDatePipe } from 'leerling-util';
 import { OuderavondInfo } from '../model/ouderavond.model';
 import { OuderavondVakDocentComponent } from '../ouderavond-vak-docent/ouderavond-vak-docent.component';
 import { OuderavondData, StapNaam, VerzendStatus } from '../ouderavond-wizard/ouderavond-wizard.component';
@@ -26,7 +25,7 @@ interface ToastInfo {
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class OuderavondSamenvattingComponent {
-    private _datePipe = new SlDatePipe();
+    private _datePipe = new HmyDatePipe();
 
     public ouderavondInfo = input.required<OuderavondInfo>();
     public data = input.required<OuderavondData>();

@@ -74,8 +74,11 @@ export class DropdownComponent<T> {
     public buttonHeight = input<number>(48);
     public withBorder = input<boolean>(true);
     public wrapItems = input<boolean>(true);
+    public useAutoCapture = input<boolean>(true);
+    public showCloseButton = input<boolean>(false);
 
     public onSelectionChanged = output<T>();
+    public onSelectionRemoved = output<void>();
 
     iconSize = computed(() => {
         return match(this.size())
@@ -134,6 +137,13 @@ export class DropdownComponent<T> {
             .with(Pattern.number, (n: number) => `${n}px`)
             .exhaustive();
     });
+
+    removeSelection(event: MouseEvent) {
+        event.stopPropagation();
+        this.selected.set(undefined);
+        this.closeOptionsList();
+        this.onSelectionRemoved.emit();
+    }
 
     closeOptionsList = () => this.overlayService.close(this.dropdownBox());
 

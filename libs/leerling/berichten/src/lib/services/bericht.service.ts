@@ -47,7 +47,8 @@ export class BerichtService {
                 text: 'Dit kan niet ongedaan worden gemaakt.',
                 annulerenButtonText: 'Annuleren',
                 bevestigenButtonText: 'Verwijderen',
-                bevestigenButtonMode: 'delete'
+                bevestigenButtonMode: 'delete',
+                bevestigenButtonIcon: undefined
             },
             settings: {
                 title: 'Gesprek verwijderen?'

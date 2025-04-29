@@ -1,7 +1,7 @@
 <div
     class="dag-header"
     #dagHeader
-    [attr.aria-label]="(dag().datum | slDate: 'dag_uitgeschreven_dagnummer_maand') + (dagitems() | aantalAfgevinktAria)"
+    [attr.aria-label]="(dag().datum | hmyDate: 'dag_uitgeschreven_dagnummer_maand') + (dagitems() | aantalAfgevinktAria)"
     [style.--header-offset]="headerOffset() + 'px'"
     tabindex="0"
     role="text">
@@ -10,7 +10,7 @@
             <hmy-notification-solid [size]="8" color="accent" />
         }
         <p class="datum" [ngClass]="{ vandaag: dag().isVandaag }">
-            {{ dag().datum | slDate: 'dag_uitgeschreven_dagnummer_maand' }}
+            {{ dag().datum | hmyDate: 'dag_uitgeschreven_dagnummer_maand' }}
         </p>
     </div>
     @if (dagitems(); as items) {
